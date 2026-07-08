@@ -52,3 +52,54 @@ The legally authoritative version of Moroccan law is the **Arabic** text; the Fr
 ## One-line summary for the report
 
 > The stack is the intersection of two hard constraints: **sovereignty** (everything must run local/open, which eliminates all API-based components) and **a bounded beginner project** (favor understandability and developer experience over production-scale performance, since the corpus is small enough that scale is a non-issue).
+
+
+## Foundations (the mental model)
+
+retrieval augmented generation explained — what RAG is, end to end
+RAG vs fine-tuning — why we retrieve the law instead of training it into the model
+text embeddings explained — what an embedding actually is
+cosine similarity explained — why angle = semantic closeness
+vector database explained — what the store does under the hood
+
+Mission 1 — corpus & chunking
+
+chunking strategies for RAG — fixed vs recursive vs semantic vs structural
+chunk size RAG retrieval quality — why too-big and too-small both hurt
+
+Mission 2a — embeddings, vector store, reranking
+
+best embedding model for RAG 2025 — where BGE-M3 sits vs the field
+multilingual embedding models comparison — the FR/AR angle
+open source vs OpenAI embeddings — why local, not an embedding API
+Chroma vs FAISS — the vector-DB choice
+bi-encoder vs cross-encoder — why retrieve-then-rerank, not retrieve alone
+reranker RAG explained — what the reranker adds
+
+Frameworks (the contrarian call I made)
+
+LangChain vs LlamaIndex 2025 — what each is for
+RAG without LangChain — the argument for hand-rolling first (watch this one; it's the case behind my advice)
+
+Local model
+
+Ollama tutorial — running a model locally
+best local LLM for RAG 2025 — Qwen vs Mistral vs others
+local LLM vs API tradeoffs — why local, and what it costs you in quality
+LLM quantization GGUF explained — why Q4, what you lose
+
+Mission 2b — grounding, citation, abstention
+
+reduce hallucination in RAG — grounded generation
+LLM grounding faithfulness — keeping answers tied to the source
+
+Mission 3 — evaluation
+
+how to evaluate RAG — the metrics landscape
+recall@k MRR information retrieval — the retrieval metrics
+RAGAS tutorial — the automated-eval library (+ its limits)
+LLM as a judge problems — why I told you to grade manually on a small set
+
+Stretch — multilingual
+
+multilingual RAG cross-lingual retrieval — the pivot idea
