@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# Generated parser output (regenerable from src/parser.py)
+output.txt
