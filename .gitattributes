@@ -1,0 +1,12 @@
+# Never apply EOL conversion to binary assets — it corrupts them on Windows.
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.svg  text eol=lf
+
+# Keep source files with LF in the repo.
+*.py   text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
