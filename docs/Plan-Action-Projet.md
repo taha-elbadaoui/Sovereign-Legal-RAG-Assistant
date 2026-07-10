@@ -36,6 +36,17 @@ Le cadrage négatif est aussi important que le cadrage positif :
 - Ce n'est **pas** un système qui répond « au mieux » : face à une question sans réponse dans le corpus, **l'abstention est le comportement correct**, pas un échec.
 - Ce n'est **pas** un produit : le livrable est le moteur RAG et son évaluation, pas une interface aboutie.
 
+### 1.4 Hors périmètre — interdictions explicites
+
+> ⚠️ Ces limites protègent le stage de l'étalement, qui est le premier risque d'échec sur un délai court. Elles ne sont pas négociables sans validation de l'encadrant.
+
+- **Pas de fine‑tuning du LLM.** Le modèle local est utilisé tel quel (prompting + RAG), jamais réentraîné.
+- **Pas de mémoire conversationnelle.** Chaque question est traitée indépendamment ; pas de suivi de dialogue multi‑tour.
+- **Pas d'autre code juridique que le Code du travail** (Loi 65‑99) engagé pour le stage.
+- **Pas d'interface web complète.** La CLI est le livrable ; une démo Streamlit/Gradio minimale reste un *nice-to-have*, jamais un engagement.
+- **Pas de correction/normalisation automatique de l'orthographe** des questions (français, arabe ou darija) au‑delà de la traduction prévue en Mission 4.
+- **Pas de veille légale automatisée en production** (cf. §8) — toute mise à jour du corpus reste déclenchée et validée par un humain.
+
 ---
 
 ## 2. Architecture générale
@@ -174,11 +185,13 @@ sovereign-legal-rag/
 └── requirements.txt                # Dépendances épinglées
 ```
 
-### 5.2 Prérequis
+### 5.2 Environnement et ressources
 
 - Python 3.11
 - [Ollama](https://ollama.com) installé localement
-- Matériel : GPU NVIDIA ≥ 6 Go de VRAM, ou Apple Silicon ≥ 16 Go de RAM. À défaut, exécution CPU possible (plus lente) avec un modèle plus petit.
+- Matériel : GPU NVIDIA ≥ 6 Go de VRAM, ou Apple Silicon ≥ 16 Go de RAM. À défaut, exécution CPU possible (plus lente) avec un modèle plus petit (Qwen3 4B).
+- Espace disque : ~10 Go (modèle quantifié + dépendances Python + corpus).
+- Accès réseau uniquement pour l'installation initiale (téléchargement des modèles) ; le fonctionnement en régime établi est **entièrement hors ligne**.
 
 ### 5.3 Installation
 
@@ -227,16 +240,16 @@ Le projet doit être **reconstructible depuis un clone vierge** : c'est un crit�
 
 ### 6.2 Plan par phases
 
-| Phase | Objet | Livrable de fin de phase |
-|---|---|---|
-| **S1** | Acquisition du corpus + extraction + découpage par article | Liste d'articles brute, fidélité vérifiée. |
-| **S2** | Structuration + découpage intelligent (métadonnées, hiérarchie) | Corpus reproductible au format JSONL. |
-| **S3** | Premier pipeline RAG bout‑en‑bout | CLI : question → réponse avec articles cités. |
-| **S4** | Ancrage, citation, abstention | Réponses fiables + abstention hors périmètre. |
-| **S5** | Recherche hybride, reranking + jeu de Q/R de référence | Recherche améliorée + jeu d'évaluation documenté. |
-| **S6** | Exécution de l'évaluation + métriques | Rapport de performance + analyse d'erreurs. |
-| **S7** | Durcissement, reproductibilité, marge | Prototype propre et reproductible. |
-| **S8** | Rapport, soutenance, reproductibilité finale | Rapport + démo + dépôt reproductible. |
+| Phase | Objet | Livrable de fin de phase | Risque principal |
+|---|---|---|---|
+| **S1** | Acquisition du corpus + extraction + découpage par article | Liste d'articles brute, fidélité vérifiée. | Fidélité d'extraction (PDF bruité) |
+| **S2** | Structuration + découpage intelligent (métadonnées, hiérarchie) | Corpus reproductible au format JSONL. | Découpage/métadonnées incohérents |
+| **S3** | Premier pipeline RAG bout‑en‑bout | CLI : question → réponse avec articles cités. | Latence d'inférence locale |
+| **S4** | Ancrage, citation, abstention | Réponses fiables + abstention hors périmètre. | Sur‑confiance du modèle (refuse mal d'abstenir) |
+| **S5** | Recherche hybride, reranking + jeu de Q/R de référence | Recherche améliorée + jeu d'évaluation documenté. | Jeu de référence biaisé ou trop facile |
+| **S6** | Exécution de l'évaluation + métriques | Rapport de performance + analyse d'erreurs. | Échantillon trop petit pour conclure |
+| **S7** | Durcissement, reproductibilité, marge | Prototype propre et reproductible. | Étalement (features au lieu de solidifier) |
+| **S8** | Rapport, soutenance, reproductibilité finale | Rapport + démo + dépôt reproductible. | Sous‑estimation du temps de rédaction |
 
 Un **journal de bord** (`JOURNAL.md`) est tenu quotidiennement : chaque décision, résultat et difficulté y est consigné, pour la traçabilité et le rapport final.
 
@@ -257,24 +270,69 @@ Prochaines sous‑étapes (S2) :
 
 ---
 
-## 7. Risques et mesures
+## 7. Critères de succès (mesurables)
 
-| Risque | Mesure |
-|---|---|
-| Bruit d'extraction PDF propagé dans les réponses | Découpage structurel par article + nettoyage documenté ; vérification manuelle de fidélité. |
-| Hallucination / sur‑affirmation du modèle local | Seuil d'abstention **avant** le modèle + prompt d'ancrage strict + vérification des citations + température basse. |
-| Évaluation sans expertise juridique | Questions factuelles à réponse directe tirée du texte ; échantillon validé par l'encadrant ; réserves explicites sur la taille de l'échantillon. |
-| Dérive de version du corpus (textes amendés) | Source officielle, `date_consolidation` en métadonnée, note de fraîcheur, patch des articles divergents. |
-| Qualité arabe / darija (RTL, extraction) | Arabe traité en expérimentation ; version française comme corpus primaire. |
+| # | Critère | Condition de validation |
+|---|---|---|
+| 1 | Corpus complet | Les 588 articles extraits sont vérifiés manuellement par échantillonnage (10 articles) contre le PDF source ; aucun écart de fond constaté. |
+| 2 | Citation systématique | 0 réponse sans numéro d'article cité sur le jeu de référence (30 à 50 questions). |
+| 3 | Abstention correcte | Sur les ~10 questions hors périmètre du jeu de référence, le taux d'abstention correcte est mesuré et documenté. |
+| 4 | Recherche mesurée | Recall@k et MRR publiés pour les trois configurations (dense seul, BM25 seul, hybride) sur le jeu de référence. |
+| 5 | Vérification des citations | Le taux d'articles cités effectivement présents dans le contexte retourné par la recherche est mesuré sur le jeu de référence. |
+| 6 | Reproductibilité | Clone vierge du dépôt → reconstruction du corpus → exécution → démo, sans intervention manuelle non documentée dans le README. |
 
 ---
 
-## 8. Livrables de fin de stage
+## 8. Risques et mesures
+
+| Risque | Impact | Mesure |
+|---|---|---|
+| Bruit d'extraction PDF propagé dans les réponses | Moyen | Découpage structurel par article + nettoyage documenté ; vérification manuelle de fidélité. |
+| Hallucination / sur‑affirmation du modèle local | Élevé | Seuil d'abstention **avant** le modèle + prompt d'ancrage strict + vérification des citations + température basse. |
+| Évaluation sans expertise juridique | Moyen | Questions factuelles à réponse directe tirée du texte ; échantillon validé par l'encadrant ; réserves explicites sur la taille de l'échantillon. |
+| Dérive de version du corpus (textes amendés) | Moyen | Source officielle, `date_consolidation` en métadonnée, note de fraîcheur, patch des articles divergents. |
+| Qualité arabe / darija (RTL, extraction) | Faible | Arabe traité en expérimentation ; version française comme corpus primaire. |
+
+---
+
+## 9. Explicitement différé (hors périmètre du stage)
+
+Pour discipline, ces sujets ne sont pas traités et sont listés pour éviter la tentation :
+
+- Le fine‑tuning ou l'entraînement d'un modèle (embeddings ou LLM).
+- Une interface produit complète (au‑delà d'une démo CLI ou Streamlit minimale).
+- Le support de codes juridiques autres que le Code du travail.
+- La veille légale automatisée en production — toute mise à jour du corpus reste déclenchée et validée par un humain (cf. §8).
+- Le darija au‑delà d'une expérimentation documentée (Mission 4).
+- Toute intégration cloud ou API externe dans le cœur du système (souveraineté, §4.1).
+
+---
+
+## 10. Livrables de fin de stage
 
 - Corpus structuré, documenté et reproductible du Code du travail (JSONL, métadonnées).
 - Pipeline RAG local (CLI) : question → réponse sourcée avec citation d'articles + abstention.
 - Jeu de questions/réponses de référence et rapport d'évaluation (métriques + analyse d'erreurs).
 - Rapport de stage + dépôt reproductible depuis un clone vierge + démonstration.
+
+---
+
+## 11. Glossaire
+
+| Terme | Définition |
+|---|---|
+| RAG | *Retrieval-Augmented Generation.* On retrouve le texte pertinent, puis on demande au modèle de répondre en s'appuyant uniquement dessus. |
+| Embedding | Vecteur de nombres représentant le sens d'un texte ; deux textes de sens proche ont des vecteurs proches. |
+| Similarité cosinus | Mesure de l'angle entre deux vecteurs (pas leur longueur) ; angle petit = sens proche. |
+| Base vectorielle | Stocke les vecteurs et retrouve rapidement les plus proches voisins d'une question (ici : Chroma). |
+| Chunk | Le morceau de texte indexé ; ici, 1 chunk = 1 article. |
+| BM25 | Recherche lexicale (mots exacts), complémentaire à la recherche sémantique. |
+| RRF (*reciprocal rank fusion*) | Méthode de fusion de deux classements de résultats sans comparer leurs scores bruts. |
+| Reranker | Modèle cross‑encodeur qui réordonne un petit nombre de candidats pour plus de précision. |
+| Ancrage (*grounding*) | Contraindre le modèle à ne répondre qu'à partir des articles fournis dans le prompt. |
+| Hallucination | Réponse plausible mais fausse, inventée par le modèle. |
+| Abstention | Réponse explicite « je n'ai pas l'information », comportement correct plutôt qu'un échec. |
+| Quantification | Compression des poids d'un modèle (ex. Q4) pour réduire son empreinte mémoire. |
 
 ---
 
@@ -302,4 +360,6 @@ Une comparaison a été menée entre les deux versions disponibles du Code du tr
 
 ---
 
-*Document de conception — mis à jour au 7 juillet 2026.*
+**Document de conception technique.** Le périmètre (§1.2, §1.4) et l'ordre des phases (§6.2) sont fermes pour la durée du stage ; les choix d'implémentation du §4 sont des points de départ discutables avec l'encadrant, à condition de respecter les principes structurants du §2.1 et les interdictions du §1.4 et du §9.
+
+*Document de conception — mis à jour au 10 juillet 2026.*
