@@ -360,6 +360,17 @@ Une comparaison a été menée entre les deux versions disponibles du Code du tr
 
 ---
 
+## Annexe B — Enseignements d'une architecture alternative
+
+Une proposition d'architecture alternative pour un projet voisin (assistant juridique marocain, microservices React / Spring Boot / Flask, LLM cloud) a été comparée à celle retenue dans ce document. Certains de ses choix méritent d'être notés, même s'ils ne sont pas retenus pour le périmètre du stage :
+
+- **Cache** (type Redis) — une optimisation légitime, absente de ce document. Sur des questions fréquentes (« durée du congé de maternité »), rejouer tout le pipeline RAG à chaque fois est un gaspillage. À considérer, même dans une version simplifiée.
+- **Historique de conversation** (type base relationnelle) — pertinent si le produit final doit un jour garder une mémoire par utilisateur. Le système décrit ici traite chaque question isolément (assumé et documenté en §1.4) — le bon choix pour un stage, mais l'architecture alternative pense davantage produit fini.
+- **Séparation en microservices** — bonne pratique générique si plusieurs personnes travaillent en parallèle, ou si le produit doit scaler. Non pertinent pour une personne seule sur 8 semaines, mais pas un mauvais réflexe en soi.
+- **Conteneurisation** (Docker) — bon sens pour la reproductibilité en déploiement, indépendamment de l'échelle.
+
+---
+
 **Document de conception technique.** Le périmètre (§1.2, §1.4) et l'ordre des phases (§6.2) sont fermes pour la durée du stage ; les choix d'implémentation du §4 sont des points de départ discutables avec l'encadrant, à condition de respecter les principes structurants du §2.1 et les interdictions du §1.4 et du §9.
 
 *Document de conception — mis à jour au 10 juillet 2026.*
