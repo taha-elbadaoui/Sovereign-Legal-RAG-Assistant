@@ -253,20 +253,21 @@ Le projet doit être **reconstructible depuis un clone vierge** : c'est un crit�
 
 Un **journal de bord** (`JOURNAL.md`) est tenu quotidiennement : chaque décision, résultat et difficulté y est consigné, pour la traçabilité et le rapport final.
 
-### 6.3 État d'avancement (au 7 juillet 2026)
+### 6.3 État d'avancement (au 20 juillet 2026)
 
-**Mission 1 — fondation en bonne voie, en avance sur le calendrier.**
+**Mission 1 — S2 terminée, en avance sur le calendrier.**
 
 Réalisé :
 - Extraction du texte du Code du travail (version française) via PyMuPDF ; correction d'un problème d'encodage des accents (UTF‑8).
 - Parser écrit **à la main** : découpage automatique en articles via expression régulière ancrée en début de ligne.
-- **588 articles** proprement séparés ; avant‑propos (dahir, préface) et table des matières isolés et traités à part.
+- **589 articles** proprement séparés ; avant‑propos (dahir, préface) et table des matières isolés et traités à part.
 - Structuration en objets `{article_number, article_text}`, numéros normalisés et stockés en chaîne pour la cohérence des comparaisons et citations en aval.
-
-Prochaines sous‑étapes (S2) :
 - Nettoyage du texte (marqueurs de pagination, normalisation des retours à la ligne).
-- Métadonnées de hiérarchie (livre, titre, chapitre, section).
-- Sérialisation JSONL déterministe + vérification manuelle de fidélité sur un échantillon.
+- Métadonnées de hiérarchie (livre, titre, chapitre, section), y compris les titres repliés sur plusieurs lignes dans le PDF.
+- Sérialisation JSONL déterministe (`data/processed/corpus_chunks.jsonl`), avec vérification manuelle de fidélité sur échantillon en cours.
+- Deux articles abrogés en 2011 (32, 256) repatchés avec le texte 2021 sourcé, marqués `amende_2021`.
+
+Prochaine sous‑étape (S3) : premier pipeline RAG bout‑en‑bout (embeddings, recherche, génération, citations).
 
 ---
 
@@ -274,7 +275,7 @@ Prochaines sous‑étapes (S2) :
 
 | # | Critère | Condition de validation |
 |---|---|---|
-| 1 | Corpus complet | Les 588 articles extraits sont vérifiés manuellement par échantillonnage (10 articles) contre le PDF source ; aucun écart de fond constaté. |
+| 1 | Corpus complet | Les 589 articles extraits sont vérifiés manuellement par échantillonnage (10 articles) contre le PDF source ; aucun écart de fond constaté. |
 | 2 | Citation systématique | 0 réponse sans numéro d'article cité sur le jeu de référence (30 à 50 questions). |
 | 3 | Abstention correcte | Sur les ~10 questions hors périmètre du jeu de référence, le taux d'abstention correcte est mesuré et documenté. |
 | 4 | Recherche mesurée | Recall@k et MRR publiés pour les trois configurations (dense seul, BM25 seul, hybride) sur le jeu de référence. |

@@ -101,3 +101,31 @@ sovereign-legal-rag/
 **Prochaine étape :**
 - Normalisation du texte (`re.sub`) : supprimer les marqueurs de pagination, réduire les suites d'espaces/retours à la ligne en un seul espace, `strip()` les bords.
 - Puis : métadonnées de hiérarchie, sérialisation JSONL, vérification manuelle ~10 articles.
+
+---
+
+## 2026-07-20 — Semaine 3 : hiérarchie, nettoyage, JSONL — S2 terminée
+
+**Fait :**
+- Normalisation du texte : suppression des marqueurs de pagination, réduction des retours à la ligne PyMuPDF (un `\n` par ligne visuelle) en un seul espace, `strip()` des bords.
+- Métadonnées de hiérarchie (`livre`, `titre`, `chapitre`, `section`) attachées à chaque article via `HEADER_RE` + un dictionnaire `hierarchy` mis à jour au fil du texte (`RESET_BELOW` : un nouveau `Titre` réinitialise `chapitre`/`section`, etc.). Amorçage depuis l'avant-propos (`parts[0]`) pour que l'Article 1 hérite bien de `Livre préliminaire` / `Titre premier`.
+- Sérialisation en JSONL déterministe : `data/processed/corpus_chunks.jsonl`, un article par ligne, schéma `{article_number, article_text, amende_2021, livre, titre, chapitre, section}` identique sur les 589 lignes.
+- Patch de contenu légal sourcé sur les articles 32 et 256 : tous deux abrogés en 2007 (loi 48-06, suppression du service militaire) et donc vides ou quasi-vides dans ce PDF FR de 2011 ; texte de remplacement 2021 (loi 02.21) injecté, déjà vérifié dans `docs/comparaison-code-du-travail-FR-AR.md`. Champ `amende_2021` ajouté à **tous** les articles (`False` par défaut) pour que la déviation reste visible et traçable dans la donnée elle-même.
+- Vérification systématique (script, pas à l'œil) sur 5 catégories : intégrité de séquence (1→589, doublons, trous), textes anormalement courts, suites de 5+ chiffres suspectes, fragments d'en-tête oubliés dans le corps, articles sans hiérarchie.
+
+**Bugs trouvés et corrigés (via le sweep + vérification manuelle) :**
+- **Numéros d'article corrompus par un chiffre de renvoi de bas de page collé** (`"33450"` au lieu de `"334"`, `"25635"` au lieu de `"256"`) : PyMuPDF ne préserve pas la mise en exposant, donc un appel de note collé à un numéro d'article dans le PDF ressort comme une seule suite de chiffres sans séparateur. Corrigé en plafonnant le regex de découpage à `\d{1,3}` (aucun article ne dépasse 589, donc 4+ chiffres = numéro + reliquat de note).
+- **Article 135 absent du corpus** (588 au lieu de 589) : un espace parasite avant `Article 135` sur sa propre ligne cassait l'ancre stricte `^Article`, donc son contenu était silencieusement absorbé dans le corps de l'Article 134. Trouvé en scannant les trous de séquence, pas en relisant à l'œil. Corrigé avec `[ \t]*` avant `Article` dans le regex de découpage.
+- **Titres de hiérarchie repliés sur 2 ou 3 lignes dans le PDF** (32 cas trouvés, dont 5 sur 3 lignes, ex. `Chapitre VII : Le Conseil supérieur de la promotion de\nl'emploi et les conseils régionaux et provinciaux de la\npromotion de l'emploi.`) : `HEADER_RE` ne capturait que la première ligne visuelle, donc (a) les champs `livre`/`titre`/`chapitre`/`section` restaient tronqués pour **tous** les articles sous ce titre jusqu'au suivant du même niveau, et (b) la ou les lignes de continuation fuyaient dans le corps de l'article adjacent (ex. Article 521 se terminait par `"...articles 518 et 519. l'emploi et les conseils régionaux et provinciaux de la promotion de l'emploi."`). Trouvé en comparant le corpus parsé au PDF brut pendant la vérification manuelle (Article 550), puis quantifié par script avant de corriger. Corrigé en étendant `HEADER_RE` pour continuer à consommer les lignes suivantes tant qu'elles ne commencent pas elles-mêmes par `Livre`/`Titre`/`Chapitre`/`Section`/`Article`.
+- Cohérence de schéma : `amende_2021` ajouté par défaut à tous les articles dès leur création (pas seulement aux deux patchés), pour éviter tout code aval qui devrait gérer une clé absente.
+
+**Limites connues, non corrigées (bruit mineur, dans la prose, pas dans les champs structurants) :**
+- Articles 73 et 76 : un chiffre de renvoi de bas de page reste collé à une référence d'article *dans* le texte courant (`"l'article 109814"` = « l'article 1098 » + note « 14 »), pas au numéro d'article lui-même — non corrigé.
+- Article 589 : un numéro de code-barres/impression parasite (`0305111201`) en toute fin de texte — non corrigé.
+
+**Vérification manuelle (fidélité PDF, échantillon en cours) :**
+- Articles 1, 32, 256, 327, 334, 521, 522, 550, 551 vérifiés (via le débogage des bugs ci-dessus).
+- Restent à échantillonner par Taha : 152, 300, 400, 500, 588, 589.
+
+**Prochaine étape (S3) :**
+- Premier pipeline RAG bout-en-bout : embeddings BGE-M3, base Chroma, index BM25, fusion RRF, génération via Ollama, citations systématiques.
