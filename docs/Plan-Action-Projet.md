@@ -257,7 +257,7 @@ Un **journal de bord** (`JOURNAL.md`) est tenu quotidiennement : chaque décisio
 
 ### 6.3 État d'avancement (au 24 juillet 2026)
 
-**Mission 1 — S2 terminée ; premier pipeline RAG bout‑en‑bout (S3) opérationnel.**
+**Mission 1 (corpus) et Mission 2 (moteur RAG) terminées sur le périmètre Code du travail ; Mission 3 (évaluation) engagée.**
 
 Réalisé (S1‑S2, corpus) :
 - Extraction du texte du Code du travail (version française) via PyMuPDF ; correction d'un problème d'encodage des accents (UTF‑8).
@@ -271,11 +271,16 @@ Réalisé (S1‑S2, corpus) :
 
 Réalisé (S3, pipeline RAG) :
 - `database.py` : indexation des 589 articles dans Chroma via embeddings BGE-M3 (local, sans appel API), métadonnées de hiérarchie attachées.
-- `retriever.py` : recherche hybride — dense (Chroma/BGE-M3) + lexicale (BM25) — fusionnées par Reciprocal Rank Fusion.
-- `generator.py` : génération ancrée via Ollama (Mistral 7B local) avec citation systématique des articles et abstention si le corpus fourni ne permet pas de répondre.
-- `eval/questions-test.md` : jeu de test manuel (15 questions/réponses attendues) pour valider la chaîne complète avant démonstration.
+- `retriever.py` : recherche hybride — dense (Chroma/BGE-M3) + lexicale (BM25) — fusionnées par Reciprocal Rank Fusion, reranking par cross‑encodeur en option.
+- `generator.py` : génération ancrée via Ollama (Mistral 7B local) avec citation systématique des articles.
 
-Prochaine sous‑étape (S4/S5) : jeu de référence formel (30‑50 questions) pour calibrer un seuil d'abstention pré‑LLM, reranking par cross‑encodeur, script d'évaluation (Recall@k, MRR).
+Réalisé (S4‑S6, ancrage + évaluation) :
+- `app.py` : orchestrateur unique partagé par la CLI et l'interface web — garde‑fou d'abstention **avant** l'appel au LLM (F5), vérification que chaque citation générée correspond à un article effectivement fourni (F6), avertissement systématique (F7).
+- Seuil d'abstention **calibré empiriquement**, pas deviné : questions dans le périmètre 0.60‑0.79 de similarité, hors périmètre non‑juridique 0.31‑0.35, autre domaine juridique 0.47‑0.52. Constat important : un seuil unique ne peut pas (et ne doit pas) séparer le droit du travail des autres domaines juridiques connexes — voir §9 et la discussion d'extension à un second code. Seuil fixé à 0.42 pour ne filtrer que la bande clairement non pertinente ; le reste est rattrapé par l'abstention au niveau du prompt.
+- `eval/reference_qa.jsonl` (37 questions) + `eval/run_eval.py` : Recall@5 / MRR mesurés — dense seul 0.969/0.891, BM25 seul 0.781/0.628, **hybride 0.875/0.794**. Constat honnête : sur des questions en langage naturel, le dense seul dépasse l'hybride (RRF dilue un bon classement dense avec un classement BM25 plus faible) ; l'hybride resterait pertinent sur des requêtes à tokens exacts. Détail dans `JOURNAL.md`.
+- `streamlit_app.py` : interface web conversationnelle (historique, sources dépliables avec chemin hiérarchique, citations non vérifiées signalées, note de souveraineté).
+
+Prochaine étape : durcissement (S7), rapport de stage (S8), et discussion avec l'encadrant sur l'extension à un second code + couche multilingue FR/EN/AR (cf. Annexe B et §2.2, darija différée).
 
 ---
 

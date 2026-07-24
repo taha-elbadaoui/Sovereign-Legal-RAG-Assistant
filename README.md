@@ -49,12 +49,16 @@ défendable ligne par ligne. Justification détaillée de chaque choix : [docs/P
 ├── docs/                          # Plan de conception, analyses, arbitrages techniques
 │   └── Plan-Action-Projet.md      # Document de conception technique complet
 ├── eval/
-│   └── questions-test.md          # Jeu de test manuel (questions + réponses attendues)
+│   ├── questions-test.md          # Jeu de test manuel (questions + réponses attendues)
+│   ├── reference_qa.jsonl         # Jeu de référence (37 questions, articles attendus)
+│   └── run_eval.py                # Métriques de recherche (Recall@k, MRR)
 ├── src/
 │   ├── parser.py                  # PDF → corpus JSONL (extraction, hiérarchie, nettoyage)
 │   ├── database.py                # Corpus → index vectoriel Chroma (embeddings BGE-M3)
-│   ├── retriever.py               # Recherche hybride (dense + BM25, fusion RRF)
-│   └── generator.py               # Génération ancrée via Ollama (citations + abstention)
+│   ├── retriever.py               # Recherche hybride (dense + BM25 + RRF), reranking optionnel
+│   ├── generator.py               # Génération ancrée via Ollama (Mistral 7B)
+│   └── app.py                     # Orchestrateur : abstention + citations + vérification (CLI)
+├── streamlit_app.py               # Interface web conversationnelle (type ChatGPT)
 ├── JOURNAL.md                     # Carnet de bord quotidien (décisions, bugs, résultats)
 └── requirements.txt
 ```
@@ -85,27 +89,52 @@ hf auth login
 
 ## Utilisation
 
-Pipeline complet, dans l'ordre :
+**Préparation** (une seule fois — construit le corpus puis l'index vectoriel) :
 
 ```bash
 python src/parser.py       # PDF -> data/processed/corpus_chunks.jsonl (589 articles)
-python src/database.py     # Corpus -> index vectoriel Chroma (BGE-M3)
-python src/generator.py "Quelle est la durée du congé annuel payé ?"
+python src/database.py     # Corpus -> index vectoriel Chroma (télécharge BGE-M3, ~2.2 Go)
 ```
 
-`database.py` télécharge et met en cache le modèle d'embeddings au premier lancement (~2.2 Go,
-one-time). `retriever.py` peut aussi être exécuté seul pour inspecter la recherche sans générer de
-réponse :
+**Interface web conversationnelle** (recommandé — type ChatGPT) :
+
+```bash
+streamlit run streamlit_app.py
+```
+
+**Ou en ligne de commande :**
+
+```bash
+python src/app.py "Un employeur peut-il licencier une salariée enceinte ?"
+```
+
+Les deux passent par le même moteur (`src/app.py`) : recherche → garde-fou d'abstention
+→ génération citée → vérification que chaque article cité était bien dans le contexte.
+
+Pour inspecter la seule recherche (sans génération) :
 
 ```bash
 python src/retriever.py "Quelle est la durée du congé annuel payé ?"
 ```
 
-### Tester
+### Évaluation
 
-[`eval/questions-test.md`](eval/questions-test.md) — 15 questions avec réponse attendue et article
-source, vérifiées contre le texte réel du corpus, dont un test d'abstention volontaire (question hors
-périmètre du Code du travail). Chaque question a sa commande prête à copier-coller.
+```bash
+python eval/run_eval.py
+```
+
+Compare dense seul / BM25 seul / hybride sur le [jeu de référence](eval/reference_qa.jsonl)
+(37 questions). Résultats mesurés (Recall@5 / MRR) :
+
+| Méthode | Recall@5 | MRR |
+|---|---|---|
+| Dense seul | **0.969** | **0.891** |
+| BM25 seul | 0.781 | 0.628 |
+| Hybride (RRF) | 0.875 | 0.794 |
+
+> Sur des questions en langage naturel, la recherche dense domine — les reformulations favorisent
+> le sémantique. L'hybride aiderait davantage sur des requêtes à tokens exacts. Constat mesuré, pas
+> supposé (cf. [JOURNAL.md](JOURNAL.md)).
 
 ## État d'avancement
 
@@ -113,11 +142,12 @@ périmètre du Code du travail). Chaque question a sa commande prête à copier-
 |---|---|---|
 | S1‑S2 | Extraction, découpage par article, métadonnées de hiérarchie, corpus JSONL | ✅ |
 | S3 | Pipeline RAG bout‑en‑bout : embeddings, recherche hybride, génération citée | ✅ |
-| S4 | Vérification automatique des citations, seuil d'abstention pré‑LLM, CLI (`app.py`) | ⬜ |
-| S5 | Reranking par cross‑encodeur, jeu de référence (30‑50 questions) | ⬜ |
-| S6 | Évaluation (Recall@k, MRR) et analyse d'erreurs | ⬜ |
-| S7 | Durcissement, reproductibilité | ⬜ |
+| S4 | Abstention pré‑LLM, vérification des citations, orchestrateur CLI + interface web | ✅ |
+| S5 | Reranking par cross‑encodeur (option), jeu de référence (37 questions) | ✅ |
+| S6 | Évaluation (Recall@k, MRR) sur dense / BM25 / hybride | ✅ |
+| S7 | Durcissement, reproductibilité | 🔶 en cours |
 | S8 | Rapport de stage, soutenance | ⬜ |
+| — | Extension multi‑codes + multilingue (FR/EN/AR) | ⬜ à venir |
 
 Journal détaillé : [JOURNAL.md](JOURNAL.md). Plan complet et justification des choix techniques :
 [docs/Plan-Action-Projet.md](docs/Plan-Action-Projet.md).

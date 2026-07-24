@@ -151,3 +151,42 @@ sovereign-legal-rag/
 - Compléter le jeu de référence formel (`eval/reference_qa.jsonl`, 30-50 questions) pour pouvoir calibrer le seuil d'abstention pré-LLM.
 - Reranking par cross-encodeur pour corriger la limite RRF ci-dessus.
 - Script d'évaluation (Recall@k, MRR) comparant dense seul / BM25 seul / hybride.
+
+---
+
+## 2026-07-24 (soir) — S4 à S6 : abstention, vérification, évaluation, interface
+
+Séance de finalisation du périmètre Code du travail : abstention pré-LLM, vérification des citations, jeu de référence, évaluation mesurée, et interface web de type conversationnel.
+
+**Fait :**
+- **`app.py` — orchestrateur** partagé (utilisé à l'identique par la CLI et l'interface web) : recherche → garde-fou d'abstention → génération → vérification des citations → affichage avec avertissement.
+- **Abstention pré-LLM (F5)** : ajout d'un signal de score = similarité cosinus dense maximale (calculée par produit scalaire sur embeddings normalisés, donc indépendante de la métrique de distance de Chroma). Si le meilleur score < seuil, le LLM n'est pas appelé.
+- **Vérification des citations (F6)** : après génération, extraction des numéros d'article cités par le modèle (regex) et contrôle qu'ils figurent bien dans le contexte fourni. Tout numéro cité mais absent est signalé (« citation non vérifiée »).
+- **Reranking (F9)** : cross-encodeur `bge-reranker-v2-m3` en option (désactivé par défaut, chargé paresseusement pour ne pas imposer le téléchargement de ~2.3 Go).
+- **`eval/reference_qa.jsonl`** : 32 questions de recherche (avec article(s) de référence, vérifiés contre le texte réel) + 5 questions d'abstention.
+- **`eval/run_eval.py`** : calcul Recall@k et MRR pour dense seul / BM25 seul / hybride, sans LLM (mesure la recherche seule).
+- **`streamlit_app.py`** : interface web conversationnelle (type ChatGPT) — historique, exemples cliquables, réponse + articles sources dépliables (avec chemin hiérarchique et marque « cité »), avertissement de citations non vérifiées, note de souveraineté. Modèles chargés une fois via `@st.cache_resource`.
+- **Durcissement** : gestion d'erreur si Ollama est injoignable (message clair au lieu d'un crash) ; sortie CLI forcée en UTF-8 (les consoles Windows en cp1252 plantaient sur les accents / symboles).
+
+**Calibration du seuil d'abstention (mesurée, pas devinée) :**
+- Questions dans le périmètre (droit du travail) : similarité **0.60 – 0.79**.
+- Questions purement non juridiques (cuisine, géographie) : **0.31 – 0.35**.
+- Questions d'un **autre domaine juridique** (famille, pénal, commercial) : **0.47 – 0.52** — plus élevées car elles partagent le vocabulaire juridique français.
+- Conclusion : un seuil unique **ne peut pas** séparer le droit du travail des autres domaines juridiques, et **ne doit pas** essayer — quand le corpus sera étendu à d'autres codes, ces questions deviendront légitimes. Le seuil (**0.42**) ne filtre donc que la bande clairement non pertinente ; les questions juridiques hors corpus passent et sont rattrapées par l'abstention au niveau du prompt (le LLM voit que les articles retrouvés ne répondent pas). Vérifié en direct : « recette du couscous » → abstention pré-LLM ; « procédure de divorce » → passe le seuil mais le LLM s'abstient correctement.
+
+**Résultat d'évaluation (Recall@5 / MRR, 32 questions) — constat honnête :**
+
+| Méthode | Recall@5 | MRR |
+|---|---|---|
+| Dense seul | **0.969** | **0.891** |
+| BM25 seul | 0.781 | 0.628 |
+| Hybride (RRF) | 0.875 | 0.794 |
+
+- **Sur ce jeu (questions en langage naturel), la recherche dense seule dépasse l'hybride.** Les questions du citoyen sont des reformulations, ce qui favorise le sémantique ; RRF dilue le bon classement dense en y mêlant le classement BM25 plus faible. Ce n'est pas un échec mais un **arbitrage mesuré** : l'hybride prendrait l'avantage sur des requêtes à tokens exacts (numéros d'article, « Loi 65-99 »). Exactement le type de décision que l'évaluation doit éclairer (cf. plan §4.3). Prochain levier à tester : le reranking (S5).
+
+**Limite connue (notée, non corrigée) :**
+- La vérification des citations signale aussi les **renvois internes** : si un article cité contient « …fixé par l'article 356 ci-dessous », le modèle peut répéter « article 356 », signalé comme non vérifié même s'il n'est pas présenté comme source. Comportement conservateur (mieux vaut signaler que manquer) ; raffinement possible : distinguer source citée vs renvoi mentionné.
+
+**Prochaine étape (avec l'encadrant) :**
+- Extension à un second code (Code de la famille pressenti — cité dans l'offre, très consulté par le citoyen) : preuve que l'architecture généralise. Nécessite un identifiant de code (les numéros d'article ne sont plus uniques entre codes).
+- Couche multilingue FR / EN / AR (darija différée : pas d'orthographe standardisée, fort code-switching, peu de données).

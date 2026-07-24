@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import numpy as np
 import chromadb
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer
@@ -11,12 +12,14 @@ CHROMA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "data", "chroma"))
 
 RRF_K = 60  # standard Reciprocal Rank Fusion constant
 CANDIDATES_PER_METHOD = 20  # results each method contributes before fusion
+RERANK_POOL = 10  # candidates handed to the cross-encoder when reranking is on
 
 articles = []
 with open(CORPUS_PATH, encoding="utf-8") as f:
     for line in f:
         articles.append(json.loads(line))
 articles_by_number = {a["article_number"]: a for a in articles}
+
 
 def tokenize(text):
     # \w is unicode-aware, so accented French words (é, à, ç...) tokenize
@@ -33,6 +36,18 @@ embed_model = SentenceTransformer("BAAI/bge-m3")
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 collection = client.get_or_create_collection("code_du_travail")
 
+# Cross-encoder reranker is loaded lazily: it downloads ~2.3GB on first use, so
+# the default pipeline (rerank off) never pays that cost.
+_reranker = None
+
+
+def _get_reranker():
+    global _reranker
+    if _reranker is None:
+        from sentence_transformers import CrossEncoder
+        _reranker = CrossEncoder("BAAI/bge-reranker-v2-m3")
+    return _reranker
+
 
 def bm25_search(query, k=CANDIDATES_PER_METHOD):
     scores = bm25_index.get_scores(tokenize(query))
@@ -41,20 +56,42 @@ def bm25_search(query, k=CANDIDATES_PER_METHOD):
 
 
 def dense_search(query, k=CANDIDATES_PER_METHOD):
-    query_embedding = embed_model.encode([query], normalize_embeddings=True).tolist()
-    result = collection.query(query_embeddings=query_embedding, n_results=k)
-    return result["ids"][0]
+    """Return [(article_id, cosine_similarity), ...], best first.
 
-
-def hybrid_search(query, k=5):
-    """Reciprocal Rank Fusion of dense + lexical results.
-
-    Each method contributes 1/(RRF_K + rank) per article based on its RANK in
-    that method's result list, not its raw score -- this sidesteps having to
-    normalize BM25 scores (unbounded) against cosine similarities (0-1) onto
-    the same scale, which is the usual pain point of combining the two.
+    Similarity is computed as the dot product between the (normalized) query
+    embedding and each (normalized) stored embedding — so it is a true cosine
+    in [-1, 1] regardless of the distance metric Chroma is configured with.
     """
-    dense_ids = dense_search(query)
+    query_embedding = embed_model.encode([query], normalize_embeddings=True)
+    result = collection.query(
+        query_embeddings=query_embedding.tolist(),
+        n_results=k,
+        include=["embeddings"],
+    )
+    ids = result["ids"][0]
+    doc_embeddings = np.array(result["embeddings"][0])
+    similarities = doc_embeddings @ query_embedding[0]
+    return list(zip(ids, similarities.tolist()))
+
+
+def rerank_articles(query, candidate_articles):
+    reranker = _get_reranker()
+    pairs = [(query, a["article_text"]) for a in candidate_articles]
+    scores = reranker.predict(pairs)
+    ranked = sorted(zip(candidate_articles, scores), key=lambda pair: pair[1], reverse=True)
+    return [article for article, score in ranked]
+
+
+def retrieve(query, k=5, rerank=False):
+    """Full retrieval: dense + lexical, fused by RRF, optionally reranked.
+
+    Returns a dict with:
+      - articles: the top-k article dicts
+      - top_similarity: best dense cosine similarity across all candidates,
+        used as the pre-LLM abstention signal ("is anything even close?")
+    """
+    dense = dense_search(query)
+    dense_ids = [article_id for article_id, _ in dense]
     lexical_ids = bm25_search(query)
 
     fused_scores = {}
@@ -62,14 +99,29 @@ def hybrid_search(query, k=5):
         for rank, article_id in enumerate(ranked_ids):
             fused_scores[article_id] = fused_scores.get(article_id, 0.0) + 1.0 / (RRF_K + rank)
 
-    top_ids = sorted(fused_scores, key=fused_scores.get, reverse=True)[:k]
-    return [articles_by_number[article_id] for article_id in top_ids]
+    pool = RERANK_POOL if rerank else k
+    top_ids = sorted(fused_scores, key=fused_scores.get, reverse=True)[:pool]
+    result_articles = [articles_by_number[article_id] for article_id in top_ids]
+
+    if rerank:
+        result_articles = rerank_articles(query, result_articles)
+    result_articles = result_articles[:k]
+
+    top_similarity = max((sim for _, sim in dense), default=0.0)
+    return {"articles": result_articles, "top_similarity": top_similarity}
+
+
+def hybrid_search(query, k=5, rerank=False):
+    """Thin wrapper returning just the article list."""
+    return retrieve(query, k=k, rerank=rerank)["articles"]
 
 
 if __name__ == "__main__":
     import sys
 
     question = " ".join(sys.argv[1:]) or "Quelle est la durée du congé annuel payé ?"
-    print(f"Question: {question}\n")
-    for article in hybrid_search(question):
-        print(f"Article {article['article_number']} — {article['article_text'][:120]}...")
+    result = retrieve(question)
+    print(f"Question: {question}")
+    print(f"Score de recherche (similarité max): {result['top_similarity']:.3f}\n")
+    for article in result["articles"]:
+        print(f"Article {article['article_number']} — {article['article_text'][:110]}...")

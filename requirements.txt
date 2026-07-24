@@ -1,9 +1,14 @@
-# Currently used
+# Corpus & parsing
 pymupdf==1.28.0
-sentence-transformers   # embeddings (BGE-M3)
-chromadb                # vector store
-rank_bm25               # lexical retrieval
-ollama                  # local LLM client
 
-# Planned (uncomment as each stage is reached)
-# pandas                  # evaluation
+# Embeddings, vector store, lexical search
+sentence-transformers==5.6.1   # BGE-M3 embeddings + cross-encoder reranker
+chromadb==1.5.9                # vector store
+rank_bm25==0.2.2               # lexical retrieval
+numpy==2.5.1                   # cosine similarity signal
+
+# Local LLM
+ollama==0.6.2                  # client for the local Ollama server
+
+# Web interface (chat UI)
+streamlit==1.42.0
