@@ -253,21 +253,27 @@ Le projet doit être **reconstructible depuis un clone vierge** : c'est un crit�
 
 Un **journal de bord** (`JOURNAL.md`) est tenu quotidiennement : chaque décision, résultat et difficulté y est consigné, pour la traçabilité et le rapport final.
 
-### 6.3 État d'avancement (au 20 juillet 2026)
+### 6.3 État d'avancement (au 24 juillet 2026)
 
-**Mission 1 — S2 terminée, en avance sur le calendrier.**
+**Mission 1 — S2 terminée ; premier pipeline RAG bout‑en‑bout (S3) opérationnel.**
 
-Réalisé :
+Réalisé (S1‑S2, corpus) :
 - Extraction du texte du Code du travail (version française) via PyMuPDF ; correction d'un problème d'encodage des accents (UTF‑8).
 - Parser écrit **à la main** : découpage automatique en articles via expression régulière ancrée en début de ligne.
 - **589 articles** proprement séparés ; avant‑propos (dahir, préface) et table des matières isolés et traités à part.
 - Structuration en objets `{article_number, article_text}`, numéros normalisés et stockés en chaîne pour la cohérence des comparaisons et citations en aval.
-- Nettoyage du texte (marqueurs de pagination, normalisation des retours à la ligne).
-- Métadonnées de hiérarchie (livre, titre, chapitre, section), y compris les titres repliés sur plusieurs lignes dans le PDF.
-- Sérialisation JSONL déterministe (`data/processed/corpus_chunks.jsonl`), avec vérification manuelle de fidélité sur échantillon en cours.
+- Nettoyage du texte (marqueurs de pagination, normalisation des retours à la ligne, titres de hiérarchie repliés sur plusieurs lignes dans le PDF).
+- Métadonnées de hiérarchie (livre, titre, chapitre, section) attachées à chaque article.
+- Sérialisation JSONL déterministe (`data/processed/corpus_chunks.jsonl`).
 - Deux articles abrogés en 2011 (32, 256) repatchés avec le texte 2021 sourcé, marqués `amende_2021`.
 
-Prochaine sous‑étape (S3) : premier pipeline RAG bout‑en‑bout (embeddings, recherche, génération, citations).
+Réalisé (S3, pipeline RAG) :
+- `database.py` : indexation des 589 articles dans Chroma via embeddings BGE-M3 (local, sans appel API), métadonnées de hiérarchie attachées.
+- `retriever.py` : recherche hybride — dense (Chroma/BGE-M3) + lexicale (BM25) — fusionnées par Reciprocal Rank Fusion.
+- `generator.py` : génération ancrée via Ollama (Mistral 7B local) avec citation systématique des articles et abstention si le corpus fourni ne permet pas de répondre.
+- `eval/questions-test.md` : jeu de test manuel (15 questions/réponses attendues) pour valider la chaîne complète avant démonstration.
+
+Prochaine sous‑étape (S4/S5) : jeu de référence formel (30‑50 questions) pour calibrer un seuil d'abstention pré‑LLM, reranking par cross‑encodeur, script d'évaluation (Recall@k, MRR).
 
 ---
 

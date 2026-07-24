@@ -18,7 +18,6 @@ with open(CORPUS_PATH, encoding="utf-8") as f:
         articles.append(json.loads(line))
 articles_by_number = {a["article_number"]: a for a in articles}
 
-# --- Lexical index (BM25) ---
 def tokenize(text):
     # \w is unicode-aware, so accented French words (é, à, ç...) tokenize
     # correctly without any extra configuration.
@@ -29,7 +28,7 @@ bm25_corpus = [tokenize(a["article_text"]) for a in articles]
 bm25_index = BM25Okapi(bm25_corpus)
 bm25_ids = [a["article_number"] for a in articles]  # same order as bm25_corpus
 
-# --- Dense index (already built into data/chroma by database.py) ---
+# Reuses the index database.py already built into data/chroma.
 embed_model = SentenceTransformer("BAAI/bge-m3")
 client = chromadb.PersistentClient(path=CHROMA_DIR)
 collection = client.get_or_create_collection("code_du_travail")

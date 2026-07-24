@@ -129,3 +129,25 @@ sovereign-legal-rag/
 
 **Prochaine étape (S3) :**
 - Premier pipeline RAG bout-en-bout : embeddings BGE-M3, base Chroma, index BM25, fusion RRF, génération via Ollama, citations systématiques.
+
+---
+
+## 2026-07-24 — Semaine 3 : premier pipeline RAG bout-en-bout (S3)
+
+**Contexte :** demande de démonstration de l'encadrant le jour même (16h). Environnement RAG construit de zéro dans la foulée : Ollama installé, modèle `mistral:7b` téléchargé, dépendances Python (`chromadb`, `sentence-transformers`, `rank_bm25`, `ollama`) installées dans le `.venv`.
+
+**Fait :**
+- `src/database.py` : embarque les 589 articles du corpus avec BGE-M3 (embeddings multilingues, local, aucun appel API) et les indexe dans une base vectorielle Chroma persistante (`data/chroma/`), avec la hiérarchie (livre/titre/chapitre/section) et `amende_2021` comme métadonnées filtrables.
+- `src/retriever.py` : recherche hybride — index lexical BM25 (mots-clés exacts) + recherche dense (similarité sémantique via l'index Chroma) — fusionnés par Reciprocal Rank Fusion (RRF). Choix motivé : le vocabulaire juridique mélange formulations formelles (le texte de loi) et casual (les questions des utilisateurs), donc aucune des deux méthodes seule ne suffit ; RRF combine les deux sans avoir à normaliser des échelles de score incompatibles (BM25 non borné vs. cosinus 0-1).
+- `src/generator.py` : génération ancrée via Ollama/Mistral 7B local. Le prompt système impose : réponse strictement basée sur les articles fournis, citation systématique des numéros d'article, abstention explicite si le corpus fourni ne permet pas de répondre, pas de conseil juridique personnalisé.
+- `eval/questions-test.md` : jeu de test manuel de 15 questions/réponses attendues (avec article source), vérifiées une à une contre le texte réel du corpus, incluant un test d'abstention volontaire (question hors périmètre du Code du travail).
+- Premier test bout-en-bout réel : "Quelle est la durée du congé annuel payé ?" → réponse correctement ancrée, citations exactes (articles 232, 235, 240, 241), aucune invention.
+
+**Limite trouvée et documentée (pas corrigée aujourd'hui, décision volontaire) :**
+- Sur ce même test, l'Article 231 (règle de base : un jour et demi par mois de service) n'est pas ressorti dans le top 5 fusionné, alors qu'il est 2e en recherche dense pure. Diagnostic : BM25 ne le trouve pas du tout dans son top 20 (son score est dilué par la longueur de l'article), donc RRF ne lui attribue de crédit que via une seule méthode — les articles présents dans les deux listes, même à un rang moins bon individuellement, l'emportent par effet de consensus. Augmenter `k` jusqu'à 10 ne corrige pas le problème (vérifié). C'est une limite connue et documentée de RRF, pas un bug — la correction prévue est le reranking par cross-encodeur (S5), qui rescorera précisément les candidats fusionnés au lieu de se fier au seul rang de fusion.
+- L'abstention par seuil *avant* l'appel au LLM (F5 du plan) n'est pas encore implémentée — seule l'abstention au niveau du prompt l'est. Un seuil non calibré risquerait de refuser à tort des questions valides ; la calibration nécessite le jeu de référence formel (S5/S6).
+
+**Prochaine étape (S4/S5) :**
+- Compléter le jeu de référence formel (`eval/reference_qa.jsonl`, 30-50 questions) pour pouvoir calibrer le seuil d'abstention pré-LLM.
+- Reranking par cross-encodeur pour corriger la limite RRF ci-dessus.
+- Script d'évaluation (Recall@k, MRR) comparant dense seul / BM25 seul / hybride.

@@ -12,9 +12,8 @@ with open(CORPUS_PATH, encoding="utf-8") as f:
     for line in f:
         articles.append(json.loads(line))
 
-# BGE-M3: multilingual embedding model (sovereignty requirement — runs fully local,
-# no API call). First run downloads the weights (~2.2GB) from Hugging Face and
-# caches them; later runs reuse the cache and start instantly.
+# Multilingual embedding model, runs fully local (sovereignty requirement).
+# First run downloads and caches the weights (~2.2GB); later runs are instant.
 model = SentenceTransformer("BAAI/bge-m3")
 
 # Embed only the legal text itself. Hierarchy (livre/titre/chapitre/section) is kept
