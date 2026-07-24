@@ -147,6 +147,7 @@ Presque toutes les décisions découlent de deux contraintes. Elles suffisent à
 | Évaluation | Scripts + `pandas` + correction manuelle | RAGAS comme évaluateur principal | Sur 30–50 questions, **lire chaque réponse** est plus honnête qu'un juge LLM. Les métriques de recherche (recall@k, MRR) sont automatisées car les identifiants d'articles de référence les rendent objectives. |
 | Format du corpus | **JSONL** | CSV, Parquet, base de données | Un chunk par ligne : lisible, métadonnées imbriquées, **diff‑able sous Git**, lecture en flux. CSV s'étrangle sur du texte contenant virgules et retours à la ligne ; Parquet est binaire ; une BDD est une indirection inutile pour un corpus statique versionné. |
 | UI *(option)* | Streamlit / Gradio | Application web React/Flask | Transforme une fonction Python en démo web en quelques minutes. Le livrable est le moteur RAG, pas une interface produit. |
+| Cache *(option, F12)* | Cache local requête→réponse (fichier JSON/SQLite, ou `functools.lru_cache` pour le cache en process) | Redis | Optimisation légitime — éviter de rejouer tout le pipeline (embedding + recherche + génération LLM) sur des questions répétées. Mais un serveur de cache distribué se justifie pour plusieurs instances backend partageant un cache réseau ; ici, un seul processus local sur une seule machine — un cache en process ou sur disque obtient le même bénéfice sans dépendance supplémentaire. Invalidation à prévoir : liée à la version du corpus (un patch comme celui des articles 32/256 ne doit pas servir une réponse mise en cache avant le patch). |
 
 ### 4.3 Les appels réellement discutables (assumés)
 
@@ -237,6 +238,7 @@ Le projet doit être **reconstructible depuis un clone vierge** : c'est un crit�
 | F9 | **Reranking** par cross‑encodeur | Si mesurée utile |
 | F10 | Interface de démonstration (Streamlit / Gradio) | Optionnelle |
 | F11 | Support **arabe / darija** via couche de traduction | Optionnelle |
+| F12 | **Cache** requête→réponse (local, invalidé par version du corpus) | Optionnelle |
 
 ### 6.2 Plan par phases
 
@@ -371,7 +373,7 @@ Une comparaison a été menée entre les deux versions disponibles du Code du tr
 
 Une proposition d'architecture alternative pour un projet voisin (assistant juridique marocain, microservices React / Spring Boot / Flask, LLM cloud) a été comparée à celle retenue dans ce document. Certains de ses choix méritent d'être notés, même s'ils ne sont pas retenus pour le périmètre du stage :
 
-- **Cache** (type Redis) — une optimisation légitime, absente de ce document. Sur des questions fréquentes (« durée du congé de maternité »), rejouer tout le pipeline RAG à chaque fois est un gaspillage. À considérer, même dans une version simplifiée.
+- **Cache** — une optimisation légitime, retenue depuis (§4.2, F12), mais **pas sous la forme Redis proposée**. Rejouer tout le pipeline RAG (embedding + recherche + génération LLM) sur des questions répétées est un gaspillage réel — l'idée tient. Redis, en revanche, résout un problème de cache *partagé entre plusieurs instances backend* qui ne se pose pas ici : un seul processus, un seul utilisateur, sur une seule machine. Un cache local (fichier ou en process) obtient le même gain sans dépendance externe injustifiée.
 - **Historique de conversation** (type base relationnelle) — pertinent si le produit final doit un jour garder une mémoire par utilisateur. Le système décrit ici traite chaque question isolément (assumé et documenté en §1.4) — le bon choix pour un stage, mais l'architecture alternative pense davantage produit fini.
 - **Séparation en microservices** — bonne pratique générique si plusieurs personnes travaillent en parallèle, ou si le produit doit scaler. Non pertinent pour une personne seule sur 8 semaines, mais pas un mauvais réflexe en soi.
 - **Conteneurisation** (Docker) — bon sens pour la reproductibilité en déploiement, indépendamment de l'échelle.
