@@ -58,7 +58,9 @@ défendable ligne par ligne. Justification détaillée de chaque choix : [docs/P
 │   ├── retriever.py               # Recherche hybride (dense + BM25 + RRF), reranking optionnel
 │   ├── generator.py               # Génération ancrée via Ollama (Mistral 7B)
 │   └── app.py                     # Orchestrateur : abstention + citations + vérification (CLI)
-├── streamlit_app.py               # Interface web conversationnelle (type ChatGPT)
+├── web/
+│   └── index.html                 # Interface web conversationnelle (chat, type Gemini/ChatGPT)
+├── serve.py                       # Serveur web local (stdlib, réponses en streaming)
 ├── JOURNAL.md                     # Carnet de bord quotidien (décisions, bugs, résultats)
 └── requirements.txt
 ```
@@ -96,11 +98,13 @@ python src/parser.py       # PDF -> data/processed/corpus_chunks.jsonl (589 arti
 python src/database.py     # Corpus -> index vectoriel Chroma (télécharge BGE-M3, ~2.2 Go)
 ```
 
-**Interface web conversationnelle** (recommandé — type ChatGPT) :
+**Interface web conversationnelle** (recommandé — chat type Gemini/ChatGPT, réponses en streaming) :
 
 ```bash
-streamlit run streamlit_app.py
+python serve.py
 ```
+
+Puis ouvrir **http://localhost:8000**. Aucune dépendance web à installer (serveur en stdlib).
 
 **Ou en ligne de commande :**
 

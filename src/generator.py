@@ -53,6 +53,27 @@ def generate(question, articles):
     return response["message"]["content"].strip(), None
 
 
+def generate_stream(question, articles):
+    """Yield the answer piece by piece as the model produces it (for the web UI's
+    typing effect). Raises on connection failure — the caller handles it."""
+    context = format_context(articles)
+    user_prompt = f"Articles du Code du travail :\n\n{context}\n\nQuestion : {question}"
+
+    stream = ollama.chat(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
+        options={"temperature": 0.1},
+        stream=True,
+    )
+    for chunk in stream:
+        piece = chunk.get("message", {}).get("content", "")
+        if piece:
+            yield piece
+
+
 if __name__ == "__main__":
     import sys
     from retriever import hybrid_search

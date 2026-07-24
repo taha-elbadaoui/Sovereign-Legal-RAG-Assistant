@@ -10,5 +10,4 @@ numpy==2.5.1                   # cosine similarity signal
 # Local LLM
 ollama==0.6.2                  # client for the local Ollama server
 
-# Web interface (chat UI)
-streamlit==1.42.0
+# The web chat UI (serve.py) uses only the Python standard library — no extra dependency.

@@ -190,3 +190,19 @@ Séance de finalisation du périmètre Code du travail : abstention pré-LLM, v�
 **Prochaine étape (avec l'encadrant) :**
 - Extension à un second code (Code de la famille pressenti — cité dans l'offre, très consulté par le citoyen) : preuve que l'architecture généralise. Nécessite un identifiant de code (les numéros d'article ne sont plus uniques entre codes).
 - Couche multilingue FR / EN / AR (darija différée : pas d'orthographe standardisée, fort code-switching, peu de données).
+
+---
+
+## 2026-07-24 (nuit) — Interface grand public (type ChatGPT / Gemini)
+
+La première interface (Streamlit) ressemblait à un tableau de bord technique (curseurs, scores, reranking) — utile pour moi, pas pour un citoyen. Remplacée par une vraie interface conversationnelle grand public.
+
+**Fait :**
+- **`web/index.html`** : interface de chat autonome (HTML/CSS/JS, une seule page) — écran d'accueil avec accroche en dégradé et suggestions cliquables, bulles de conversation, **réponse en streaming** (effet de frappe token par token), citations d'articles surlignées dans le texte, sources en pastilles cliquables qui déplient l'article complet (avec son chemin hiérarchique), avertissement discret. Thème clair/sombre automatique. Police système et zéro ressource externe (cohérent avec la souveraineté : aucun CDN).
+- **`serve.py`** : serveur web local en **bibliothèque standard uniquement** (aucune dépendance à installer). Couche mince au-dessus du moteur existant (`app.py`) ; diffuse les réponses en Server-Sent Events. Le garde-fou d'abstention et la vérification des citations restent identiques à la CLI.
+- Suppression de `streamlit_app.py` et de la dépendance `streamlit` (l'interface web n'en a plus besoin).
+- Correction du même bug d'encodage cp1252 (Windows) sur les `print` du serveur.
+
+**Vérifié en direct dans le navigateur :** question via une suggestion → réponse en streaming citant les articles 53/55/56 → pastilles sources dépliables affichant le texte réel et le chemin hiérarchique → avertissement. Test d'abstention (« recette du couscous ») : refus correct.
+
+**Séparation claire des interfaces :** CLI + `run_eval.py` = outils techniques (scores, métriques, citations non vérifiées) ; interface web = grand public (uniquement réponse + sources + avertissement, aucune mécanique interne exposée).
