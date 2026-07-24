@@ -5,3 +5,6 @@ __pycache__/
 
 # Generated parser output (regenerable from src/parser.py)
 output.txt
+
+# Generated vector store (regenerable from src/database.py)
+data/chroma/

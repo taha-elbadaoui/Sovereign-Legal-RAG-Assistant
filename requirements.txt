@@ -1,9 +1,9 @@
 # Currently used
 pymupdf==1.28.0
+sentence-transformers   # embeddings (BGE-M3)
+chromadb                # vector store
+rank_bm25               # lexical retrieval
+ollama                  # local LLM client
 
 # Planned (uncomment as each stage is reached)
-# sentence-transformers   # embeddings (BGE-M3)
-# chromadb                # vector store
-# rank_bm25               # lexical retrieval
 # pandas                  # evaluation
-# ollama                  # local LLM client

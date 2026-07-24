@@ -44,18 +44,7 @@ for page in doc:
 full_text = PAGINATION_RE.sub("\n", full_text)
 
 # 2. Split into article label/body pairs.
-# \d{1,3} not \d+: PyMuPDF drops superscript formatting, so a footnote marker
-# glued right after an article number (e.g. "Article 334" with a tiny superscript
-# "50" next to it in the PDF) extracts as one contiguous run "33450" with zero
-# separator. Capping at 3 digits is safe because no article number in this law
-# exceeds 589 — anything longer is a number with a footnote digit stuck to it.
-#
-# [ \t]* before "Article": Article 135's header has one stray leading space in
-# the raw PDF extraction (" Article 135" — a single space before it on its own
-# line), which broke a strict ^Article anchor. Its content silently got absorbed
-# into Article 134's body instead of becoming its own entry — found by scanning
-# the parsed corpus for gaps in the 1..589 sequence, then confirmed against the
-# raw extracted text before fixing.
+
 parts = re.split(r"(^[ \t]*Article\s(?:premier|\d{1,3}))", full_text, flags=re.MULTILINE)
 temp = parts[-1].split("TABLE DES MATIÈRES")
 parts[-1] = temp[0]
@@ -70,11 +59,7 @@ for i in range(1, len(parts) - 1, 2):
 # body that precedes them in the raw text (they announce what comes NEXT), so we
 # walk articles in order, apply whatever hierarchy was announced so far, THEN look
 # for new headers inside this article's own text to carry forward to the next one.
-#
-# Important: "Livre préliminaire" / "Titre PREMIER" appear in the front matter
-# (parts[0]), before "Article premier" — not inside any article body. Verified by
-# inspecting output.txt directly. Without seeding from the front matter first,
-# Article 1 would silently get empty hierarchy fields.
+
 hierarchy = {"livre": None, "titre": None, "chapitre": None, "section": None}
 
 
@@ -107,7 +92,7 @@ for article in articles:
 # PDF (service-militaire alinéas removed by loi 48-06 in 2007), but restored by
 # loi 02.21 in 2021. Replaced with the French gloss of the 2021 Arabic text
 # already verified against the source in docs/comparaison-code-du-travail-FR-AR.md
-# (§3), not invented here. Flagged with "amende_2021" so this deviation from the
+# Flagged with "amende_2021" so this deviation from the
 # raw 2011 PDF stays visible in the data itself, per Annexe A of the design doc.
 PATCHES = {
     "32": ("Le contrat est provisoirement suspendu : 1. pendant la période "
