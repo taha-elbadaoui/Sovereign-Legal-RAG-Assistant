@@ -1,14 +1,20 @@
-"""Web server for the citizen-facing chat UI.
+"""Web server for the citizen-facing chat UI (React app in web/).
 
 Thin layer over the existing RAG engine (src/app.py, retriever, generator):
-serves web/index.html and streams answers token by token over Server-Sent
-Events. Uses only the Python standard library — nothing extra to install.
+serves the built React app (web/dist/, produced by `npm run build`) and
+streams answers token by token over Server-Sent Events. The API side uses
+only the Python standard library — nothing extra to install for the backend.
 
-Run:  python serve.py   then open http://localhost:8000
+Setup (once):  cd web && npm install && npm run build
+Run:           python serve.py   then open http://localhost:8000
+
+For frontend development with hot-reload, run `npm run dev` in web/ instead
+(it proxies /api to this server, so run both at once).
 """
 import os
 import sys
 import json
+import mimetypes
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 # Windows consoles default to cp1252 and crash on accented / symbol output.
@@ -21,7 +27,7 @@ from retriever import retrieve
 from generator import generate_stream, DISCLAIMER, MODEL
 from app import ABSTENTION_THRESHOLD, ABSTENTION_MESSAGE, cited_article_numbers
 
-WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
+WEB_DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", "dist")
 PORT = 8000
 
 
@@ -32,16 +38,30 @@ def hierarchy_path(article):
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path in ("/", "/index.html"):
-            with open(os.path.join(WEB_DIR, "index.html"), "rb") as f:
-                body = f.read()
+        # Static files built by Vite (JS/CSS bundles, index.html, etc.).
+        # Any unknown path falls back to index.html (single-page app).
+        requested = self.path.split("?", 1)[0].lstrip("/") or "index.html"
+        file_path = os.path.join(WEB_DIST, requested)
+        if not os.path.isfile(file_path):
+            file_path = os.path.join(WEB_DIST, "index.html")
+
+        if not os.path.isfile(file_path):
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
             self.end_headers()
-            self.wfile.write(body)
-        else:
-            self.send_error(404)
+            self.wfile.write(
+                b"<h1>Interface non compilee</h1><p>Run: cd web && npm install && npm run build</p>"
+            )
+            return
+
+        content_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
+        with open(file_path, "rb") as f:
+            body = f.read()
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def do_POST(self):
         if self.path != "/api/ask":
@@ -57,10 +77,20 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
 
+        # ConnectionAbortedError/BrokenPipeError happen when the browser cancels
+        # (Stop button) or closes the tab mid-stream -- not a real failure.
+        client_gone = False
+
         def sse(event, data):
+            nonlocal client_gone
+            if client_gone:
+                return
             block = f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
-            self.wfile.write(block.encode("utf-8"))
-            self.wfile.flush()
+            try:
+                self.wfile.write(block.encode("utf-8"))
+                self.wfile.flush()
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                client_gone = True
 
         if not question:
             sse("done", {"sources": [], "disclaimer": DISCLAIMER})
@@ -79,6 +109,8 @@ class Handler(BaseHTTPRequestHandler):
         full = ""
         try:
             for piece in generate_stream(question, articles):
+                if client_gone:
+                    break  # stop pulling tokens from Ollama once nobody is listening
                 full += piece
                 sse("delta", {"text": piece})
         except Exception as exc:

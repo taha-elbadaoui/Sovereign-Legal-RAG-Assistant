@@ -8,3 +8,7 @@ output.txt
 
 # Generated vector store (regenerable from src/database.py)
 data/chroma/
+
+# Node / web frontend (regenerable: cd web && npm install && npm run build)
+web/node_modules/
+web/dist/

@@ -2,6 +2,15 @@ import ollama
 
 MODEL = "mistral:7b"
 
+# temperature: low = stable, near-deterministic answers (right fit for legal Q&A).
+# repeat_penalty: raised above Ollama's default (1.1) because low-temperature
+# generation on this model can degenerate into repeating the same word/phrase
+# hundreds of times once it runs out of confident tokens (observed live: a
+# question about "toutes les fêtes payées" looping on one holiday name
+# indefinitely). num_predict caps the worst case so a runaway generation still
+# stops on its own instead of running unbounded.
+GENERATION_OPTIONS = {"temperature": 0.1, "repeat_penalty": 1.3, "num_predict": 700}
+
 DISCLAIMER = (
     "Réponse fournie à titre informatif, fondée sur les textes cités ; "
     "elle ne constitue pas un conseil juridique. Pour une situation particulière, "
@@ -14,8 +23,11 @@ Règles strictes :
 1. Réponds UNIQUEMENT à partir des articles fournis ci-dessous. N'utilise aucune autre connaissance ni aucune supposition.
 2. Cite systématiquement le ou les numéros d'article sur lesquels tu t'appuies, sous la forme (Article N).
 3. Si les articles fournis ne permettent pas de répondre à la question, dis-le clairement au lieu d'inventer une réponse, avec exactement cette phrase : "Je ne dispose pas d'information suffisante dans le corpus fourni pour répondre à cette question."
-4. Ne donne jamais de conseil juridique personnalisé.
-5. Réponds de façon claire et concise, dans la même langue que la question.
+4. Cette règle s'applique même si un numéro d'article précis est demandé et n'apparaît pas dans le contexte fourni : n'écris JAMAIS de phrase du type "cependant, je peux vous dire que cet article traite de..." ou toute autre supposition sur son contenu. Constater l'absence de l'article, puis t'arrêter à la phrase d'abstention de la règle 3 — ne complète jamais par une supposition, même présentée comme approximative ou incertaine.
+5. Par défaut, RÉPONDS. Si les articles fournis contiennent de quoi répondre, même partiellement, réponds en citant ces articles — l'abstention est réservée aux cas où les articles fournis ne traitent réellement pas du sujet. Ne refuse pas une question simplement parce qu'elle te paraît sensible, incomplète ou proche d'un autre domaine.
+6. En revanche, si la question relève réellement d'un autre texte de loi que le Code du travail, il t'est absolument interdit d'en décrire le contenu : ne cite jamais un numéro de loi, un numéro d'article, une procédure ou une règle provenant d'un autre code — tu n'as reçu aucun de ces textes, donc toute affirmation à leur sujet serait inventée. Tu peux seulement nommer le domaine concerné. N'écris jamais que tu as "consulté" un texte : les seuls textes dont tu disposes sont les articles fournis ci-dessous.
+7. Ne donne jamais de conseil juridique personnalisé.
+8. Réponds de façon claire et concise, dans la même langue que la question.
 """
 
 
@@ -41,7 +53,7 @@ def generate(question, articles):
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
-            options={"temperature": 0.1},  # low = stable, near-deterministic answers
+            options=GENERATION_OPTIONS,
         )
     except Exception as exc:
         return None, (
@@ -65,7 +77,7 @@ def generate_stream(question, articles):
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
         ],
-        options={"temperature": 0.1},
+        options=GENERATION_OPTIONS,
         stream=True,
     )
     for chunk in stream:

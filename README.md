@@ -51,16 +51,18 @@ défendable ligne par ligne. Justification détaillée de chaque choix : [docs/P
 ├── eval/
 │   ├── questions-test.md          # Jeu de test manuel (questions + réponses attendues)
 │   ├── reference_qa.jsonl         # Jeu de référence (37 questions, articles attendus)
-│   └── run_eval.py                # Métriques de recherche (Recall@k, MRR)
+│   ├── run_eval.py                # Métriques de recherche (Recall@k, MRR) — sans LLM
+│   ├── run_answer_eval.py         # Évaluation bout en bout des réponses — avec LLM
+│   └── resultats-evaluation.md    # Rapport généré par run_answer_eval.py
 ├── src/
 │   ├── parser.py                  # PDF → corpus JSONL (extraction, hiérarchie, nettoyage)
 │   ├── database.py                # Corpus → index vectoriel Chroma (embeddings BGE-M3)
 │   ├── retriever.py               # Recherche hybride (dense + BM25 + RRF), reranking optionnel
 │   ├── generator.py               # Génération ancrée via Ollama (Mistral 7B)
 │   └── app.py                     # Orchestrateur : abstention + citations + vérification (CLI)
-├── web/
-│   └── index.html                 # Interface web conversationnelle (chat, type Gemini/ChatGPT)
-├── serve.py                       # Serveur web local (stdlib, réponses en streaming)
+├── web/                            # Interface web (React + Vite), chat type Gemini/ChatGPT
+│   └── src/                       # Composants : Sidebar (historique), Message, Composer
+├── serve.py                       # Serveur web local (stdlib côté API, sert web/dist/ en prod)
 ├── JOURNAL.md                     # Carnet de bord quotidien (décisions, bugs, résultats)
 └── requirements.txt
 ```
@@ -98,13 +100,22 @@ python src/parser.py       # PDF -> data/processed/corpus_chunks.jsonl (589 arti
 python src/database.py     # Corpus -> index vectoriel Chroma (télécharge BGE-M3, ~2.2 Go)
 ```
 
-**Interface web conversationnelle** (recommandé — chat type Gemini/ChatGPT, réponses en streaming) :
+**Interface web conversationnelle** (recommandé — chat type Gemini/ChatGPT, historique de
+conversations, réponses en streaming). Nécessite [Node.js](https://nodejs.org/) pour la construire
+une première fois :
 
 ```bash
+cd web
+npm install
+npm run build
+cd ..
 python serve.py
 ```
 
-Puis ouvrir **http://localhost:8000**. Aucune dépendance web à installer (serveur en stdlib).
+Puis ouvrir **http://localhost:8000**. Une fois construite (`web/dist/`), il suffit de relancer
+`python serve.py` pour les usages suivants — pas besoin de refaire `npm install`/`npm run build`
+tant que le code de l'interface ne change pas. Le backend (API, streaming, garde-fous) reste en
+bibliothèque standard Python ; seul le frontend a une étape de build (React/Vite).
 
 **Ou en ligne de commande :**
 
@@ -140,6 +151,22 @@ Compare dense seul / BM25 seul / hybride sur le [jeu de référence](eval/refere
 > le sémantique. L'hybride aiderait davantage sur des requêtes à tokens exacts. Constat mesuré, pas
 > supposé (cf. [JOURNAL.md](JOURNAL.md)).
 
+Évaluation **bout en bout** des réponses générées (nécessite Ollama, ~3 min) :
+
+```bash
+python eval/run_answer_eval.py
+```
+
+Produit [`eval/resultats-evaluation.md`](eval/resultats-evaluation.md). Derniers résultats :
+
+| Critère de succès | Résultat |
+|---|---|
+| Citation systématique | **94 %** (30/32) |
+| Abstention correcte (hors périmètre) | **100 %** (5/5) |
+| Vérification des citations | **96 %** (44/46) |
+| *(bonus)* L'article attendu est cité | 81 % (26/32) |
+| Abstentions à tort | **0/32** |
+
 ## État d'avancement
 
 | Phase | Contenu | Statut |
@@ -148,7 +175,7 @@ Compare dense seul / BM25 seul / hybride sur le [jeu de référence](eval/refere
 | S3 | Pipeline RAG bout‑en‑bout : embeddings, recherche hybride, génération citée | ✅ |
 | S4 | Abstention pré‑LLM, vérification des citations, orchestrateur CLI + interface web | ✅ |
 | S5 | Reranking par cross‑encodeur (option), jeu de référence (37 questions) | ✅ |
-| S6 | Évaluation (Recall@k, MRR) sur dense / BM25 / hybride | ✅ |
+| S6 | Évaluation : recherche (Recall@k, MRR) **et** réponses (citation, abstention, vérification) | ✅ |
 | S7 | Durcissement, reproductibilité | 🔶 en cours |
 | S8 | Rapport de stage, soutenance | ⬜ |
 | — | Extension multi‑codes + multilingue (FR/EN/AR) | ⬜ à venir |

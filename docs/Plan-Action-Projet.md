@@ -278,9 +278,12 @@ Réalisé (S4‑S6, ancrage + évaluation) :
 - `app.py` : orchestrateur unique partagé par la CLI et l'interface web — garde‑fou d'abstention **avant** l'appel au LLM (F5), vérification que chaque citation générée correspond à un article effectivement fourni (F6), avertissement systématique (F7).
 - Seuil d'abstention **calibré empiriquement**, pas deviné : questions dans le périmètre 0.60‑0.79 de similarité, hors périmètre non‑juridique 0.31‑0.35, autre domaine juridique 0.47‑0.52. Constat important : un seuil unique ne peut pas (et ne doit pas) séparer le droit du travail des autres domaines juridiques connexes — voir §9 et la discussion d'extension à un second code. Seuil fixé à 0.42 pour ne filtrer que la bande clairement non pertinente ; le reste est rattrapé par l'abstention au niveau du prompt.
 - `eval/reference_qa.jsonl` (37 questions) + `eval/run_eval.py` : Recall@5 / MRR mesurés — dense seul 0.969/0.891, BM25 seul 0.781/0.628, **hybride 0.875/0.794**. Constat honnête : sur des questions en langage naturel, le dense seul dépasse l'hybride (RRF dilue un bon classement dense avec un classement BM25 plus faible) ; l'hybride resterait pertinent sur des requêtes à tokens exacts. Détail dans `JOURNAL.md`.
-- `streamlit_app.py` : interface web conversationnelle (historique, sources dépliables avec chemin hiérarchique, citations non vérifiées signalées, note de souveraineté).
+- `eval/run_answer_eval.py` + `eval/resultats-evaluation.md` : évaluation **bout en bout** à travers le modèle, couvrant les critères qui dépendent de la réponse générée (2, 3, 5) — que `run_eval.py`, limité à la recherche, ne mesurait pas.
+- `web/` (React + Vite) servie par `serve.py` : interface conversationnelle grand public — réponses en streaming, historique de conversations, sources dépliables avec chemin hiérarchique, avertissement systématique. La surface technique (scores, citations non vérifiées, métriques) reste volontairement côté CLI et évaluation.
 
 Prochaine étape : durcissement (S7), rapport de stage (S8), et discussion avec l'encadrant sur l'extension à un second code + couche multilingue FR/EN/AR (cf. Annexe B et §2.2, darija différée).
+
+> **Note de périmètre (§1.4).** Le plan prévoyait « pas d'interface web complète ; la CLI est le livrable, une démo minimale reste un *nice-to-have* ». L'interface réalisée (React, historique, streaming) va au‑delà d'une démo minimale. La CLI (`src/app.py`) reste le livrable de référence et expose seule la traçabilité complète ; l'interface web est une couche de démonstration au‑dessus du **même** moteur (`app.py`), sans logique métier propre. À valider avec l'encadrant : effort justifié pour la soutenance, ou étalement à assumer ?
 
 ---
 

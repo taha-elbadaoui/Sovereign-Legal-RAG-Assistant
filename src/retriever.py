@@ -74,6 +74,32 @@ def dense_search(query, k=CANDIDATES_PER_METHOD):
     return list(zip(ids, similarities.tolist()))
 
 
+# Matches "article 32", "l'article 32", "Article premier" in the QUESTION
+# itself (not the corpus) -- used to detect a direct-lookup request.
+EXPLICIT_ARTICLE_RE = re.compile(r"[Aa]rticle\s+(premier|\d{1,3})")
+
+
+def explicit_article_refs(query):
+    """Article numbers the user names directly in their question, e.g.
+    "Que dit l'article 32 ?" -> ["32"].
+
+    Dense/lexical search both match the QUESTION's meaning against article
+    BODY text -- but a meta-question like "what does article 32 say" shares
+    no vocabulary with article 32's actual content (contract suspension,
+    military service), so it can rank arbitrarily low or miss entirely even
+    though the article is real and in the corpus. When a query names a real
+    article number directly, that article is included unconditionally rather
+    than left to compete on semantic/lexical similarity it was never going to
+    win on.
+    """
+    refs = []
+    for match in EXPLICIT_ARTICLE_RE.finditer(query):
+        num = "1" if match.group(1) == "premier" else match.group(1)
+        if num in articles_by_number and num not in refs:
+            refs.append(num)
+    return refs
+
+
 def rerank_articles(query, candidate_articles):
     reranker = _get_reranker()
     pairs = [(query, a["article_text"]) for a in candidate_articles]
@@ -99,6 +125,12 @@ def retrieve(query, k=5, rerank=False):
         for rank, article_id in enumerate(ranked_ids):
             fused_scores[article_id] = fused_scores.get(article_id, 0.0) + 1.0 / (RRF_K + rank)
 
+    # Directly-named articles always make the cut, ranked above anything
+    # fusion scored (see explicit_article_refs for why fusion can't be
+    # trusted for this case).
+    for num in explicit_article_refs(query):
+        fused_scores[num] = float("inf")
+
     pool = RERANK_POOL if rerank else k
     top_ids = sorted(fused_scores, key=fused_scores.get, reverse=True)[:pool]
     result_articles = [articles_by_number[article_id] for article_id in top_ids]
@@ -108,6 +140,11 @@ def retrieve(query, k=5, rerank=False):
     result_articles = result_articles[:k]
 
     top_similarity = max((sim for _, sim in dense), default=0.0)
+    # A named article is, by definition, relevant -- don't let a low dense
+    # score (expected here: the question and the article's own body text
+    # share little vocabulary) trip the pre-LLM abstention gate in app.py.
+    if explicit_article_refs(query):
+        top_similarity = 1.0
     return {"articles": result_articles, "top_similarity": top_similarity}
 
 
