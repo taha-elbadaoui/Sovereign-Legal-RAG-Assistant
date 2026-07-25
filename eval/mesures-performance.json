@@ -1,0 +1,725 @@
+{
+  "generated_at": "2026-07-25T17:28:05",
+  "model": "mistral:7b",
+  "abstention_threshold": 0.42,
+  "reference_set": {
+    "in_scope": 32,
+    "out_of_scope": 5
+  },
+  "latency_seconds": {
+    "retrieval": {
+      "n": 37,
+      "min": 0.13312860000041837,
+      "median": 0.15971650000028603,
+      "mean": 0.17121627027031414,
+      "p90": 0.17519659999925352,
+      "max": 0.45668710000063584
+    },
+    "generation": {
+      "n": 35,
+      "min": 1.040529299998525,
+      "median": 3.284293799999432,
+      "mean": 3.932135145713983,
+      "p90": 7.231388899999729,
+      "max": 12.92844199999854
+    },
+    "total_with_generation": {
+      "n": 35,
+      "min": 1.200245799998811,
+      "median": 3.485794700000042,
+      "mean": 4.105260208571157,
+      "p90": 7.480749899999864,
+      "max": 13.0842240999973
+    },
+    "total_abstained_pre_llm": {
+      "n": 2,
+      "min": 0.13312860000041837,
+      "median": 0.13781240000025718,
+      "mean": 0.13781240000025718,
+      "p90": 0.142496200000096,
+      "max": 0.142496200000096
+    }
+  },
+  "outcome_taxonomy": {
+    "Réponse sourcée, article attendu cité": 23,
+    "Réponse sourcée, autre article cité": 2,
+    "Réponse avec citation non vérifiée": 3,
+    "Réponse sans aucune citation": 1,
+    "Refus à tort (question valide)": 3,
+    "Abstention correcte": 5
+  },
+  "questions": [
+    {
+      "question": "Quelle est la durée de la période d'essai pour un cadre en contrat à durée indéterminée ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "14"
+      ],
+      "cited_articles": [
+        "14"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7826,
+      "t_retrieval_s": 0.457,
+      "t_generation_s": 7.024,
+      "t_total_s": 7.481,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "À quel âge minimum un mineur peut-il être employé au Maroc ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "143"
+      ],
+      "cited_articles": [
+        "143",
+        "145"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7658,
+      "t_retrieval_s": 0.165,
+      "t_generation_s": 3.556,
+      "t_total_s": 3.721,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelle est la durée du congé de maternité ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "152"
+      ],
+      "cited_articles": [
+        "152",
+        "154",
+        "156",
+        "269"
+      ],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.6797,
+      "t_retrieval_s": 0.147,
+      "t_generation_s": 6.984,
+      "t_total_s": 7.131,
+      "outcome": "Refus à tort (question valide)"
+    },
+    {
+      "question": "Quelle est la durée légale du travail dans les activités non agricoles ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "184"
+      ],
+      "cited_articles": [
+        "184"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7373,
+      "t_retrieval_s": 0.169,
+      "t_generation_s": 2.112,
+      "t_total_s": 2.282,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Dans quel délai faut-il saisir le tribunal après un licenciement contesté ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "65"
+      ],
+      "cited_articles": [
+        "41",
+        "65",
+        "532"
+      ],
+      "unverified_citations": [
+        "532"
+      ],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7214,
+      "t_retrieval_s": 0.16,
+      "t_generation_s": 4.383,
+      "t_total_s": 4.543,
+      "outcome": "Réponse avec citation non vérifiée"
+    },
+    {
+      "question": "À quel âge un salarié est-il mis à la retraite ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "526"
+      ],
+      "cited_articles": [
+        "53",
+        "526"
+      ],
+      "unverified_citations": [
+        "53"
+      ],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7487,
+      "t_retrieval_s": 0.16,
+      "t_generation_s": 4.629,
+      "t_total_s": 4.79,
+      "outcome": "Réponse avec citation non vérifiée"
+    },
+    {
+      "question": "Le harcèlement sexuel commis par l'employeur est-il une faute grave ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "40"
+      ],
+      "cited_articles": [
+        "39",
+        "40"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7164,
+      "t_retrieval_s": 0.16,
+      "t_generation_s": 1.041,
+      "t_total_s": 1.2,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Peut-on employer un mineur de moins de 18 ans dans les mines ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "179"
+      ],
+      "cited_articles": [
+        "179"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.718,
+      "t_retrieval_s": 0.175,
+      "t_generation_s": 2.001,
+      "t_total_s": 2.176,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Combien d'heures par mois un délégué des salariés a-t-il pour exercer ses fonctions ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "456"
+      ],
+      "cited_articles": [
+        "456"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7124,
+      "t_retrieval_s": 0.174,
+      "t_generation_s": 2.436,
+      "t_total_s": 2.609,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelles catégories de salariés sont régies par des statuts spéciaux ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "3"
+      ],
+      "cited_articles": [
+        "4",
+        "11"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6946,
+      "t_retrieval_s": 0.156,
+      "t_generation_s": 7.231,
+      "t_total_s": 7.387,
+      "outcome": "Réponse sourcée, autre article cité"
+    },
+    {
+      "question": "Pour combien de temps peut-on conclure un CDD à l'ouverture d'une nouvelle entreprise ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "17"
+      ],
+      "cited_articles": [
+        "17"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6039,
+      "t_retrieval_s": 0.172,
+      "t_generation_s": 4.998,
+      "t_total_s": 5.17,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Combien de jours de congé annuel payé acquiert-on par mois de service ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "231"
+      ],
+      "cited_articles": [
+        "231",
+        "238"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.696,
+      "t_retrieval_s": 0.159,
+      "t_generation_s": 4.179,
+      "t_total_s": 4.338,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelle est la durée minimale du repos hebdomadaire ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "205"
+      ],
+      "cited_articles": [
+        "206",
+        "213"
+      ],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.6611,
+      "t_retrieval_s": 0.159,
+      "t_generation_s": 3.814,
+      "t_total_s": 3.973,
+      "outcome": "Refus à tort (question valide)"
+    },
+    {
+      "question": "Combien de jours de congé un salarié a-t-il à l'occasion d'une naissance ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "269"
+      ],
+      "cited_articles": [
+        "269"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7707,
+      "t_retrieval_s": 0.163,
+      "t_generation_s": 1.517,
+      "t_total_s": 1.68,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "À partir de quelle ancienneté la prime d'ancienneté est-elle due, et à quel taux ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "350"
+      ],
+      "cited_articles": [
+        "350"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7335,
+      "t_retrieval_s": 0.167,
+      "t_generation_s": 1.361,
+      "t_total_s": 1.528,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelles sont les fautes graves pouvant justifier le licenciement d'un salarié ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "39"
+      ],
+      "cited_articles": [
+        "39",
+        "40"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7805,
+      "t_retrieval_s": 0.156,
+      "t_generation_s": 12.928,
+      "t_total_s": 13.084,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Comment sont calculés les dommages-intérêts en cas de licenciement abusif ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "41"
+      ],
+      "cited_articles": [
+        "41",
+        "51",
+        "59"
+      ],
+      "unverified_citations": [
+        "51"
+      ],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7263,
+      "t_retrieval_s": 0.202,
+      "t_generation_s": 3.284,
+      "t_total_s": 3.486,
+      "outcome": "Réponse avec citation non vérifiée"
+    },
+    {
+      "question": "Comment est calculée l'indemnité de licenciement ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "53"
+      ],
+      "cited_articles": [
+        "53",
+        "55",
+        "56",
+        "59"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7881,
+      "t_retrieval_s": 0.151,
+      "t_generation_s": 6.516,
+      "t_total_s": 6.667,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "L'employeur peut-il licencier une salariée enceinte ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "159"
+      ],
+      "cited_articles": [
+        "159",
+        "160"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7153,
+      "t_retrieval_s": 0.153,
+      "t_generation_s": 4.861,
+      "t_total_s": 5.015,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Une mère salariée a-t-elle droit à un repos pour allaiter son enfant ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "161"
+      ],
+      "cited_articles": [
+        "161"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7935,
+      "t_retrieval_s": 0.166,
+      "t_generation_s": 3.102,
+      "t_total_s": 3.267,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Est-il permis de faire travailler les salariés pendant les jours de fête payés ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "217"
+      ],
+      "cited_articles": [
+        "217"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7135,
+      "t_retrieval_s": 0.16,
+      "t_generation_s": 1.756,
+      "t_total_s": 1.916,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "La discrimination salariale entre hommes et femmes est-elle autorisée ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "346"
+      ],
+      "cited_articles": [
+        "346"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.755,
+      "t_retrieval_s": 0.192,
+      "t_generation_s": 2.333,
+      "t_total_s": 2.526,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "À partir de combien de salariés doit-on élire des délégués des salariés ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "430"
+      ],
+      "cited_articles": [
+        "433"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.767,
+      "t_retrieval_s": 0.246,
+      "t_generation_s": 9.532,
+      "t_total_s": 9.778,
+      "outcome": "Réponse sourcée, autre article cité"
+    },
+    {
+      "question": "À partir de combien de salariés faut-il créer un comité d'entreprise ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "464"
+      ],
+      "cited_articles": [
+        "464"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6743,
+      "t_retrieval_s": 0.159,
+      "t_generation_s": 1.949,
+      "t_total_s": 2.108,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Faut-il une autorisation pour recruter un salarié étranger ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "516"
+      ],
+      "cited_articles": [
+        "516"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7278,
+      "t_retrieval_s": 0.155,
+      "t_generation_s": 1.372,
+      "t_total_s": 1.527,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Le salarié doit-il être entendu avant d'être licencié ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "62"
+      ],
+      "cited_articles": [
+        "62"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7092,
+      "t_retrieval_s": 0.161,
+      "t_generation_s": 4.332,
+      "t_total_s": 4.493,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelle est la durée maximale d'une mission d'intérim ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "500"
+      ],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.5955,
+      "t_retrieval_s": 0.154,
+      "t_generation_s": 1.737,
+      "t_total_s": 1.891,
+      "outcome": "Réponse sans aucune citation"
+    },
+    {
+      "question": "À partir de combien de salariés un comité de sécurité et d'hygiène est-il obligatoire ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "336"
+      ],
+      "cited_articles": [
+        "337"
+      ],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.692,
+      "t_retrieval_s": 0.174,
+      "t_generation_s": 3.465,
+      "t_total_s": 3.638,
+      "outcome": "Refus à tort (question valide)"
+    },
+    {
+      "question": "Que doit faire un salarié malade pour justifier son absence ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "271"
+      ],
+      "cited_articles": [
+        "271"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.764,
+      "t_retrieval_s": 0.158,
+      "t_generation_s": 3.895,
+      "t_total_s": 4.052,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Combien de jours d'absence a-t-on pour son propre mariage ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "274"
+      ],
+      "cited_articles": [
+        "274"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7076,
+      "t_retrieval_s": 0.155,
+      "t_generation_s": 1.516,
+      "t_total_s": 1.671,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelles obligations de sécurité et de santé l'employeur a-t-il envers ses salariés ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "24",
+        "281"
+      ],
+      "cited_articles": [
+        "24",
+        "287",
+        "504",
+        "542"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7173,
+      "t_retrieval_s": 0.175,
+      "t_generation_s": 8.123,
+      "t_total_s": 8.298,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Un salarié appelé au service militaire retrouve-t-il son poste au retour ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "510"
+      ],
+      "cited_articles": [
+        "510"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6958,
+      "t_retrieval_s": 0.156,
+      "t_generation_s": 1.928,
+      "t_total_s": 2.083,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelle est la procédure pour divorcer au Maroc ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.5147,
+      "t_retrieval_s": 0.152,
+      "t_generation_s": 1.566,
+      "t_total_s": 1.718,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Comment créer une société anonyme au Maroc ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.515,
+      "t_retrieval_s": 0.145,
+      "t_generation_s": 2.946,
+      "t_total_s": 3.091,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Quelle est la peine encourue pour vol qualifié ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.4453,
+      "t_retrieval_s": 0.148,
+      "t_generation_s": 3.216,
+      "t_total_s": 3.364,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Quelle est la recette du couscous royal ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": true,
+      "retrieval_score": 0.3071,
+      "t_retrieval_s": 0.142,
+      "t_generation_s": 0.0,
+      "t_total_s": 0.142,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Quelle est la capitale de la France ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": true,
+      "retrieval_score": 0.3357,
+      "t_retrieval_s": 0.133,
+      "t_generation_s": 0.0,
+      "t_total_s": 0.133,
+      "outcome": "Abstention correcte"
+    }
+  ]
+}

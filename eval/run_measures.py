@@ -27,6 +27,7 @@ NOT measured (stated plainly rather than papered over):
 import os
 import sys
 import json
+import csv
 import statistics as stats
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
@@ -43,6 +44,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REF_PATH = os.path.join(HERE, "reference_qa.jsonl")
 FIG_DIR = os.path.join(HERE, "figures")
 REPORT = os.path.join(HERE, "mesures-performance.md")
+JSON_EXPORT = os.path.join(HERE, "mesures-performance.json")
+CSV_EXPORT = os.path.join(HERE, "mesures-performance.csv")
 
 ABSTENTION_MARKERS = ["ne dispose pas d'information suffisante"]
 
@@ -284,6 +287,60 @@ def main():
     with open(REPORT, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
 
+    # ------------------------------------------------------------- JSON export
+    import datetime
+    payload = {
+        "generated_at": datetime.datetime.now().isoformat(timespec="seconds"),
+        "model": MODEL,
+        "abstention_threshold": ABSTENTION_THRESHOLD,
+        "reference_set": {"in_scope": len(in_scope), "out_of_scope": len(out_scope)},
+        "latency_seconds": {
+            "retrieval": t_ret,
+            "generation": t_llm,
+            "total_with_generation": t_gen,
+            "total_abstained_pre_llm": t_gate,
+        },
+        "outcome_taxonomy": {k: counts[k] for k in order if counts.get(k)},
+        "questions": [
+            {
+                "question": r["question"],
+                "type": r["type"],
+                "expected_articles": sorted(r["expected"]),
+                "cited_articles": sorted(r["cited"], key=int),
+                "unverified_citations": sorted(r["unverified"], key=int),
+                "abstained": r["abstained"],
+                "gate_abstained": r["gate_abstained"],
+                "retrieval_score": round(r["score"], 4),
+                "t_retrieval_s": round(r["t_retrieval"], 3),
+                "t_generation_s": round(r["t_generation"], 3),
+                "t_total_s": round(r["t_total"], 3),
+                "outcome": r["outcome"],
+            }
+            for r in rows
+        ],
+    }
+    with open(JSON_EXPORT, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+
+    # -------------------------------------------------------------- CSV export
+    with open(CSV_EXPORT, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["question", "type", "expected_articles", "cited_articles",
+                    "unverified_citations", "abstained", "gate_abstained",
+                    "retrieval_score", "t_retrieval_s", "t_generation_s",
+                    "t_total_s", "outcome"])
+        for r in rows:
+            w.writerow([
+                r["question"], r["type"],
+                ";".join(sorted(r["expected"])),
+                ";".join(sorted(r["cited"], key=int)),
+                ";".join(sorted(r["unverified"], key=int)),
+                r["abstained"], r["gate_abstained"],
+                round(r["score"], 4), round(r["t_retrieval"], 3),
+                round(r["t_generation"], 3), round(r["t_total"], 3),
+                r["outcome"],
+            ])
+
     print("\n" + "=" * 62)
     print(f"Latence médiane (avec génération) : {t_gen['median']:.2f} s")
     if t_gate:
@@ -295,6 +352,8 @@ def main():
             print(f"{k:.<46}{counts[k]:>3}  ({pct(counts[k], len(rows))})")
     print("=" * 62)
     print(f"Rapport  : {REPORT}")
+    print(f"JSON     : {JSON_EXPORT}")
+    print(f"CSV      : {CSV_EXPORT}  (ouvre directement dans Excel)")
     print(f"Figures  : {FIG_DIR} ({len(figs)} SVG)")
 
 
