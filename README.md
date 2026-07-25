@@ -63,6 +63,7 @@ défendable ligne par ligne. Justification détaillée de chaque choix : [docs/P
 ├── web/                            # Interface web (React + Vite), chat type Gemini/ChatGPT
 │   └── src/                       # Composants : Sidebar (historique), Message, Composer
 ├── serve.py                       # Serveur web local (stdlib côté API, sert web/dist/ en prod)
+├── demo.py                        # Démonstration scriptée (8 scènes) pour la soutenance
 ├── JOURNAL.md                     # Carnet de bord quotidien (décisions, bugs, résultats)
 └── requirements.txt
 ```
@@ -132,6 +133,14 @@ Pour inspecter la seule recherche (sans génération) :
 python src/retriever.py "Quelle est la durée du congé annuel payé ?"
 ```
 
+**Démonstration scriptée** (8 scènes : corpus, recherche hybride, réponse citée, abstention,
+article inexistant, recherche par numéro, métriques) :
+
+```bash
+python demo.py            # toutes les scènes
+python demo.py 4          # une scène précise
+```
+
 ### Évaluation
 
 ```bash
@@ -161,11 +170,16 @@ Produit [`eval/resultats-evaluation.md`](eval/resultats-evaluation.md). Derniers
 
 | Critère de succès | Résultat |
 |---|---|
-| Citation systématique | **94 %** (30/32) |
+| Citation systématique | **97 %** (30/31) |
 | Abstention correcte (hors périmètre) | **100 %** (5/5) |
-| Vérification des citations | **96 %** (44/46) |
-| *(bonus)* L'article attendu est cité | 81 % (26/32) |
-| Abstentions à tort | **0/32** |
+| Vérification des citations | **91 %** (49/54) |
+| *(bonus)* L'article attendu est cité | 84 % (26/31) |
+| Abstentions à tort | 1/32 |
+
+> Les citations « non vérifiées » restantes sont des **renvois internes** (« …prévu par l'article N
+> ci-dessous ») repris depuis le texte d'un article bien fourni — pas des hallucinations. Limite
+> connue : la vérification contrôle la *présence* de l'article dans le contexte, pas le fait qu'il
+> dise réellement ce que la réponse lui attribue.
 
 ## État d'avancement
 

@@ -22,13 +22,31 @@ ABSTENTION_MESSAGE = (
     "(Code du travail, Loi 65-99) pour répondre à cette question."
 )
 
-# Matches "Article 152", "article 152", "(Article 152)" — used to check that
-# every article the model cites was actually in the context we gave it.
-CITATION_RE = re.compile(r"[Aa]rticle\s+(\d{1,3})")
+# Matches the article numbers a generated answer cites, so we can check each one
+# was actually in the context we supplied.
+#
+# Handles the enumerated form the model actually produces -- "Articles 154 et 156",
+# "les articles 53, 55 et 56" -- not just the singular case. An earlier version
+# anchored on "[Aa]rticle\s+" and silently missed EVERY plural citation, which
+# both weakened the F6 guardrail and made the measured citation rate too low.
+#
+# "\d{1,3}(?!\d)" refuses 4+ digit numbers on purpose: no article in this law
+# exceeds 589, so "l'article 1098 du Code des obligations" (a cross-reference to
+# a different code) must not be read as a citation of article 109.
+CITATION_LEAD_RE = re.compile(
+    r"[Aa]rticles?\s+(premier|\d{1,3}(?!\d))"      # first number after "article(s)"
+    r"((?:\s*(?:,|et|and|&)\s*\d{1,3}(?!\d))*)"    # ", 55 et 56" continuation
+)
+NUMBER_RE = re.compile(r"\d{1,3}(?!\d)")
 
 
 def cited_article_numbers(answer):
-    return set(CITATION_RE.findall(answer))
+    found = set()
+    for match in CITATION_LEAD_RE.finditer(answer):
+        head = match.group(1)
+        found.add("1" if head == "premier" else head)
+        found.update(NUMBER_RE.findall(match.group(2) or ""))
+    return found
 
 
 def answer_question(question, k=5, rerank=False):

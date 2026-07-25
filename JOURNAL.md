@@ -303,3 +303,38 @@ La correction anti-fabrication a été mesurée, pas supposée bonne. Trois exé
 **Métriques de recherche inchangées** après l'ajout du chemin de recherche par numéro d'article explicite (dense 0.969/0.891, BM25 0.781/0.628, hybride 0.875/0.794) — attendu, aucune question du jeu de référence ne nomme un article par son numéro.
 
 **Écart de périmètre signalé honnêtement (§1.4) :** le plan prévoit « pas d'interface web complète ; la CLI est le livrable, une démo minimale reste un *nice-to-have* ». L'interface React réalisée (historique, streaming, recherche) dépasse une démo minimale. Noté explicitement dans le document de conception §6.3 comme point à valider avec l'encadrant, plutôt que de laisser le document contredire silencieusement le dépôt. Atténuation : l'interface n'a **aucune logique métier propre**, elle appelle le même `app.py` que la CLI.
+
+---
+
+## 2026-07-24 (fin) — Revue globale avant changement de phase
+
+Revue complète du projet avant de passer à la phase suivante : reproductibilité, revue de code, cohérence de la documentation.
+
+**Critère 6 (reproductibilité) — enfin testé, et validé :**
+- Le dépôt a été **cloné à neuf** depuis GitHub dans un répertoire vierge, puis `src/parser.py` exécuté sur le PDF du clone.
+- Le PDF source est **identique après clone** (SHA-256) — la protection `.gitattributes` contre la normalisation CRLF de Git tient bien.
+- Le corpus régénéré est **identique octet pour octet** au corpus versionné. Le pipeline d'extraction est donc réellement déterministe, pas seulement « à peu près reproductible ».
+- Tous les modules Python compilent ; toutes les dépendances importées figurent dans `requirements.txt`.
+
+**Bug réel trouvé en revue de code — la vérification des citations (F6) ratait toutes les citations au pluriel :**
+- `CITATION_RE = r"[Aa]rticle\s+(\d{1,3})"` exigeait un espace juste après « Article ». Or le modèle écrit très souvent « **Articles** 154 et 156 » ou « les articles 53, 55 et 56 » — dans ces cas la regex ne trouvait **rien du tout**.
+- Double conséquence : (1) le garde-fou F6 ne vérifiait pas ces citations, et (2) les métriques d'évaluation étaient **fausses** — une réponse citant « Articles 152 et 154 » était comptée comme *ne citant aucun article*. Cela explique la ligne « congé de maternité → cité : aucun » du rapport précédent.
+- Corrigé : `[Aa]articles?` + capture des énumérations (`, 55 et 56`), plus `\d{1,3}(?!\d)` pour refuser les nombres à 4 chiffres — « l'article 1098 du Code des obligations » ne doit pas être lu comme une citation de l'article 109 (faux positif présent dans l'ancienne version). 9 cas de test vérifiés.
+
+**Évaluation recalculée après correction** (les chiffres précédents étaient mesurés avec la regex bugguée) :
+
+| Critère | Avant (regex bugguée) | Après correction |
+|---|---|---|
+| 2 — Citation systématique | 94 % | **97 %** (30/31) |
+| 3 — Abstention correcte | 100 % | **100 %** (5/5) |
+| 5 — Vérification des citations | 96 % | **91 %** (49/54) |
+| Justesse de la source | 81 % | **84 %** (26/31) |
+
+Le critère 5 *baisse* : ce n'est pas une régression mais une **mesure enfin correcte** — 8 citations supplémentaires sont désormais détectées (46 → 54), dont certaines non présentes dans le contexte. Les 5 restantes sont toutes des **renvois internes** (l'article 32 cite lui-même les articles 154, 156, 274, 275, 277) : le contrôle est volontairement strict et sur-signale plutôt que de manquer une hallucination.
+
+**Ajouté : `demo.py`** — démonstration scriptée en 8 scènes (corpus, comparaison dense/BM25/hybride, réponse citée, abstention juridique hors périmètre, abstention pré-LLM, article inexistant, recherche par numéro, métriques). Tout est exécuté en direct, rien n'est simulé. Point de démonstration efficace : la scène 5 répond en **0,2 s** (LLM non appelé) contre **5,2 s** pour une vraie réponse — le garde-fou d'abstention est donc visible à l'œil nu.
+
+**Ménage et points en suspens :**
+- `docs/comparaison-code.md` supprimé : **doublon exact** (même SHA-256) de `docs/comparaison-code-du-travail-FR-AR.md`, hérité du premier commit.
+- ⚠ **`docs/Plan-Action-Projet.pdf` est périmé** (14 juillet) par rapport au `.md` (24 juillet) : il ne contient ni l'avancement S3-S6, ni les résultats d'évaluation, ni la note de périmètre sur l'interface web. Le script qui l'a produit contient le texte **en dur** (il ne lit pas le `.md`), donc le régénérer tel quel reproduirait l'ancienne version. À trancher : porter les nouvelles sections dans le script, ou cesser de maintenir une version PDF et partager le `.md` / le dépôt.
+- `docs/Sovereign-Legal-RAG-8-Week-Plan-v2.md` et `docs/Tech-Stack-Decision-Rationale-v2.md` sont supplantés par `Plan-Action-Projet.md` et ne sont plus référencés que dans l'arborescence historique en tête de ce journal. Conservés pour l'instant (trace de la réflexion initiale).
