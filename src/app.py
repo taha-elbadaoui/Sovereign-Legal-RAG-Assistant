@@ -1,4 +1,5 @@
 import re
+import time
 
 from retriever import retrieve
 from generator import generate, DISCLAIMER
@@ -58,9 +59,13 @@ def answer_question(question, k=5, rerank=False):
       cited              -> set of article numbers the answer cites
       unverified         -> cited numbers NOT present in sources (hallucinated)
       retrieval_score    -> best dense cosine similarity
+      timings            -> {"retrieval": s, "generation": s, "total": s}
+                            generation is 0.0 when the gate abstained
       error              -> str if the LLM was unreachable, else None
     """
+    started = time.perf_counter()
     result = retrieve(question, k=k, rerank=rerank)
+    t_retrieval = time.perf_counter() - started
     articles = result["articles"]
     score = result["top_similarity"]
 
@@ -72,10 +77,19 @@ def answer_question(question, k=5, rerank=False):
             "cited": set(),
             "unverified": set(),
             "retrieval_score": score,
+            "timings": {"retrieval": t_retrieval, "generation": 0.0, "total": t_retrieval},
             "error": None,
         }
 
+    gen_started = time.perf_counter()
     answer, error = generate(question, articles)
+    t_generation = time.perf_counter() - gen_started
+    timings = {
+        "retrieval": t_retrieval,
+        "generation": t_generation,
+        "total": t_retrieval + t_generation,
+    }
+
     if error:
         return {
             "abstained": False,
@@ -84,6 +98,7 @@ def answer_question(question, k=5, rerank=False):
             "cited": set(),
             "unverified": set(),
             "retrieval_score": score,
+            "timings": timings,
             "error": error,
         }
 
@@ -98,6 +113,7 @@ def answer_question(question, k=5, rerank=False):
         "cited": cited,
         "unverified": unverified,
         "retrieval_score": score,
+        "timings": timings,
         "error": None,
     }
 

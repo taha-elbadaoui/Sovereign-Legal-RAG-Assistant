@@ -12,3 +12,6 @@ data/chroma/
 # Node / web frontend (regenerable: cd web && npm install && npm run build)
 web/node_modules/
 web/dist/
+
+# Rendered previews of the SVG figures (regenerable)
+eval/figures/*.png
