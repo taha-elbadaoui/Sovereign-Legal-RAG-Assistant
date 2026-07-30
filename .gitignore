@@ -15,3 +15,16 @@ web/dist/
 
 # Rendered previews of the SVG figures (regenerable)
 eval/figures/*.png
+
+# LaTeX build artefacts (rapport/)
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.lol
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+rapport/main.pdf

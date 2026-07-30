@@ -1,0 +1,179 @@
+\chapter{Contexte général du projet}
+\label{chap:contexte}
+
+\section*{Introduction}
+
+Ce premier chapitre situe le projet dans son contexte. Il présente l'organisme d'accueil, la
+problématique nationale à laquelle le sujet se rattache, les objectifs assignés au stage, ainsi
+que le périmètre volontairement borné qui a été retenu pour garantir la faisabilité du travail
+dans le temps imparti.
+
+\section{Organisme d'accueil}
+
+\subsection{Présentation de Pulsaride Solutions}
+
+Pulsaride Solutions est une entreprise du domaine \textit{deeptech}, spécialisée en sécurité et
+en intelligence artificielle, dont le siège est situé rue Henri Dunant à Pessac, en France.
+
+% TODO : compléter cette section avec les informations que vous obtiendrez auprès de
+% l'entreprise (date de création, effectif, domaines d'activité détaillés, organigramme,
+% principaux clients ou projets). Ne rien inventer ici : ce sont des faits vérifiables.
+
+\subsection{Organisation et positionnement}
+
+% TODO : insérer ici l'organigramme de l'entreprise si vous pouvez l'obtenir.
+% Le template fournit un exemple : Figures/Organizational\_Chart.png
+%
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{Figures/Organizational_Chart.png}
+%     \caption{Organigramme de Pulsaride Solutions}
+%     \label{fig:organigramme}
+% \end{figure}
+
+\section{Contexte : la souveraineté numérique au Maroc}
+
+Le Maroc a fait de l'intelligence artificielle souveraine une priorité nationale, portée
+notamment par la feuille de route « Maroc IA 2030 », l'initiative « AI Made in Morocco » et le
+réseau des Instituts Al Jazari. L'un des principes directeurs de cette stratégie est la
+\textbf{maîtrise de la donnée} : une information sensible produite au Maroc doit pouvoir être
+traitée localement, sans dépendance critique vis-à-vis d'infrastructures étrangères.
+
+Ce principe prend un relief particulier dans le domaine juridique. Une question posée par un
+citoyen sur ses droits --- son licenciement, son congé de maternité, son salaire --- est une
+information intime. La confier à un service en ligne étranger revient à la faire sortir du
+territoire, avec les conséquences que cela implique en matière de confidentialité et de
+dépendance technologique.
+
+\section{Problématique}
+
+L'accès du citoyen à l'information juridique et administrative constitue aujourd'hui un point
+faible. Les textes --- Code du travail, Code de la famille, Bulletin Officiel, codes sectoriels
+--- sont publics, mais restent difficilement exploitables pour trois raisons :
+
+\begin{itemize}
+    \item \textbf{Une langue dense.} Le vocabulaire juridique, les renvois entre articles et la
+    structure hiérarchique des codes rendent la lecture directe ardue pour un non-spécialiste.
+    \item \textbf{Une disponibilité linguistique inégale.} Certains textes ne sont accessibles
+    qu'en arabe, d'autres uniquement dans une version française parfois plus ancienne que la
+    version arabe en vigueur.
+    \item \textbf{L'absence d'outil fiable.} Il n'existe pas d'outil permettant de répondre à
+    une question simple posée en langage courant, tout en garantissant que la réponse provient
+    bien du texte officiel.
+\end{itemize}
+
+Les assistants conversationnels généralistes ne comblent pas ce manque. Ils connaissent mal le
+droit marocain, peuvent produire des références qui n'existent pas --- un numéro d'article
+plausible mais faux est particulièrement trompeur en matière juridique --- et font transiter les
+questions des citoyens hors du territoire.
+
+\section{Objectifs du stage}
+
+L'objectif est de concevoir et d'évaluer un assistant de recherche juridique souverain fondé sur
+l'architecture RAG (\textit{Retrieval-Augmented Generation}). Le citoyen pose une question en
+langage naturel ; le système recherche le passage pertinent dans le corpus juridique, puis
+formule une réponse claire \textbf{en citant systématiquement la source officielle}.
+
+Le principe de fiabilité est central : le système s'appuie sur les textes réels et
+\textbf{indique honnêtement lorsqu'il ne dispose pas de l'information}, plutôt que d'inventer.
+
+\subsection{Exemple d'interaction visée}
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!40,title=Exemple]
+\textbf{Citoyen :} « J'ai droit à combien de jours de congé de maternité ? »
+
+\medskip
+\textbf{Assistant :} « Selon l'article 152 du Code du travail (Loi 65-99), la salariée bénéficie
+d'un congé de maternité de 14 semaines. Le contrat de travail est suspendu, non rompu, pendant
+cette période.
+
+\textit{Source : Code du travail, article 152.}
+
+Réponse fournie à titre informatif ; pour une situation particulière, consultez un
+professionnel. »
+\end{tcolorbox}
+
+\subsection{Missions}
+
+Le stage s'articule autour de quatre missions :
+
+\begin{enumerate}
+    \item \textbf{Constitution et préparation du corpus juridique.} Collecter, nettoyer et
+    découper intelligemment le corpus par article. La qualité de ce découpage conditionne
+    directement la qualité des réponses.
+    \item \textbf{Moteur de recherche sémantique et génération.} Indexer le corpus, retrouver les
+    passages pertinents à partir d'une question, puis générer une réponse claire et sourcée, en
+    garantissant l'ancrage dans les textes réels et la gestion explicite du « je ne sais pas ».
+    \item \textbf{Évaluation de la fiabilité.} Construire un jeu de questions-réponses de
+    référence et mesurer la précision du système. L'analyse honnête des limites fait partie
+    intégrante du livrable.
+    \item \textbf{Extension multilingue} \textit{(ambition complémentaire)}. Explorer une couche
+    de normalisation linguistique permettant de comprendre une question posée en arabe ou en
+    darija, tout en conservant l'ancrage des réponses dans le texte officiel d'origine.
+\end{enumerate}
+
+\section{Périmètre et non-objectifs}
+
+Pour garantir la faisabilité, le sujet a été volontairement borné. Le système part d'un
+\textbf{périmètre juridique unique} --- le droit du travail --- et d'un fonctionnement
+\textbf{monolingue solide} en français. L'extension multilingue et l'élargissement à d'autres
+codes constituent des ambitions complémentaires, non des engagements.
+
+Le cadrage négatif est aussi important que le cadrage positif. Le système n'est explicitement
+pas :
+
+\begin{itemize}
+    \item \textbf{un outil de conseil juridique personnalisé.} Il relève de la \emph{restitution
+    d'information juridique}. Chaque réponse porte un avertissement en ce sens.
+    \item \textbf{un système qui répond « au mieux ».} Face à une question sans réponse dans le
+    corpus, \textbf{l'abstention est le comportement correct}, pas un échec.
+    \item \textbf{un produit fini.} Le livrable est le moteur RAG et son évaluation.
+\end{itemize}
+
+Les interdictions suivantes ont été posées dès la conception et tenues jusqu'au terme du stage :
+pas de \textit{fine-tuning} du modèle, pas de mémoire conversationnelle multi-tours, pas d'autre
+code juridique que le Code du travail, et aucune intégration d'API externe dans le cœur du
+système.
+
+\section{Méthodologie et organisation}
+
+Le travail a été organisé en huit phases hebdomadaires, chacune assortie d'un livrable et d'un
+risque principal identifié à l'avance. Un \textbf{journal de bord} a été tenu quotidiennement,
+consignant chaque décision, chaque résultat et chaque difficulté rencontrée --- y compris les
+impasses. Ce journal a servi de matière première à la rédaction du présent rapport.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|m{1.2cm}|m{6.5cm}|m{6.5cm}|}
+        \hline
+        \textbf{Phase} & \textbf{Objet} & \textbf{Livrable} \\
+        \hline
+        S1 & Acquisition du corpus, extraction, découpage par article & Liste d'articles brute, fidélité vérifiée \\
+        \hline
+        S2 & Structuration, métadonnées, hiérarchie & Corpus reproductible au format JSONL \\
+        \hline
+        S3 & Premier pipeline RAG bout-en-bout & CLI : question $\rightarrow$ réponse citée \\
+        \hline
+        S4 & Ancrage, citation, abstention & Réponses fiables, abstention hors périmètre \\
+        \hline
+        S5 & Recherche hybride, jeu de référence & Recherche améliorée, jeu d'évaluation \\
+        \hline
+        S6 & Exécution de l'évaluation et métriques & Rapport de performance, analyse d'erreurs \\
+        \hline
+        S7 & Durcissement, reproductibilité & Prototype propre et reproductible \\
+        \hline
+        S8 & Rapport et soutenance & Rapport, démonstration, dépôt reproductible \\
+        \hline
+    \end{tabular}
+    \caption{Découpage du stage en phases}
+    \label{tab:phases}
+\end{table}
+
+\newpage
+\section*{Conclusion}
+
+Le projet répond à un besoin concret --- rendre le droit du travail interrogeable en langage
+naturel --- sous une contrainte structurante : la souveraineté des données. Le chapitre suivant
+présente les fondements techniques sur lesquels repose l'architecture retenue, et explique
+pourquoi la génération augmentée par la recherche constitue une réponse adaptée au problème de
+l'invention de références.

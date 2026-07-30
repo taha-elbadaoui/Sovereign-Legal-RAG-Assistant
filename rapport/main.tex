@@ -1,0 +1,142 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  Rapport de stage --- Taha El Badaoui
+%  Assistant juridique souverain (RAG) sur le Code du travail marocain
+%  Pulsaride Solutions / INPT --- 2026
+%
+%  Compilation : pdfLaTeX
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[12pt,a4paper,oneside]{book}
+
+\input{Packages}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdfauthor={Taha El Badaoui},
+    pdftitle={Assistant juridique souverain - RAG sur le Code du travail marocain},
+    pdfpagemode=FullScreen,
+    }
+
+\begin{document}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+    \definecolor{codegray}{rgb}{0.5,0.5,0.5}
+    \definecolor{codepurple}{rgb}{0.58,0,0.82}
+    \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+    \lstdefinestyle{mystyle}{
+        backgroundcolor=\color{backcolour},
+        keywordstyle=\color{magenta},
+        numberstyle=\tiny\color{codegreen},
+        stringstyle=\color{codepurple},
+        basicstyle=\ttfamily\footnotesize,
+        breakatwhitespace=false,
+        breaklines=true,
+        captionpos=b,
+        keepspaces=true,
+        numbers=left,
+        numbersep=5pt,
+        showspaces=false,
+        showstringspaces=false,
+        showtabs=false,
+        tabsize=2
+    }
+
+\include{Frontmatter/Page_de_garde}   % page de garde française
+
+\afterpage{\blankpage}  %page vide obligatoire
+
+\frontmatter
+
+\input{Frontmatter/Dedication}
+
+\input{Frontmatter/Acknowledgements}
+
+\input{Frontmatter/Résumé}
+
+\input{Frontmatter/Abstract}
+
+% Résumé en arabe --- à compléter (cf. TODO dans le fichier).
+% Décommenter une fois rédigé :
+% \input{Frontmatter/Molakhas}
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Table des figures}
+
+\listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+
+\lstlistoflistings
+\addcontentsline{toc}{chapter}{Liste des extraits de code}
+
+\tableofcontents
+\addcontentsline{toc}{chapter}{Table des matières}
+
+\mainmatter
+
+\input{Chapters/Chapter1}
+
+\input{Chapters/Chapter2}
+
+\input{Chapters/Chapter3}
+
+\input{Chapters/Chapter4}
+
+\input{Chapters/Chapter5}
+
+\input{Chapters/Conclusion}
+
+\appendix
+
+\input{Endmatter/Glossary}
+
+\input{Endmatter/Acronyms}
+
+\input{Endmatter/ComplementaryCodes}
+
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliographie}
+
+\bibitem{royaume2003}
+Royaume du Maroc,
+\emph{Dahir n\textsuperscript{o} 1-03-194 du 11 septembre 2003 portant promulgation de la loi
+n\textsuperscript{o} 65-99 relative au Code du travail}, Bulletin Officiel.
+
+\bibitem{lewis2020}
+P. Lewis et al.,
+\emph{Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks},
+Advances in Neural Information Processing Systems (NeurIPS), 2020.
+
+\bibitem{chen2024}
+J. Chen, S. Xiao, P. Zhang, K. Luo, D. Lian, Z. Liu,
+\emph{BGE M3-Embedding: Multi-Lingual, Multi-Functionality, Multi-Granularity Text Embeddings
+Through Self-Knowledge Distillation}, 2024.
+
+\bibitem{robertson2009}
+S. Robertson, H. Zaragoza,
+\emph{The Probabilistic Relevance Framework: BM25 and Beyond},
+Foundations and Trends in Information Retrieval, 2009.
+
+\bibitem{cormack2009}
+G. V. Cormack, C. L. A. Clarke, S. Buettcher,
+\emph{Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods},
+SIGIR, 2009.
+
+\bibitem{jiang2023}
+A. Q. Jiang et al.,
+\emph{Mistral 7B}, 2023.
+
+\bibitem{maroc2030}
+Ministère de la Transition Numérique et de la Réforme de l'Administration,
+\emph{Stratégie « Maroc Digital 2030 »}, Royaume du Maroc.
+
+% TODO : compléter avec les références effectivement consultées,
+% et vérifier chaque entrée avant la soutenance.
+
+\end{thebibliography}
+
+\end{document}

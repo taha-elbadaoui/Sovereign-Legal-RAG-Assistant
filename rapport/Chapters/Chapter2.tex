@@ -1,0 +1,129 @@
+\chapter{Fondements techniques et état de l'art}
+\label{chap:etat-art}
+
+\section*{Introduction}
+
+Ce chapitre expose les briques techniques mobilisées par le projet. Il part du problème central
+--- pourquoi un grand modèle de langage seul ne peut pas répondre de façon fiable à une question
+juridique --- puis présente l'architecture RAG comme réponse à ce problème, avant de détailler
+les deux familles de méthodes de recherche utilisées et leur combinaison.
+
+\section{Grands modèles de langage et hallucination}
+
+Un grand modèle de langage (\textit{Large Language Model}, LLM) est un modèle statistique entraîné
+à prédire la suite la plus plausible d'une séquence de texte. Cette formulation explique à la fois
+sa fluidité et sa principale faiblesse : le modèle produit ce qui est \emph{vraisemblable}, non ce
+qui est \emph{vrai}.
+
+Ce comportement porte le nom d'\textbf{hallucination}. Dans un contexte juridique, il est
+particulièrement dangereux : un modèle sollicité sur un article de loi qu'il ne connaît pas
+produira volontiers un numéro d'article plausible accompagné d'un contenu inventé. La réponse
+paraît crédible, la référence semble vérifiable, et rien dans la forme ne signale l'invention.
+
+Deux stratégies existent pour ancrer un modèle dans des faits réels :
+
+\begin{itemize}
+    \item Le \textbf{\textit{fine-tuning}}, qui consiste à réentraîner le modèle sur un corpus
+    spécialisé. Coûteux, difficile à mettre à jour, et surtout : le modèle continue de générer
+    depuis ses poids, sans possibilité de citer une source vérifiable.
+    \item La \textbf{génération augmentée par la recherche} (RAG), qui fournit au modèle les
+    documents pertinents \emph{au moment de la question} et lui demande de s'appuyer uniquement
+    sur eux.
+\end{itemize}
+
+C'est la seconde qui a été retenue : elle permet la citation, donc la vérification, ce qui est la
+condition même de la fiabilité recherchée.
+
+\section{L'architecture RAG}
+
+Le principe du RAG consiste à séparer deux préoccupations habituellement confondues : \emph{savoir}
+et \emph{formuler}. Le savoir est stocké dans un corpus documentaire externe et interrogeable ; le
+modèle de langage n'est plus qu'un moteur de reformulation appliqué à des documents qu'on lui
+fournit.
+
+Le système se décompose en deux pipelines distincts :
+
+\begin{itemize}
+    \item Un pipeline d'\textbf{indexation}, exécuté une seule fois hors ligne : le corpus est
+    découpé, vectorisé et stocké dans des index.
+    \item Un pipeline de \textbf{requête}, exécuté à chaque question : la question est vectorisée,
+    les passages pertinents sont retrouvés, puis transmis au modèle qui rédige la réponse.
+\end{itemize}
+
+Cette séparation a une conséquence pratique décisive pour le débogage : il est possible d'inspecter
+les documents retrouvés \emph{avant} l'appel au modèle. Or la majorité des mauvaises réponses en RAG
+proviennent d'une mauvaise \emph{recherche}, non d'une mauvaise \emph{génération}.
+
+\section{Recherche sémantique par embeddings}
+
+Un \textbf{embedding} est la représentation d'un texte sous forme de vecteur numérique de dimension
+fixe, construite de telle sorte que deux textes de sens proche produisent des vecteurs proches dans
+l'espace. La proximité est mesurée par la \textbf{similarité cosinus} :
+
+\begin{equation}
+    \mathrm{sim}(\vec{a}, \vec{b}) = \frac{\vec{a} \cdot \vec{b}}{\|\vec{a}\|\,\|\vec{b}\|}
+\end{equation}
+
+Pour des vecteurs normalisés, cette expression se réduit à un simple produit scalaire, borné entre
+$-1$ et $1$.
+
+L'intérêt de cette approche est qu'elle capture le \emph{sens} et non les mots : une question posée
+en langage courant (« mon patron peut me virer sans raison ? ») peut retrouver un article rédigé en
+langage juridique formel, sans partager aucun terme avec lui.
+
+Sa limite est symétrique : elle est moins précise lorsque le terme exact compte --- un numéro
+d'article, une expression figée comme « Loi 65-99 ».
+
+Une \textbf{base vectorielle} stocke ces vecteurs et permet de retrouver efficacement les plus
+proches voisins d'un vecteur requête.
+
+\section{Recherche lexicale : BM25}
+
+BM25 (\textit{Best Matching 25}) est une fonction de classement lexicale qui score un document en
+fonction des termes qu'il partage avec la requête. Elle pondère chaque terme par sa rareté dans le
+corpus (un mot rare est plus discriminant qu'un mot fréquent) et normalise par la longueur du
+document, afin qu'un document long ne soit pas favorisé mécaniquement.
+
+BM25 est exactement complémentaire des embeddings : excellent sur les correspondances exactes,
+aveugle à la reformulation.
+
+\section{Fusion des classements : Reciprocal Rank Fusion}
+
+Combiner les deux méthodes pose un problème pratique : leurs scores ne sont pas comparables. Un
+score BM25 n'est pas borné et peut valoir 8 ou 20 ; une similarité cosinus est bornée entre $-1$ et
+$1$. Faire la moyenne de $8$ et de $0{,}7$ n'a aucun sens.
+
+La \textbf{fusion par rang réciproque} (\textit{Reciprocal Rank Fusion}, RRF) contourne
+entièrement ce problème en n'utilisant que le \emph{rang} de chaque document dans chaque liste, et
+non son score brut :
+
+\begin{equation}
+    \mathrm{RRF}(d) = \sum_{m \in M} \frac{1}{k + \mathrm{rang}_m(d)}
+\end{equation}
+
+où $M$ est l'ensemble des méthodes de recherche, $\mathrm{rang}_m(d)$ le rang du document $d$ selon
+la méthode $m$, et $k$ une constante d'amortissement (valeur usuelle : 60) qui limite l'influence
+excessive des tout premiers rangs.
+
+Un document bien classé par les deux méthodes obtient ainsi un score élevé, sans qu'aucune
+normalisation d'échelle ne soit nécessaire.
+
+\section{Souveraineté : la contrainte d'exécution locale}
+
+La contrainte de souveraineté a une conséquence technique directe : \textbf{aucun composant du
+cœur du système ne peut être un service en ligne}. Cela exclut d'emblée les embeddings par API,
+les services de reclassement commerciaux, et les modèles de génération propriétaires accessibles
+uniquement à distance.
+
+Toute la chaîne doit donc reposer sur des modèles open-source exécutables sur du matériel
+ordinaire. Cette contrainte, loin d'être seulement une limitation, structure l'ensemble des choix
+techniques présentés au chapitre suivant.
+
+\newpage
+\section*{Conclusion}
+
+Le RAG apporte une réponse directe au problème de l'invention de références : en fournissant au
+modèle les textes au moment de la question, il rend la citation possible et donc la vérification
+réalisable. La recherche sémantique et la recherche lexicale étant complémentaires, leur fusion
+par rang réciproque permet de bénéficier des deux sans arbitrage d'échelle. Le chapitre suivant
+traduit ces principes en une architecture concrète.

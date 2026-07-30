@@ -1,0 +1,40 @@
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+L'accès du citoyen marocain à l'information juridique reste difficile : les textes sont
+publics, mais rédigés dans une langue dense et parfois disponibles uniquement en arabe. Les
+assistants conversationnels généralistes, eux, connaissent mal le droit marocain, peuvent
+inventer des références inexistantes, et font transiter les questions des citoyens hors du
+territoire national.
+
+Ce stage a consisté à concevoir, réaliser et évaluer un assistant de recherche juridique
+\textbf{souverain} fondé sur l'architecture RAG (\textit{Retrieval-Augmented Generation}),
+appliqué au Code du travail marocain (Loi n\textsuperscript{o}~65-99). Le système répond à une
+question posée en langage naturel en s'appuyant \emph{uniquement} sur les articles réellement
+retrouvés dans le corpus, cite systématiquement leurs numéros, et s'abstient explicitement
+lorsque l'information demandée n'y figure pas. L'ensemble de la chaîne --- corpus, embeddings,
+recherche et génération --- s'exécute en local, sans aucun appel à une API externe.
+
+Le corpus a été construit à la main à partir du PDF officiel : 589 articles extraits, nettoyés
+et enrichis de leurs métadonnées de hiérarchie, avec une régénération vérifiée identique octet
+pour octet depuis la source. La recherche combine une méthode sémantique (embeddings BGE-M3,
+base vectorielle Chroma) et une méthode lexicale (BM25), fusionnées par \textit{Reciprocal Rank
+Fusion}. La génération s'appuie sur un modèle Mistral~7B exécuté localement via Ollama, encadré
+par deux garde-fous : un seuil d'abstention appliqué \emph{avant} l'appel au modèle, et une
+vérification que chaque article cité figurait bien dans le contexte fourni.
+
+Le système a été évalué sur un jeu de référence de 37 questions. La recherche atteint un
+Recall@5 de 0{,}97 et un MRR de 0{,}89 en configuration dense. Côté réponses, 97~\% citent au
+moins un article, 94~\% des citations sont vérifiées comme réellement fournies au modèle, et
+l'abstention est correcte sur 100~\% des questions hors périmètre. Le temps de réponse médian
+est de 3{,}5~secondes, réduit à 0{,}14~seconde lorsque le garde-fou d'abstention se déclenche.
+Les limites de mesure --- notamment l'impossibilité de vérifier automatiquement qu'un article
+cité \emph{dit réellement} ce que la réponse lui attribue --- sont documentées explicitement.
+
+\noindent\rule[2pt]{\textwidth}{0.5pt}
+
+{\textbf{Mots clés :}}
+RAG, souveraineté numérique, traitement automatique du langage naturel, recherche sémantique,
+grands modèles de langage, droit du travail marocain, ancrage documentaire, abstention.
+\\
+\noindent\rule[2pt]{\textwidth}{0.5pt}
