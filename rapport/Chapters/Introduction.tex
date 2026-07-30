@@ -1,0 +1,64 @@
+\chapter*{Introduction générale}
+\addcontentsline{toc}{chapter}{Introduction générale}
+
+\section*{Contexte}
+
+Le Maroc a fait de l'intelligence artificielle souveraine une priorité nationale, portée
+notamment par la feuille de route « Maroc IA 2030 », l'initiative « AI Made in Morocco » et le
+réseau des Instituts Al Jazari. L'un des principes directeurs de cette stratégie est la
+\textbf{maîtrise de la donnée} : une information sensible produite au Maroc doit pouvoir être
+traitée localement, sans dépendance critique vis-à-vis d'infrastructures étrangères.
+
+Ce principe prend un relief particulier dans le domaine juridique. Une question posée par un
+citoyen sur ses droits --- son licenciement, son congé de maternité, son salaire --- est une
+information intime. La confier à un service en ligne étranger revient à la faire sortir du
+territoire, avec les conséquences que cela implique en matière de confidentialité et de
+dépendance technologique.
+
+\section*{Problématique}
+
+L'accès du citoyen à l'information juridique reste aujourd'hui difficile. Les textes --- Code du
+travail, Code de la famille, Bulletin Officiel --- sont publics, mais rédigés dans une langue
+dense, structurés en centaines d'articles se renvoyant les uns aux autres, et parfois disponibles
+uniquement en arabe. Il n'existe pas d'outil fiable permettant de répondre à une question simple
+posée en langage courant tout en garantissant que la réponse provient du texte officiel.
+
+Les assistants conversationnels généralistes ne comblent pas ce manque, pour deux raisons.
+D'une part, ils connaissent mal le droit marocain et peuvent \textbf{inventer des références
+inexistantes} --- un numéro d'article plausible mais faux est particulièrement trompeur en
+matière juridique. D'autre part, ils font transiter les questions des citoyens vers des serveurs
+étrangers, en contradiction directe avec l'exigence de souveraineté.
+
+\section*{Contribution}
+
+Ce stage, effectué au sein de Pulsaride Solutions du 1\textsuperscript{er} juillet au 31 août
+2026, a consisté à concevoir, réaliser et évaluer un assistant de recherche juridique
+\textbf{souverain} fondé sur l'architecture RAG (\textit{Retrieval-Augmented Generation}),
+appliqué au Code du travail marocain (Loi n\textsuperscript{o}~65-99). Le système livré :
+
+\begin{itemize}
+    \item s'appuie sur un corpus de \textbf{589 articles} construit à la main depuis le PDF
+    officiel, reproductible à l'identique ;
+    \item retrouve les articles pertinents par une recherche combinant méthodes sémantique et
+    lexicale ;
+    \item génère une réponse fondée \emph{uniquement} sur ces articles, en citant
+    systématiquement leurs numéros ;
+    \item \textbf{s'abstient} explicitement lorsque l'information demandée ne figure pas dans le
+    corpus ;
+    \item s'exécute \textbf{entièrement en local}, sans aucun appel à une API externe.
+\end{itemize}
+
+L'ensemble a été évalué sur un jeu de référence de 37 questions : 97~\% des réponses citent au
+moins un article, l'abstention est correcte sur 100~\% des questions hors périmètre, et le temps
+de réponse médian est de 3{,}5 secondes.
+
+\section*{Plan du rapport}
+
+Ce rapport est structuré en quatre chapitres. Le premier présente le contexte du projet ---
+l'organisme d'accueil, les objectifs et le périmètre du stage --- ainsi que les fondements
+techniques mobilisés. Le deuxième expose la conception du système : son architecture, ses
+principes structurants et les choix technologiques opérés. Le troisième détaille la réalisation,
+de la constitution du corpus aux garde-fous de génération, en passant par les difficultés
+techniques rencontrées. Le quatrième présente le protocole d'évaluation et l'ensemble des
+résultats mesurés. Le rapport se termine par une conclusion générale dressant le bilan du stage
+et ses perspectives.

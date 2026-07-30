@@ -1,165 +1,161 @@
-\chapter{Conception et architecture}
-\label{chap:conception}
+\chapter{Réalisation}
+\label{chap:realisation}
 
 \section*{Introduction}
 
-Ce chapitre présente l'architecture retenue et justifie les choix technologiques. L'accent est
-mis sur les décisions structurantes --- celles qui, une fois prises, contraignent tout le reste
---- et sur les arbitrages assumés, y compris ceux qui restent discutables.
+Ce chapitre décrit la mise en œuvre du système, de l'extraction du corpus à l'interface
+utilisateur. Une place particulière est accordée aux difficultés rencontrées : les bugs
+d'extraction décrits en section~\ref{sec:bugs} ont représenté une part significative du temps de
+travail, et illustrent pourquoi la qualité du corpus conditionne tout le reste.
 
-\section{Architecture générale}
+\section{Constitution du corpus}
 
-Le système se décompose en deux pipelines distincts : un pipeline d'\textbf{indexation} exécuté
-une seule fois hors ligne, et un pipeline de \textbf{requête} exécuté à chaque question.
+\subsection{Extraction et découpage}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{Figures/architecture.png}
-    \caption{Architecture générale : pipeline d'indexation (hors ligne) et pipeline de requête (en ligne)}
-    \label{fig:architecture}
-\end{figure}
+Le texte a été extrait du PDF officiel du Code du travail à l'aide de PyMuPDF. Le découpage en
+articles repose sur une expression régulière ancrée en début de ligne, appliquée au texte complet
+plutôt que page par page --- un article pouvant s'étendre sur deux pages.
 
-Les index Chroma (dense) et BM25 (lexical), construits hors ligne, sont ceux qu'interrogent
-respectivement les recherches dense et lexicale du pipeline de requête. Le modèle d'embedding
-BGE-M3 intervient \textbf{deux fois} : à l'indexation, pour vectoriser les articles ; à la
-requête, pour vectoriser la question. C'est cette identité qui garantit que les deux vivent dans
-le même espace vectoriel et que la comparaison a un sens.
+Le corpus final compte \textbf{589 articles}. Chaque article est enrichi de sa position exacte
+dans la hiérarchie de la loi (livre, titre, chapitre, section), reconstruite en parcourant le
+texte dans l'ordre : les en-têtes de hiérarchie annoncent ce qui suit, ils sont donc mémorisés au
+fil de la lecture et appliqués aux articles suivants.
 
-\subsection{Deux principes structurants}
+Le résultat est sérialisé au format JSONL, un article par ligne :
 
-\paragraph{Le garde-fou d'abstention est placé \emph{avant} le modèle.}
-Il s'agit d'un test de seuil sur le score de recherche, donc d'un mécanisme
-\textbf{indépendant du modèle}. Il ne dépend pas de la bonne volonté du LLM à dire « je ne sais
-pas » --- ce sur quoi les petits modèles locaux sont peu fiables. Ce choix a un effet secondaire
-mesurable : lorsqu'il se déclenche, le modèle n'est pas appelé du tout, et la réponse est rendue
-en une fraction du temps habituel (cf. chapitre~\ref{chap:evaluation}).
+% NB : « json » n'est pas un langage reconnu par listings ; style par défaut.
+\begin{lstlisting}[style=mystyle,caption={Structure d'un article du corpus},captionpos=b]
+{
+  "article_number": "152",
+  "article_text": "La salariee en etat de grossesse atteste par certificat
+                   medical dispose d'un conge de maternite de quatorze
+                   semaines, sauf stipulations plus favorables...",
+  "amende_2021": false,
+  "livre": "Livre II: Des conditions de travail et de la remuneration du salarie",
+  "titre": "Titre II : De la protection du mineur et de la femme",
+  "chapitre": "Chapitre II : De la protection de la maternite",
+  "section": null
+}
+\end{lstlisting}
 
-\paragraph{La recherche et la génération sont séparables.}
-À tout moment il est possible d'afficher les articles retrouvés \emph{avant} l'appel au modèle.
-Cette séparation rend le débogage possible : face à une mauvaise réponse, elle permet de
-déterminer immédiatement si le problème vient de la recherche ou de la génération.
+\subsection{Difficultés d'extraction rencontrées}
+\label{sec:bugs}
 
-\section{Séquence d'une requête}
+Trois familles de défauts, invisibles à la lecture rapide, ont été découvertes puis corrigées.
+Elles méritent d'être détaillées car elles illustrent un point méthodologique : \textbf{une
+vérification par échantillonnage ne suffit pas} --- ces trois bugs ont été trouvés par balayage
+systématique du corpus, non à l'œil.
 
-\begin{enumerate}
-    \item L'orchestrateur reçoit la question de l'utilisateur.
-    \item Il appelle la fonction de recherche.
-    \item La question est vectorisée avec BGE-M3, puis les index Chroma et BM25 sont interrogés
-    \textbf{en parallèle} ; les deux classements sont fusionnés par RRF.
-    \item Le \textbf{garde-fou} est appliqué : si le meilleur score est sous le seuil calibré,
-    l'abstention est immédiate et le modèle n'est pas appelé.
-    \item Sinon, les articles retenus sont transmis au générateur.
-    \item Le générateur construit un prompt strict, appelle le modèle local à basse température,
-    puis \textbf{vérifie que chaque numéro d'article cité figure bien dans le contexte fourni}.
-    \item L'orchestrateur affiche la réponse, les articles cités et l'avertissement d'usage.
-\end{enumerate}
+\paragraph{Numéros d'articles corrompus par des appels de note.}
+PyMuPDF ne préserve pas la mise en exposant. Un appel de note collé à un numéro d'article dans le
+PDF (« Article 334\textsuperscript{50} ») ressort donc comme une seule suite de chiffres sans
+séparateur : \texttt{33450}. L'expression régulière, gourmande, consommait la suite entière.
+Correction : plafonner la capture à trois chiffres, ce qui est sûr puisque aucun article de cette
+loi ne dépasse 589.
 
-\section{Rôle de chaque module}
+\paragraph{Un article entièrement absent.}
+Le corpus comptait 588 articles au lieu de 589. Un espace parasite avant « Article 135 » dans le
+texte extrait cassait l'ancrage en début de ligne pour cette seule occurrence ; son contenu était
+silencieusement absorbé dans le corps de l'article précédent. Détecté en cherchant les trous dans
+la séquence 1--589.
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|m{2.4cm}|m{5.2cm}|m{6.4cm}|}
-        \hline
-        \textbf{Module} & \textbf{Rôle} & \textbf{Entrée $\rightarrow$ Sortie} \\
-        \hline
-        \texttt{parser.py} & Extraction PDF, découpage par article, métadonnées & PDF source $\rightarrow$ corpus JSONL \\
-        \hline
-        \texttt{database.py} & Calcul des embeddings, construction de l'index & JSONL $\rightarrow$ collection Chroma \\
-        \hline
-        \texttt{retriever.py} & Recherche dense et lexicale, fusion RRF & Question $\rightarrow$ articles + scores \\
-        \hline
-        \texttt{generator.py} & Prompt ancré, appel au modèle local & Question + articles $\rightarrow$ réponse \\
-        \hline
-        \texttt{app.py} & Orchestration, abstention, vérification des citations & Question $\rightarrow$ réponse affichée \\
-        \hline
-    \end{tabular}
-    \caption{Répartition des responsabilités entre modules}
-    \label{tab:modules}
-\end{table}
+\paragraph{Titres de hiérarchie repliés sur plusieurs lignes.}
+Trente-deux titres de section sont trop longs pour tenir sur une ligne du PDF et se replient sur
+une deuxième, parfois une troisième. L'expression régulière ne capturant que la première ligne,
+deux conséquences se cumulaient : les métadonnées de hiérarchie restaient tronquées pour
+\emph{tous} les articles concernés, et la fin du titre fuyait dans le corps de l'article adjacent.
 
-\subsection{Découplage et interchangeabilité}
+\subsection{Traitement d'un cas particulier : les articles abrogés}
 
-Chaque composant est isolé derrière une fonction simple, ce qui permet de remplacer une brique
-sans toucher aux autres :
+Les articles 32 et 256 sont abrogés dans la version française de 2011 utilisée --- leurs
+dispositions relatives au service militaire ont été supprimées par la loi 48-06 --- mais ont été
+rétablis par la loi 02.21 en 2021. Le texte de remplacement, vérifié contre la version arabe en
+vigueur, a été réintégré dans le corpus. Ces deux articles portent un indicateur explicite
+(\texttt{amende\_2021}) afin que cette déviation par rapport au PDF source reste visible
+\emph{dans la donnée elle-même}, et non seulement dans la documentation.
 
-\begin{itemize}
-    \item Changer de modèle d'embeddings impose de modifier \texttt{database.py} \textbf{et}
-    \texttt{retriever.py} --- les deux doivent impérativement utiliser le même modèle, faute de
-    quoi question et articles ne vivent plus dans le même espace vectoriel.
-    \item Changer de modèle de langage n'affecte que \texttt{generator.py}.
-    \item Passer du dense seul à l'hybride n'affecte que \texttt{retriever.py}.
-\end{itemize}
+\subsection{Reproductibilité du corpus}
 
-Cette contrainte est délibérée : elle rend l'\textbf{évaluation comparative} possible, en
-permettant de ne mesurer qu'une variante à la fois.
+La chaîne d'extraction est déterministe : un clone vierge du dépôt suivi d'une réexécution du
+parseur produit un corpus \textbf{identique octet pour octet} au corpus versionné. Cette
+propriété a été vérifiée explicitement par comparaison d'empreintes SHA-256.
 
-\section{Choix technologiques}
+\section{Indexation}
 
-\subsection{Deux filtres derrière chaque décision}
+Les 589 articles sont vectorisés avec BGE-M3 et stockés dans une collection Chroma persistante.
+Seul le \emph{texte légal} est embarqué ; la hiérarchie est conservée comme métadonnée filtrable
+plutôt qu'incluse dans le vecteur, afin de ne pas diluer le signal sémantique qu'une requête
+cherche réellement à faire correspondre.
 
-La quasi-totalité des choix découle de deux contraintes :
+Les vecteurs sont normalisés à l'indexation, ce qui permet de calculer la similarité cosinus par
+simple produit scalaire, indépendamment de la métrique de distance configurée dans la base.
 
-\begin{enumerate}
-    \item \textbf{Souveraineté $\rightarrow$ tout doit s'exécuter en local.} Ce seul critère
-    élimine les embeddings par API, les services de reclassement commerciaux et les modèles de
-    génération propriétaires. Beaucoup de « pourquoi pas X ? » se résument à : \emph{X est une
-    API ; la question du citoyen ne doit pas quitter le territoire}.
-    \item \textbf{Corpus borné et durée courte $\rightarrow$ optimiser la compréhension et la
-    maîtrise, pas la performance à grande échelle.} À l'échelle de quelques centaines d'articles,
-    toutes les bases vectorielles sont instantanées : la performance brute n'est jamais le
-    facteur décisif.
-\end{enumerate}
+\section{Recherche hybride}
 
-\subsection{Décisions par composant}
+La recherche interroge les deux index puis fusionne les classements par RRF, avec une constante
+d'amortissement $k = 60$ et vingt candidats par méthode.
 
-\begin{longtable}[c]{| m{2.6cm} | m{3.1cm} | m{8.4cm} |}
-\caption{Choix technologiques et justifications}\label{tab:techno}\\
-\hline
-\textbf{Couche} & \textbf{Choix} & \textbf{Justification} \\
-\hline
-\endfirsthead
-\hline
-\textbf{Couche} & \textbf{Choix} & \textbf{Justification} \\
-\hline
-\endhead
-Extraction PDF & PyMuPDF & Rapide, fidélité Unicode fiable. Surtout : contrôle brut sur la façon dont la loi est découpée, là où les parseurs automatiques masquent ce contrôle. \\
-\hline
-Embeddings & BGE-M3 & La souveraineté exclut les embeddings par API. Parmi les modèles locaux : bonne couverture FR + AR, contexte long (8192 tokens, aucun article tronqué). \\
-\hline
-Base vectorielle & Chroma & À cette échelle la performance est hors sujet : l'expérience de développement a été privilégiée. Chroma est embarquée (pas de serveur), persiste sur disque, filtre par métadonnées. \\
-\hline
-Recherche lexicale & BM25 (\texttt{rank\_bm25}) & Les requêtes juridiques sont riches en tokens exacts (numéros d'articles, « Loi 65-99 ») --- précisément là où le lexical bat les embeddings. \\
-\hline
-Runtime LLM & Ollama & Une commande télécharge et sert un modèle quantifié via une API propre. \\
-\hline
-Modèle & Mistral 7B & La souveraineté exclut les modèles frontières par API. La classe 7B est le point d'équilibre : suffisante en suivi d'instructions, exécutable sur du matériel étudiant. Mistral pour la qualité du français. \\
-\hline
-Framework RAG & \textbf{Aucun} & Pour un corpus borné, la boucle RAG représente environ 150 lignes. La coder soi-même permet de comprendre chaque étape, de déboguer directement, et d'expliquer son propre pipeline en soutenance. \\
-\hline
-Format du corpus & JSONL & Un article par ligne : lisible, métadonnées imbriquées, \emph{diff-able} sous Git, lecture en flux. \\
-\hline
-\end{longtable}
+\subsection{Une limite structurelle de la recherche par similarité}
 
-\subsection{Les arbitrages réellement discutables}
+Un cas particulier a nécessité un traitement dédié. À la question « Que dit l'article 32 ? », la
+recherche sémantique échoue --- structurellement. La formulation de la question ne partage aucun
+vocabulaire avec le \emph{contenu} de l'article 32 (suspension du contrat, service militaire,
+grève) : la similarité entre les deux est donc faible, alors même que l'article existe bel et
+bien dans le corpus.
 
-Il serait malhonnête de présenter tous ces choix comme évidents. Trois d'entre eux restent
-ouverts :
+La correction consiste à détecter les références explicites (« article N ») dans la question
+elle-même et à garantir la présence de l'article correspondant dans le contexte, sans le faire
+concourir dans un classement de similarité qu'il ne pouvait pas gagner.
+
+\section{Génération ancrée et garde-fous}
+
+\subsection{Le prompt système}
+
+La génération est encadrée par un prompt système imposant des règles strictes : répondre
+uniquement à partir des articles fournis, citer systématiquement leurs numéros, employer une
+phrase d'abstention exacte lorsque l'information est absente, ne jamais donner de conseil
+juridique personnalisé.
+
+Deux règles ont été ajoutées en cours de projet à la suite de défaillances observées lors de
+l'évaluation (cf. section~\ref{sec:hallucination}) : l'interdiction de compléter un aveu
+d'absence par une supposition, et l'interdiction absolue de citer un numéro de loi ou d'article
+provenant d'un autre code.
+
+Le modèle est appelé à basse température (0{,}1), avec une pénalité de répétition et un plafond
+de longueur --- ces deux derniers paramètres ayant été ajoutés après avoir observé qu'une
+génération à basse température peut dégénérer en répétition infinie d'un même mot.
+
+\subsection{Vérification des citations}
+
+Après génération, les numéros d'articles cités par le modèle sont extraits par expression
+régulière, puis confrontés à la liste des articles réellement fournis. Tout numéro cité mais
+absent du contexte est signalé.
+
+Ce contrôle a lui-même fait l'objet d'une correction significative : sa première version
+n'appariait que la forme au singulier (« Article 152 ») et manquait donc \emph{toutes} les
+citations au pluriel (« Articles 154 et 156 »), pourtant très fréquentes. Le garde-fou était
+ainsi partiellement inopérant, et les métriques d'évaluation sous-estimaient le taux de citation.
+
+\section{Interfaces}
+
+Deux interfaces partagent exactement le même moteur :
 
 \begin{itemize}
-    \item \textbf{BGE-M3 contre multilingual-e5} --- appel serré ; e5 est plus léger. BGE-M3
-    l'emporte sur la largeur multilingue et la longueur de contexte.
-    \item \textbf{Sans framework contre LlamaIndex} --- l'arbitrage le plus discutable. Un
-    framework se justifierait si le projet grossissait (sources multiples, agents, routage).
-    \item \textbf{Dense seul contre hybride} --- l'hybride est peu coûteux et le texte juridique
-    favorise la correspondance exacte ; mais la position honnête est \emph{« je l'ai mesuré,
-    voici l'écart »}. Le chapitre~\ref{chap:evaluation} montre que cet écart n'est pas celui
-    attendu.
+    \item Une \textbf{interface en ligne de commande}, qui constitue le livrable de référence.
+    Elle expose la totalité de la traçabilité : score de recherche, articles retrouvés, citations
+    non vérifiées.
+    \item Une \textbf{interface web conversationnelle} (React), destinée à la démonstration.
+    Elle affiche les réponses en streaming, met en évidence les citations dans le texte, et
+    permet de déplier chaque article source avec son chemin hiérarchique complet.
 \end{itemize}
+
+La surface technique reste volontairement du côté de la ligne de commande : l'interface web ne
+montre que la réponse, ses sources et l'avertissement d'usage.
 
 \newpage
 \section*{Conclusion}
 
-L'architecture retenue place délibérément le garde-fou d'abstention hors du modèle et maintient
-la recherche séparable de la génération. Ces deux décisions, prises tôt, ont conditionné la
-capacité à déboguer et à mesurer le système. Le chapitre suivant décrit leur mise en œuvre
-concrète.
+La réalisation confirme un point souvent sous-estimé : la qualité du corpus conditionne celle des
+réponses. Les trois familles de bugs d'extraction, toutes invisibles à la lecture rapide, auraient
+dégradé silencieusement le système si elles n'avaient pas été cherchées méthodiquement. Le
+chapitre suivant présente l'évaluation quantitative du système ainsi construit.

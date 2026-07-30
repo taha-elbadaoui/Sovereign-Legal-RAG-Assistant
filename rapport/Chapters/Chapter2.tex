@@ -1,129 +1,160 @@
-\chapter{Fondements techniques et état de l'art}
-\label{chap:etat-art}
+\chapter{Conception et choix techniques}
+\label{chap:conception}
 
 \section*{Introduction}
 
-Ce chapitre expose les briques techniques mobilisées par le projet. Il part du problème central
---- pourquoi un grand modèle de langage seul ne peut pas répondre de façon fiable à une question
-juridique --- puis présente l'architecture RAG comme réponse à ce problème, avant de détailler
-les deux familles de méthodes de recherche utilisées et leur combinaison.
+Ce chapitre présente l'architecture retenue et justifie les choix technologiques. L'accent est
+mis sur les décisions structurantes --- celles qui, une fois prises, contraignent tout le reste
+--- et sur les arbitrages assumés, y compris ceux qui restent discutables.
 
-\section{Grands modèles de langage et hallucination}
+\section{Architecture générale}
 
-Un grand modèle de langage (\textit{Large Language Model}, LLM) est un modèle statistique entraîné
-à prédire la suite la plus plausible d'une séquence de texte. Cette formulation explique à la fois
-sa fluidité et sa principale faiblesse : le modèle produit ce qui est \emph{vraisemblable}, non ce
-qui est \emph{vrai}.
+Le système se décompose en deux pipelines distincts : un pipeline d'\textbf{indexation} exécuté
+une seule fois hors ligne, et un pipeline de \textbf{requête} exécuté à chaque question
+(figure~\ref{fig:architecture}).
 
-Ce comportement porte le nom d'\textbf{hallucination}. Dans un contexte juridique, il est
-particulièrement dangereux : un modèle sollicité sur un article de loi qu'il ne connaît pas
-produira volontiers un numéro d'article plausible accompagné d'un contenu inventé. La réponse
-paraît crédible, la référence semble vérifiable, et rien dans la forme ne signale l'invention.
+\begin{figure}[H]
+    \centering
+    \input{Figures/architecture_tikz}
+    \caption{Architecture générale du système : pipeline d'indexation (hors ligne) et pipeline
+    de requête (en ligne). Les index construits hors ligne (traits pleins) sont interrogés à
+    chaque question (traits pointillés) ; le modèle d'embedding BGE-M3 (en vert) intervient aux
+    deux étapes, ce qui garantit que la question et les articles vivent dans le même espace
+    vectoriel.}
+    \label{fig:architecture}
+\end{figure}
 
-Deux stratégies existent pour ancrer un modèle dans des faits réels :
+Les index Chroma (dense) et BM25 (lexical), construits hors ligne, sont ceux qu'interrogent
+respectivement les recherches dense et lexicale du pipeline de requête. Le modèle d'embedding
+BGE-M3 intervient \textbf{deux fois} : à l'indexation, pour vectoriser les articles ; à la
+requête, pour vectoriser la question. C'est cette identité qui donne un sens à la comparaison
+entre les deux.
+
+\subsection{Deux principes structurants}
+
+\paragraph{Le garde-fou d'abstention est placé \emph{avant} le modèle.}
+Il s'agit d'un test de seuil sur le score de recherche, donc d'un mécanisme
+\textbf{indépendant du modèle}. Il ne dépend pas de la bonne volonté du LLM à dire « je ne sais
+pas » --- ce sur quoi les petits modèles locaux sont peu fiables. Ce choix a un effet secondaire
+mesurable : lorsqu'il se déclenche, le modèle n'est pas appelé du tout, et la réponse est rendue
+en une fraction du temps habituel (cf. chapitre~\ref{chap:evaluation}).
+
+\paragraph{La recherche et la génération sont séparables.}
+À tout moment il est possible d'afficher les articles retrouvés \emph{avant} l'appel au modèle.
+Cette séparation rend le débogage possible : face à une mauvaise réponse, elle permet de
+déterminer immédiatement si le problème vient de la recherche ou de la génération.
+
+\section{Séquence d'une requête}
+
+\begin{enumerate}
+    \item L'orchestrateur reçoit la question de l'utilisateur.
+    \item La question est vectorisée avec BGE-M3, puis les index Chroma et BM25 sont interrogés ;
+    les deux classements sont fusionnés par RRF.
+    \item Le \textbf{garde-fou} est appliqué : si le meilleur score est sous le seuil calibré,
+    l'abstention est immédiate et le modèle n'est pas appelé.
+    \item Sinon, les articles retenus sont transmis au générateur, qui construit un prompt
+    strict et appelle le modèle local à basse température.
+    \item Le système \textbf{vérifie que chaque numéro d'article cité figure bien dans le
+    contexte fourni}, puis affiche la réponse, les articles cités et l'avertissement d'usage.
+\end{enumerate}
+
+\section{Rôle de chaque module}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|m{2.4cm}|m{5.2cm}|m{6.4cm}|}
+        \hline
+        \textbf{Module} & \textbf{Rôle} & \textbf{Entrée $\rightarrow$ Sortie} \\
+        \hline
+        \texttt{parser.py} & Extraction PDF, découpage par article, métadonnées & PDF source $\rightarrow$ corpus JSONL \\
+        \hline
+        \texttt{database.py} & Calcul des embeddings, construction de l'index & JSONL $\rightarrow$ collection Chroma \\
+        \hline
+        \texttt{retriever.py} & Recherche dense et lexicale, fusion RRF & Question $\rightarrow$ articles + scores \\
+        \hline
+        \texttt{generator.py} & Prompt ancré, appel au modèle local & Question + articles $\rightarrow$ réponse \\
+        \hline
+        \texttt{app.py} & Orchestration, abstention, vérification des citations & Question $\rightarrow$ réponse affichée \\
+        \hline
+    \end{tabular}
+    \caption{Répartition des responsabilités entre modules}
+    \label{tab:modules}
+\end{table}
+
+Chaque composant est isolé derrière une fonction simple, ce qui permet de remplacer une brique
+sans toucher aux autres : changer de modèle de langage n'affecte que \texttt{generator.py} ;
+passer du dense seul à l'hybride n'affecte que \texttt{retriever.py}. Cette contrainte est
+délibérée : elle rend l'\textbf{évaluation comparative} possible, en permettant de ne mesurer
+qu'une variante à la fois. Seul le modèle d'embeddings fait exception : il est partagé entre
+\texttt{database.py} et \texttt{retriever.py}, les deux devant impérativement utiliser le même.
+
+\section{Choix technologiques}
+
+\subsection{Deux filtres derrière chaque décision}
+
+La quasi-totalité des choix découle de deux contraintes :
+
+\begin{enumerate}
+    \item \textbf{Souveraineté $\rightarrow$ tout doit s'exécuter en local.} Ce seul critère
+    élimine les embeddings par API, les services de reclassement commerciaux et les modèles de
+    génération propriétaires. Beaucoup de « pourquoi pas X ? » se résument à : \emph{X est une
+    API ; la question du citoyen ne doit pas quitter le territoire}.
+    \item \textbf{Corpus borné et durée courte $\rightarrow$ optimiser la compréhension et la
+    maîtrise, pas la performance à grande échelle.} À l'échelle de quelques centaines d'articles,
+    toutes les bases vectorielles sont instantanées : la performance brute n'est jamais le
+    facteur décisif.
+\end{enumerate}
+
+\subsection{Décisions par composant}
+
+\begin{longtable}[c]{| m{2.6cm} | m{3.1cm} | m{8.4cm} |}
+\caption{Choix technologiques et justifications}\label{tab:techno}\\
+\hline
+\textbf{Couche} & \textbf{Choix} & \textbf{Justification} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Couche} & \textbf{Choix} & \textbf{Justification} \\
+\hline
+\endhead
+Extraction PDF & PyMuPDF & Rapide, fidélité Unicode fiable. Surtout : contrôle brut sur la façon dont la loi est découpée, là où les parseurs automatiques masquent ce contrôle. \\
+\hline
+Embeddings & BGE-M3 & La souveraineté exclut les embeddings par API. Parmi les modèles locaux : bonne couverture FR + AR, contexte long (8192 tokens, aucun article tronqué). \\
+\hline
+Base vectorielle & Chroma & À cette échelle la performance est hors sujet : l'expérience de développement a été privilégiée. Chroma est embarquée (pas de serveur), persiste sur disque, filtre par métadonnées. \\
+\hline
+Recherche lexicale & BM25 (\texttt{rank\_bm25}) & Les requêtes juridiques sont riches en tokens exacts (numéros d'articles, « Loi 65-99 ») --- précisément là où le lexical bat les embeddings. \\
+\hline
+Runtime LLM & Ollama & Une commande télécharge et sert un modèle quantifié via une API locale propre. \\
+\hline
+Modèle & Mistral 7B & La souveraineté exclut les modèles frontières par API. La classe 7B est le point d'équilibre : suffisante en suivi d'instructions, exécutable sur du matériel étudiant. Mistral pour la qualité du français. \\
+\hline
+Framework RAG & \textbf{Aucun} & Pour un corpus borné, la boucle RAG représente environ 150 lignes. La coder soi-même permet de comprendre chaque étape, de déboguer directement, et d'expliquer son propre pipeline en soutenance. \\
+\hline
+Format du corpus & JSONL & Un article par ligne : lisible, métadonnées imbriquées, \emph{diff-able} sous Git, lecture en flux. \\
+\hline
+\end{longtable}
+
+\subsection{Les arbitrages réellement discutables}
+
+Il serait malhonnête de présenter tous ces choix comme évidents. Trois d'entre eux restent
+ouverts :
 
 \begin{itemize}
-    \item Le \textbf{\textit{fine-tuning}}, qui consiste à réentraîner le modèle sur un corpus
-    spécialisé. Coûteux, difficile à mettre à jour, et surtout : le modèle continue de générer
-    depuis ses poids, sans possibilité de citer une source vérifiable.
-    \item La \textbf{génération augmentée par la recherche} (RAG), qui fournit au modèle les
-    documents pertinents \emph{au moment de la question} et lui demande de s'appuyer uniquement
-    sur eux.
+    \item \textbf{BGE-M3 contre multilingual-e5} --- appel serré ; e5 est plus léger. BGE-M3
+    l'emporte sur la largeur multilingue et la longueur de contexte.
+    \item \textbf{Sans framework contre LlamaIndex} --- l'arbitrage le plus discutable. Un
+    framework se justifierait si le projet grossissait (sources multiples, agents, routage).
+    \item \textbf{Dense seul contre hybride} --- l'hybride est peu coûteux et le texte juridique
+    favorise la correspondance exacte ; mais la position honnête est \emph{« je l'ai mesuré,
+    voici l'écart »}. Le chapitre~\ref{chap:evaluation} montre que cet écart n'est pas celui
+    attendu.
 \end{itemize}
-
-C'est la seconde qui a été retenue : elle permet la citation, donc la vérification, ce qui est la
-condition même de la fiabilité recherchée.
-
-\section{L'architecture RAG}
-
-Le principe du RAG consiste à séparer deux préoccupations habituellement confondues : \emph{savoir}
-et \emph{formuler}. Le savoir est stocké dans un corpus documentaire externe et interrogeable ; le
-modèle de langage n'est plus qu'un moteur de reformulation appliqué à des documents qu'on lui
-fournit.
-
-Le système se décompose en deux pipelines distincts :
-
-\begin{itemize}
-    \item Un pipeline d'\textbf{indexation}, exécuté une seule fois hors ligne : le corpus est
-    découpé, vectorisé et stocké dans des index.
-    \item Un pipeline de \textbf{requête}, exécuté à chaque question : la question est vectorisée,
-    les passages pertinents sont retrouvés, puis transmis au modèle qui rédige la réponse.
-\end{itemize}
-
-Cette séparation a une conséquence pratique décisive pour le débogage : il est possible d'inspecter
-les documents retrouvés \emph{avant} l'appel au modèle. Or la majorité des mauvaises réponses en RAG
-proviennent d'une mauvaise \emph{recherche}, non d'une mauvaise \emph{génération}.
-
-\section{Recherche sémantique par embeddings}
-
-Un \textbf{embedding} est la représentation d'un texte sous forme de vecteur numérique de dimension
-fixe, construite de telle sorte que deux textes de sens proche produisent des vecteurs proches dans
-l'espace. La proximité est mesurée par la \textbf{similarité cosinus} :
-
-\begin{equation}
-    \mathrm{sim}(\vec{a}, \vec{b}) = \frac{\vec{a} \cdot \vec{b}}{\|\vec{a}\|\,\|\vec{b}\|}
-\end{equation}
-
-Pour des vecteurs normalisés, cette expression se réduit à un simple produit scalaire, borné entre
-$-1$ et $1$.
-
-L'intérêt de cette approche est qu'elle capture le \emph{sens} et non les mots : une question posée
-en langage courant (« mon patron peut me virer sans raison ? ») peut retrouver un article rédigé en
-langage juridique formel, sans partager aucun terme avec lui.
-
-Sa limite est symétrique : elle est moins précise lorsque le terme exact compte --- un numéro
-d'article, une expression figée comme « Loi 65-99 ».
-
-Une \textbf{base vectorielle} stocke ces vecteurs et permet de retrouver efficacement les plus
-proches voisins d'un vecteur requête.
-
-\section{Recherche lexicale : BM25}
-
-BM25 (\textit{Best Matching 25}) est une fonction de classement lexicale qui score un document en
-fonction des termes qu'il partage avec la requête. Elle pondère chaque terme par sa rareté dans le
-corpus (un mot rare est plus discriminant qu'un mot fréquent) et normalise par la longueur du
-document, afin qu'un document long ne soit pas favorisé mécaniquement.
-
-BM25 est exactement complémentaire des embeddings : excellent sur les correspondances exactes,
-aveugle à la reformulation.
-
-\section{Fusion des classements : Reciprocal Rank Fusion}
-
-Combiner les deux méthodes pose un problème pratique : leurs scores ne sont pas comparables. Un
-score BM25 n'est pas borné et peut valoir 8 ou 20 ; une similarité cosinus est bornée entre $-1$ et
-$1$. Faire la moyenne de $8$ et de $0{,}7$ n'a aucun sens.
-
-La \textbf{fusion par rang réciproque} (\textit{Reciprocal Rank Fusion}, RRF) contourne
-entièrement ce problème en n'utilisant que le \emph{rang} de chaque document dans chaque liste, et
-non son score brut :
-
-\begin{equation}
-    \mathrm{RRF}(d) = \sum_{m \in M} \frac{1}{k + \mathrm{rang}_m(d)}
-\end{equation}
-
-où $M$ est l'ensemble des méthodes de recherche, $\mathrm{rang}_m(d)$ le rang du document $d$ selon
-la méthode $m$, et $k$ une constante d'amortissement (valeur usuelle : 60) qui limite l'influence
-excessive des tout premiers rangs.
-
-Un document bien classé par les deux méthodes obtient ainsi un score élevé, sans qu'aucune
-normalisation d'échelle ne soit nécessaire.
-
-\section{Souveraineté : la contrainte d'exécution locale}
-
-La contrainte de souveraineté a une conséquence technique directe : \textbf{aucun composant du
-cœur du système ne peut être un service en ligne}. Cela exclut d'emblée les embeddings par API,
-les services de reclassement commerciaux, et les modèles de génération propriétaires accessibles
-uniquement à distance.
-
-Toute la chaîne doit donc reposer sur des modèles open-source exécutables sur du matériel
-ordinaire. Cette contrainte, loin d'être seulement une limitation, structure l'ensemble des choix
-techniques présentés au chapitre suivant.
 
 \newpage
 \section*{Conclusion}
 
-Le RAG apporte une réponse directe au problème de l'invention de références : en fournissant au
-modèle les textes au moment de la question, il rend la citation possible et donc la vérification
-réalisable. La recherche sémantique et la recherche lexicale étant complémentaires, leur fusion
-par rang réciproque permet de bénéficier des deux sans arbitrage d'échelle. Le chapitre suivant
-traduit ces principes en une architecture concrète.
+L'architecture retenue place délibérément le garde-fou d'abstention hors du modèle et maintient
+la recherche séparable de la génération. Ces deux décisions, prises tôt, ont conditionné la
+capacité à déboguer et à mesurer le système. Le chapitre suivant décrit leur mise en œuvre
+concrète.

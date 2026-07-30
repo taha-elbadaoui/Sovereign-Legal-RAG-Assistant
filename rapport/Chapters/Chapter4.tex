@@ -1,162 +1,269 @@
-\chapter{Réalisation}
-\label{chap:realisation}
+\chapter{Évaluation et résultats}
+\label{chap:evaluation}
 
 \section*{Introduction}
 
-Ce chapitre décrit la mise en œuvre du système, de l'extraction du corpus à l'interface
-utilisateur. Une place particulière est accordée aux difficultés rencontrées : les bugs
-d'extraction décrits en section~\ref{sec:bugs} ont représenté une part significative du temps de
-travail, et illustrent pourquoi la qualité du corpus conditionne tout le reste.
+Ce chapitre présente le protocole d'évaluation et les résultats obtenus. Conformément à
+l'objectif de fiabilité posé au chapitre~\ref{chap:contexte}, l'analyse des limites y occupe
+autant de place que celle des performances.
 
-\section{Constitution du corpus}
+\section{Protocole}
 
-\subsection{Extraction et découpage}
+\subsection{Jeu de référence}
 
-Le texte a été extrait du PDF officiel du Code du travail à l'aide de PyMuPDF. Le découpage en
-articles repose sur une expression régulière ancrée en début de ligne, appliquée au texte complet
-plutôt que page par page --- un article pouvant s'étendre sur deux pages.
-
-Le corpus final compte \textbf{589 articles}. Chaque article est enrichi de sa position exacte
-dans la hiérarchie de la loi (livre, titre, chapitre, section), reconstruite en parcourant le
-texte dans l'ordre : les en-têtes de hiérarchie annoncent ce qui suit, ils sont donc mémorisés au
-fil de la lecture et appliqués aux articles suivants.
-
-Le résultat est sérialisé au format JSONL, un article par ligne :
-
-% NB : « json » n'est pas un langage reconnu par listings ; on garde le style
-% par défaut, suffisant pour un extrait de données.
-\begin{lstlisting}[style=mystyle,caption={Structure d'un article du corpus},captionpos=b]
-{
-  "article_number": "152",
-  "article_text": "La salariee en etat de grossesse atteste par certificat
-                   medical dispose d'un conge de maternite de quatorze
-                   semaines, sauf stipulations plus favorables...",
-  "amende_2021": false,
-  "livre": "Livre II: Des conditions de travail et de la remuneration du salarie",
-  "titre": "Titre II : De la protection du mineur et de la femme",
-  "chapitre": "Chapitre II : De la protection de la maternite",
-  "section": null
-}
-\end{lstlisting}
-
-\subsection{Difficultés d'extraction rencontrées}
-\label{sec:bugs}
-
-Trois familles de défauts, invisibles à la lecture rapide, ont été découvertes puis corrigées.
-Elles méritent d'être détaillées car elles illustrent un point méthodologique : \textbf{une
-vérification par échantillonnage ne suffit pas} --- ces trois bugs ont été trouvés par balayage
-systématique du corpus, non à l'œil.
-
-\paragraph{Numéros d'articles corrompus par des appels de note.}
-PyMuPDF ne préserve pas la mise en exposant. Un appel de note collé à un numéro d'article dans le
-PDF (« Article 334\textsuperscript{50} ») ressort donc comme une seule suite de chiffres sans
-séparateur : \texttt{33450}. L'expression régulière, gourmande, consommait la suite entière.
-Correction : plafonner la capture à trois chiffres, ce qui est sûr puisque aucun article de cette
-loi ne dépasse 589.
-
-\paragraph{Un article entièrement absent.}
-Le corpus comptait 588 articles au lieu de 589. Un espace parasite avant « Article 135 » dans le
-texte extrait cassait l'ancrage en début de ligne pour cette seule occurrence ; son contenu était
-silencieusement absorbé dans le corps de l'article précédent. Détecté en cherchant les trous dans
-la séquence 1--589.
-
-\paragraph{Titres de hiérarchie repliés sur plusieurs lignes.}
-Trente-deux titres de section sont trop longs pour tenir sur une ligne du PDF et se replient sur
-une deuxième, parfois une troisième. L'expression régulière ne capturant que la première ligne,
-deux conséquences se cumulaient : les métadonnées de hiérarchie restaient tronquées pour
-\emph{tous} les articles concernés, et la fin du titre fuyait dans le corps de l'article adjacent.
-
-\subsection{Traitement d'un cas particulier : les articles abrogés}
-
-Les articles 32 et 256 sont abrogés dans la version française de 2011 utilisée --- leurs
-dispositions relatives au service militaire ont été supprimées par la loi 48-06 --- mais ont été
-rétablis par la loi 02.21 en 2021. Le texte de remplacement, vérifié contre la version arabe en
-vigueur, a été réintégré dans le corpus. Ces deux articles portent un indicateur explicite
-(\texttt{amende\_2021}) afin que cette déviation par rapport au PDF source reste visible
-\emph{dans la donnée elle-même}, et non seulement dans la documentation.
-
-\subsection{Reproductibilité du corpus}
-
-La chaîne d'extraction est déterministe : un clone vierge du dépôt suivi d'une réexécution du
-parseur produit un corpus \textbf{identique octet pour octet} au corpus versionné. Cette
-propriété a été vérifiée explicitement par comparaison d'empreintes SHA-256.
-
-\section{Indexation}
-
-Les 589 articles sont vectorisés avec BGE-M3 et stockés dans une collection Chroma persistante.
-Seul le \emph{texte légal} est embarqué ; la hiérarchie est conservée comme métadonnée
-filtrable plutôt qu'incluse dans le vecteur, afin de ne pas diluer le signal sémantique
-qu'une requête cherche réellement à faire correspondre.
-
-Les vecteurs sont normalisés à l'indexation, ce qui permet de calculer la similarité cosinus par
-simple produit scalaire, indépendamment de la métrique de distance configurée dans la base.
-
-\section{Recherche hybride}
-
-La recherche interroge les deux index puis fusionne les classements par RRF, avec une constante
-d'amortissement $k = 60$ et vingt candidats par méthode.
-
-\subsection{Une limite de la recherche par similarité}
-
-Un cas particulier a nécessité un traitement dédié. À la question « Que dit l'article 32 ? », la
-recherche sémantique échoue --- structurellement. La formulation de la question ne partage aucun
-vocabulaire avec le \emph{contenu} de l'article 32 (suspension du contrat, service militaire,
-grève) : la similarité entre les deux est donc faible, alors même que l'article existe bel et
-bien dans le corpus.
-
-La correction consiste à détecter les références explicites (« article N ») dans la question
-elle-même et à garantir la présence de l'article correspondant dans le contexte, sans le faire
-concourir dans un classement de similarité qu'il ne pouvait pas gagner.
-
-\section{Génération ancrée et garde-fous}
-
-\subsection{Le prompt système}
-
-La génération est encadrée par un prompt système imposant des règles strictes : répondre
-uniquement à partir des articles fournis, citer systématiquement leurs numéros, employer une
-phrase d'abstention exacte lorsque l'information est absente, ne jamais donner de conseil
-juridique personnalisé.
-
-Deux règles ont été ajoutées en cours de projet à la suite de défaillances observées lors de
-l'évaluation (cf. section~\ref{sec:hallucination}) : l'interdiction de compléter un aveu
-d'absence par une supposition, et l'interdiction absolue de citer un numéro de loi ou d'article
-provenant d'un autre code.
-
-Le modèle est appelé à basse température (0{,}1), avec une pénalité de répétition et un plafond
-de longueur --- ces deux derniers paramètres ayant été ajoutés après avoir observé qu'une
-génération à basse température peut dégénérer en répétition infinie d'un même mot.
-
-\subsection{Vérification des citations}
-
-Après génération, les numéros d'articles cités par le modèle sont extraits par expression
-régulière, puis confrontés à la liste des articles réellement fournis. Tout numéro cité mais
-absent du contexte est signalé.
-
-Ce contrôle a lui-même fait l'objet d'une correction significative : sa première version
-n'appariait que la forme au singulier (« Article 152 ») et manquait donc \emph{toutes} les
-citations au pluriel (« Articles 154 et 156 »), pourtant très fréquentes. Le garde-fou était
-ainsi partiellement inopérant, et les métriques d'évaluation sous-estimaient le taux de citation.
-
-\section{Interfaces}
-
-Deux interfaces partagent exactement le même moteur :
+Un jeu de référence de \textbf{37 questions} a été construit à la main :
 
 \begin{itemize}
-    \item Une \textbf{interface en ligne de commande}, qui constitue le livrable de référence.
-    Elle expose la totalité de la traçabilité : score de recherche, articles retrouvés, citations
-    non vérifiées.
-    \item Une \textbf{interface web conversationnelle} (React), destinée à la démonstration.
-    Elle affiche les réponses en streaming, met en évidence les citations dans le texte, et
-    permet de déplier chaque article source avec son chemin hiérarchique complet.
+    \item \textbf{32 questions dans le périmètre}, chacune associée au ou aux articles attendus,
+    vérifiés contre le texte réel du corpus. Elles couvrent le contrat de travail, la durée du
+    travail, les congés, la protection de la maternité, les délégués des salariés, les sanctions
+    et la retraite.
+    \item \textbf{5 questions hors périmètre}, destinées à tester l'abstention : deux relèvent
+    d'autres domaines juridiques (divorce, droit pénal), deux sont sans rapport avec le droit
+    (cuisine, géographie), une relève du droit commercial.
 \end{itemize}
 
-La surface technique reste volontairement du côté de la ligne de commande : l'interface web ne
-montre que la réponse, ses sources et l'avertissement d'usage.
+\subsection{Scripts d'évaluation}
+
+Trois scripts distincts, tous rejouables, produisent l'ensemble des chiffres présentés ici.
+\textbf{Aucune valeur de ce chapitre n'a été saisie à la main.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|m{3.6cm}|m{4.2cm}|m{6.2cm}|}
+        \hline
+        \textbf{Script} & \textbf{Mesure} & \textbf{Particularité} \\
+        \hline
+        \texttt{run\_eval.py} & Recall@k, MRR & N'utilise pas le modèle : mesure la recherche seule \\
+        \hline
+        \texttt{run\_answer\_eval.py} & Critères de succès & Citation, abstention, vérification \\
+        \hline
+        \texttt{run\_measures.py} & Latence, taxonomie & Produit également les figures \\
+        \hline
+    \end{tabular}
+    \caption{Scripts d'évaluation}
+    \label{tab:scripts-eval}
+\end{table}
+
+\section{Qualité de la recherche}
+
+Les trois configurations ont été comparées sur les 32 questions du périmètre.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|m{4cm}|m{3cm}|m{3cm}|}
+        \hline
+        \textbf{Méthode} & \textbf{Recall@5} & \textbf{MRR} \\
+        \hline
+        \textbf{Dense seul} & \textbf{0{,}969} & \textbf{0{,}891} \\
+        \hline
+        BM25 seul & 0{,}781 & 0{,}628 \\
+        \hline
+        Hybride (RRF) & 0{,}875 & 0{,}794 \\
+        \hline
+    \end{tabular}
+    \caption{Comparaison des méthodes de recherche}
+    \label{tab:recherche}
+\end{table}
+
+\subsection{Un résultat contraire à l'attente}
+
+Sur ce jeu de questions, \textbf{la recherche dense seule dépasse la recherche hybride}. Ce
+résultat mérite d'être discuté plutôt qu'écarté.
+
+L'explication tient à la nature des questions : formulées en langage naturel par un citoyen, ce
+sont des \emph{reformulations}, ce qui favorise structurellement la recherche sémantique. La
+fusion RRF dilue alors un bon classement dense en y mêlant un classement BM25 plus faible : un
+article correctement placé en tête par le dense mais absent du top-20 de BM25 ne reçoit de
+crédit que d'une seule méthode, et se retrouve dépassé par des articles moyennement classés par
+les deux.
+
+Ce constat ne condamne pas l'approche hybride : elle conserverait son intérêt sur des requêtes à
+tokens exacts (numéros d'articles, expressions figées). Il illustre en revanche la valeur de la
+mesure : sans elle, l'hybride aurait été conservé par principe, alors que les données suggèrent
+que le dense seul est préférable \emph{pour ce type d'usage}.
+
+\section{Qualité des réponses}
+
+\subsection{Taxonomie des résultats}
+
+Chaque réponse a été classée dans une catégorie unique.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|m{7.5cm}|m{2.2cm}|m{2.2cm}|}
+        \hline
+        \textbf{Catégorie} & \textbf{Nombre} & \textbf{Part} \\
+        \hline
+        Réponse sourcée, article attendu cité & 23 & 62~\% \\
+        \hline
+        Réponse sourcée, autre article cité & 2 & 5~\% \\
+        \hline
+        Réponse avec citation non vérifiée & 3 & 8~\% \\
+        \hline
+        Réponse sans aucune citation & 1 & 3~\% \\
+        \hline
+        Refus à tort (question valide) & 3 & 8~\% \\
+        \hline
+        Abstention correcte & 5 & 14~\% \\
+        \hline
+        \textbf{Répond alors qu'il devrait s'abstenir} & \textbf{0} & \textbf{0~\%} \\
+        \hline
+    \end{tabular}
+    \caption{Classement des 37 réponses générées}
+    \label{tab:taxonomie}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/taxonomie-resultats.pdf}
+    \caption{Répartition des 37 réponses par catégorie}
+    \label{fig:taxonomie}
+\end{figure}
+
+La dernière ligne du tableau~\ref{tab:taxonomie} est la plus importante pour un outil juridique :
+\textbf{aucune réponse n'a été produite sur un sujet absent du corpus}.
+
+\subsection{Indicateurs de fiabilité}
+
+\begin{itemize}
+    \item \textbf{Citation systématique} : 97~\% des réponses citent au moins un article.
+    \item \textbf{Vérification des citations} : 94~\% des articles cités figuraient effectivement
+    dans le contexte fourni au modèle.
+    \item \textbf{Abstention correcte} : 100~\% des questions hors périmètre ont été refusées.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/fiabilite-synthese.pdf}
+    \caption{Indicateurs de fiabilité}
+    \label{fig:fiabilite}
+\end{figure}
+
+Les citations restées « non vérifiées » sont, à l'examen, des \textbf{renvois internes} : le
+texte d'un article fourni mentionne lui-même d'autres articles (« …dans les conditions prévues
+par les articles 154 et 156 »), que le modèle reprend. Le contrôle signale ces numéros parce
+qu'ils ne figurent pas dans le contexte ; il sur-signale volontairement, plutôt que de risquer de
+manquer une véritable invention.
+
+\section{Le garde-fou d'abstention}
+
+\subsection{Calibration du seuil}
+
+Le seuil d'abstention a été calibré empiriquement, non choisi arbitrairement. La mesure des
+scores de recherche sur les deux populations de questions révèle trois bandes distinctes :
+
+\begin{itemize}
+    \item Questions de droit du travail : scores de \textbf{0{,}596} à \textbf{0{,}793}.
+    \item Questions d'un \emph{autre domaine juridique} : environ 0{,}47 à 0{,}52 --- plus élevées
+    que les précédentes car elles partagent le vocabulaire juridique français.
+    \item Questions sans rapport avec le droit : \textbf{0{,}307} à environ 0{,}35.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/separation-abstention.pdf}
+    \caption{Séparation des scores de recherche selon le périmètre de la question}
+    \label{fig:separation}
+\end{figure}
+
+Ce constat a une conséquence de conception importante : \textbf{un seuil unique ne peut pas
+séparer le droit du travail des autres domaines juridiques} --- et ne doit pas essayer. Le jour
+où le corpus sera étendu à un second code, ces questions devront précisément devenir
+répondables. Le seuil retenu (\textbf{0{,}42}) ne filtre donc que la bande clairement non
+pertinente ; les questions juridiques hors corpus le franchissent et sont rattrapées par
+l'abstention au niveau du prompt.
+
+\subsection{Coût de l'abstention}
+
+Trois questions valides sur 32 ont été refusées à tort. C'est le prix d'une abstention stricte,
+et l'arbitrage est assumé : pour un outil juridique, un refus injustifié est préférable à une
+réponse inventée. Cet équilibre reste néanmoins perfectible.
+
+\section{Latence}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|m{4.6cm}|m{2.2cm}|m{2.2cm}|m{2cm}|m{2cm}|}
+        \hline
+        \textbf{Étape} & \textbf{Médiane} & \textbf{Moyenne} & \textbf{p90} & \textbf{Max} \\
+        \hline
+        Recherche & 0{,}16 s & 0{,}17 s & 0{,}18 s & 0{,}46 s \\
+        \hline
+        Génération (modèle) & 3{,}28 s & 3{,}93 s & 7{,}23 s & 12{,}93 s \\
+        \hline
+        \textbf{Total avec génération} & \textbf{3{,}49 s} & 4{,}11 s & 7{,}48 s & 13{,}08 s \\
+        \hline
+        \textbf{Total, abstention} & \textbf{0{,}14 s} & 0{,}14 s & 0{,}14 s & 0{,}14 s \\
+        \hline
+    \end{tabular}
+    \caption{Temps de réponse mesurés (37 questions, Mistral 7B en local)}
+    \label{tab:latence}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/latence-repartition.pdf}
+    \caption{Répartition du temps de réponse}
+    \label{fig:latence}
+\end{figure}
+
+Deux observations méritent d'être relevées :
+
+\paragraph{La recherche ne représente que 5~\% du temps total.}
+L'ensemble de la chaîne de recherche --- vectorisation de la question, interrogation des deux
+index, fusion --- coûte 0{,}16~seconde. Tout le reste est de l'inférence. Optimiser davantage la
+recherche n'apporterait donc rien sur le temps de réponse perçu.
+
+\paragraph{Le garde-fou divise le temps de réponse par 25.}
+Une question hors périmètre reçoit sa réponse en 0{,}14~seconde contre 3{,}49~secondes pour une
+réponse complète, puisque le modèle n'est jamais appelé. Le placement du garde-fou \emph{avant}
+le modèle, décidé pour des raisons de fiabilité, produit ainsi un bénéfice de performance qui
+n'était pas son objectif premier.
+
+\section{Défaillance observée et corrigée}
+\label{sec:hallucination}
+
+L'évaluation a mis au jour une défaillance qui n'était pas apparue lors des tests manuels, et qui
+mérite d'être rapportée en détail car elle constitue le mode d'échec le plus dangereux pour ce
+type de système.
+
+Interrogé sur la procédure de divorce --- question hors périmètre --- le modèle refusait
+correctement, \emph{puis inventait une réponse complète} citant un « Code civil marocain (Loi
+14-82) » et son « article 96 », en affirmant l'avoir consulté. Ces références n'existent pas : le
+droit de la famille marocain relève de la Moudawana (loi 70-03), et aucun texte de ce type n'avait
+été fourni au modèle.
+
+Ce comportement --- reconnaître l'absence d'information puis produire malgré tout un contenu
+inventé --- est plus trompeur qu'une invention franche : la prudence apparente du début de la
+réponse renforce la crédibilité de ce qui suit.
+
+La correction a consisté à interdire explicitement, dans le prompt système, toute mention d'un
+numéro de loi ou d'article provenant d'un autre code. Une première version de cette règle s'est
+révélée \textbf{trop stricte} : le taux d'abstention correcte est passé à 100~\%, mais les refus à
+tort ont triplé. Une règle de rééquilibrage --- \emph{par défaut, réponds} --- a permis de
+conserver le bénéfice sans le coût.
+
+Cet épisode illustre l'intérêt d'un banc d'évaluation rejouable : sans lui, la sur-correction
+serait passée inaperçue, le système paraissant simplement « plus prudent » alors qu'il devenait
+moins utile.
+
+\section{Limite de mesure assumée}
+
+La vérification des citations contrôle qu'un article cité \textbf{figurait dans le contexte
+fourni} --- pas qu'il \textbf{dise réellement} ce que la réponse lui attribue. Une réponse citant
+un article réel tout en en déformant le contenu est comptée ici comme sourcée.
+
+Détecter ce cas demanderait une vérification d'implication (\textit{entailment}) ou une relecture
+humaine systématique. C'est hors du périmètre de ce stage, et le chiffre de 94~\% de citations
+vérifiées doit être lu avec cette réserve : il mesure la \emph{traçabilité} des sources, non la
+\emph{fidélité sémantique} des affirmations.
 
 \newpage
 \section*{Conclusion}
 
-La réalisation confirme un point souvent sous-estimé : la qualité du corpus conditionne celle des
-réponses. Les trois familles de bugs d'extraction, toutes invisibles à la lecture rapide, auraient
-dégradé silencieusement le système si elles n'avaient pas été cherchées méthodiquement. Le
-chapitre suivant présente l'évaluation quantitative du système ainsi construit.
+Le système atteint les objectifs de fiabilité fixés : citation quasi systématique, abstention
+correcte sur l'intégralité des questions hors périmètre, et aucune réponse produite sur un sujet
+absent du corpus. Deux résultats vont à l'encontre des attentes initiales --- la supériorité du
+dense sur l'hybride, et l'existence d'une hallucination inter-codes invisible aux tests manuels
+--- et n'ont pu être établis que grâce à une évaluation systématique et rejouable.

@@ -1,10 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  Rapport de stage --- Taha El Badaoui
+%  Rapport de stage de fin de première année --- Taha El Badaoui
 %  Assistant juridique souverain (RAG) sur le Code du travail marocain
-%  Pulsaride Solutions / INPT --- 2026
+%  Pulsaride Solutions / INPT --- juillet-août 2026
 %
 %  Compilation : pdfLaTeX
+%
+%  NB : pas de \frontmatter/\mainmatter --- pagination arabe continue,
+%  conformément à l'usage des rapports de stage (vs mémoires de PFE).
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \documentclass[12pt,a4paper,oneside]{book}
@@ -18,7 +21,7 @@
     urlcolor=cyan,
     pdfauthor={Taha El Badaoui},
     pdftitle={Assistant juridique souverain - RAG sur le Code du travail marocain},
-    pdfpagemode=FullScreen,
+    pdfpagemode=UseOutlines,
     }
 
 \begin{document}
@@ -46,13 +49,9 @@
         tabsize=2
     }
 
-\include{Frontmatter/Page_de_garde}   % page de garde française
+\include{Frontmatter/Page_de_garde}
 
-\afterpage{\blankpage}  %page vide obligatoire
-
-\frontmatter
-
-\input{Frontmatter/Dedication}
+\afterpage{\blankpage}  % page vide après la page de garde
 
 \input{Frontmatter/Acknowledgements}
 
@@ -60,19 +59,17 @@
 
 \input{Frontmatter/Abstract}
 
+\input{Frontmatter/Abbreviations}
+
+\tableofcontents
+
 \listoffigures
 \addcontentsline{toc}{chapter}{Table des figures}
 
 \listoftables
 \addcontentsline{toc}{chapter}{Liste des tableaux}
 
-\lstlistoflistings
-\addcontentsline{toc}{chapter}{Liste des extraits de code}
-
-\tableofcontents
-\addcontentsline{toc}{chapter}{Table des matières}
-
-\mainmatter
+\input{Chapters/Introduction}
 
 \input{Chapters/Chapter1}
 
@@ -82,15 +79,11 @@
 
 \input{Chapters/Chapter4}
 
-\input{Chapters/Chapter5}
-
 \input{Chapters/Conclusion}
 
 \appendix
 
 \input{Endmatter/Glossary}
-
-\input{Endmatter/Acronyms}
 
 \input{Endmatter/ComplementaryCodes}
 
@@ -130,8 +123,7 @@ A. Q. Jiang et al.,
 Ministère de la Transition Numérique et de la Réforme de l'Administration,
 \emph{Stratégie « Maroc Digital 2030 »}, Royaume du Maroc.
 
-% TODO : compléter avec les références effectivement consultées,
-% et vérifier chaque entrée avant la soutenance.
+% TODO : vérifier chaque référence avant la soutenance.
 
 \end{thebibliography}
 
