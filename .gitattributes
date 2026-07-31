@@ -13,3 +13,22 @@
 *.md   text eol=lf
 *.txt  text eol=lf
 *.json text eol=lf
+*.tex  text eol=lf
+*.js   text eol=lf
+
+# --- Statistiques de langage GitHub (linguist) ---
+# Le rapport LaTeX pèse plus que tout le code réuni : sans cette directive,
+# GitHub annonce « TeX 55 % » et le projet passe pour un document, pas pour un
+# système Python. On le marque comme documentation — il reste versionné et
+# consultable, il ne compte simplement plus dans le calcul des langages.
+#
+# Marquer *.tex plutôt que rapport/** est délibéré : rapport/build_data.py est
+# du vrai code du projet et doit rester compté comme Python.
+*.tex        linguist-documentation
+*.bib        linguist-documentation
+
+# Le corpus et les mesures sont des données produites, pas du code écrit.
+data/processed/*.jsonl   linguist-generated
+eval/*.json              linguist-generated
+eval/*.csv               linguist-generated
+rapport/Figures/data/*   linguist-generated
