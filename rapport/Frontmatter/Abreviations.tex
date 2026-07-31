@@ -2,34 +2,54 @@
 \addcontentsline{toc}{chapter}{Liste des abréviations}
 \markboth{Liste des abréviations}{}
 
-\begin{longtable}{@{}>{\sffamily\bfseries\color{navy}}p{2.6cm}@{\hspace{6mm}}p{\dimexpr\textwidth-3.6cm\relax}@{}}
-\toprule
-\multicolumn{1}{@{}l}{\sffamily\bfseries\color{navy}Sigle} &
-\multicolumn{1}{l@{}}{\sffamily\bfseries\color{navy}Signification} \\
-\midrule
+% Colonnes « m » (centrées verticalement) et non « p » (alignées en haut) :
+% avec l'interligne élargi du document, deux colonnes « p » ne placent pas
+% leur première ligne à la même hauteur, ce qui décalait le sigle par rapport
+% à sa définition. Un filet fin sépare chaque ligne.
+\begingroup
+\renewcommand{\arraystretch}{1.55}
+\arrayrulecolor{rule}
+\setlength{\arrayrulewidth}{0.4pt}
+
+\begin{longtable}{@{}>{\sffamily\bfseries\color{navy}}m{2.3cm}
+                   m{\dimexpr\textwidth-3.3cm\relax}@{}}
+\arrayrulecolor{navy}\hline\arrayrulecolor{rule}
+% Cellules simples et non \multicolumn : sinon le fond de ligne ne couvre pas
+% l'espace inter-colonnes et laisse une coupure blanche dans l'en-tête.
+% La colonne 1 applique déjà la fonte de titre.
+\rowcolor{mist}
+Sigle & \sffamily\bfseries\color{navy}Signification \\
+\arrayrulecolor{navy}\hline\arrayrulecolor{rule}
 \endfirsthead
-\toprule
-\multicolumn{1}{@{}l}{\sffamily\bfseries\color{navy}Sigle} &
-\multicolumn{1}{l@{}}{\sffamily\bfseries\color{navy}Signification} \\
-\midrule
+
+\arrayrulecolor{navy}\hline\arrayrulecolor{rule}
+% Cellules simples et non \multicolumn : sinon le fond de ligne ne couvre pas
+% l'espace inter-colonnes et laisse une coupure blanche dans l'en-tête.
+% La colonne 1 applique déjà la fonte de titre.
+\rowcolor{mist}
+Sigle & \sffamily\bfseries\color{navy}Signification \\
+\arrayrulecolor{navy}\hline\arrayrulecolor{rule}
 \endhead
-\bottomrule
+
+\arrayrulecolor{navy}\hline\arrayrulecolor{rule}
 \endfoot
-ANRT    & Agence Nationale de Réglementation des Télécommunications \\
-API     & \anglais{Application Programming Interface} --- interface de programmation \\
-ASEDS   & \anglais{Advanced Software Engineering for Digital Services} \\
-BGE-M3  & \anglais{BAAI General Embedding}, version M3 --- modèle d'embeddings multilingue \\
-BM25    & \anglais{Best Matching 25} --- fonction de classement lexicale \\
-CDD     & Contrat à durée déterminée \\
-CLI     & \anglais{Command Line Interface} --- interface en ligne de commande \\
-IA      & Intelligence artificielle \\
-INPT    & Institut National des Postes et Télécommunications \\
-JSON    & \anglais{JavaScript Object Notation} \\
-JSONL   & \anglais{JSON Lines} --- un objet JSON par ligne \\
-LLM     & \anglais{Large Language Model} --- grand modèle de langage \\
-MRR     & \anglais{Mean Reciprocal Rank} --- rang réciproque moyen \\
-PDF     & \anglais{Portable Document Format} \\
-RAG     & \anglais{Retrieval-Augmented Generation} --- génération augmentée par la recherche \\
-RRF     & \anglais{Reciprocal Rank Fusion} --- fusion par rang réciproque \\
+
+ANRT    & Agence Nationale de Réglementation des Télécommunications \\ \hline
+API     & \anglais{Application Programming Interface} --- interface de programmation \\ \hline
+ASEDS   & \anglais{Advanced Software Engineering for Digital Services} \\ \hline
+BGE-M3  & \anglais{BAAI General Embedding}, version M3 --- modèle d'embeddings multilingue \\ \hline
+BM25    & \anglais{Best Matching 25} --- fonction de classement lexicale \\ \hline
+CDD     & Contrat à durée déterminée \\ \hline
+CLI     & \anglais{Command Line Interface} --- interface en ligne de commande \\ \hline
+IA      & Intelligence artificielle \\ \hline
+INPT    & Institut National des Postes et Télécommunications \\ \hline
+JSON    & \anglais{JavaScript Object Notation} \\ \hline
+JSONL   & \anglais{JSON Lines} --- un objet JSON par ligne \\ \hline
+LLM     & \anglais{Large Language Model} --- grand modèle de langage \\ \hline
+MRR     & \anglais{Mean Reciprocal Rank} --- rang réciproque moyen \\ \hline
+PDF     & \anglais{Portable Document Format} \\ \hline
+RAG     & \anglais{Retrieval-Augmented Generation} --- génération augmentée par la recherche \\ \hline
+RRF     & \anglais{Reciprocal Rank Fusion} --- fusion par rang réciproque \\ \hline
 TAL     & Traitement automatique du langage \\
 \end{longtable}
+\endgroup

@@ -23,7 +23,9 @@
 % Palette dérivée des logos de l'institut : le bleu est celui du logo INPT,
 % le rouge celui du logo ANRT. Chaque couleur porte un sens unique et s'y
 % tient dans tout le document, texte et figures compris.
-\usepackage{xcolor}
+% L'option « table » charge colortbl : elle donne \arrayrulecolor (filets
+% colorés) et \rowcolors (fonds alternés) pour les tableaux de référence.
+\usepackage[table]{xcolor}
 \definecolor{inptblue}{HTML}{0082C8}   % accent : liens, numéros, mise en avant
 \definecolor{navy}{HTML}{0B2E4F}       % titres
 \definecolor{anrtred}{HTML}{BF162B}    % échec, abstention, danger
