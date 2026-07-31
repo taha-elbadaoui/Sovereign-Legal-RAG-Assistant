@@ -315,6 +315,11 @@ def main():
                 "t_generation_s": round(r["t_generation"], 3),
                 "t_total_s": round(r["t_total"], 3),
                 "outcome": r["outcome"],
+                # Le texte de la réponse est conservé : sans lui, une citation
+                # signalée « non vérifiée » n'est plus diagnosticable après coup
+                # (impossible de distinguer un renvoi interne d'une invention
+                # ou d'un faux positif du détecteur de citations).
+                "answer": r["answer"],
             }
             for r in rows
         ],

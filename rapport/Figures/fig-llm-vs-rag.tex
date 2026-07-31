@@ -1,0 +1,69 @@
+% Pourquoi un modèle seul ne suffit pas : la même question, deux chaînes.
+%
+% Les deux réponses sont alignées sur la même verticale : c'est la comparaison
+% que la figure doit rendre immédiate. Routage orthogonal, aucun croisement.
+\begin{tikzpicture}[
+    font=\sffamily\scriptsize,
+    boite/.style={draw, line width=0.7pt, rounded corners=2pt,
+                  text width=24mm, minimum height=10mm, align=center,
+                  inner sep=3pt},
+    sortie/.style={boite, text width=31mm},
+    d/.style={draw=slate,     fill=mist,        text=ink},
+    t/.style={draw=inptblue,  fill=inptblue!8,  text=navy},
+    m/.style={draw=leafgreen, fill=leafgreen!8, text=leafgreen!40!black},
+    faux/.style={draw=anrtred,  fill=anrtred!6,   text=anrtred!70!black},
+    vrai/.style={draw=leafgreen, fill=leafgreen!8, text=leafgreen!40!black},
+    fleche/.style={-{Stealth[length=2.3mm,width=1.7mm]}, line width=0.7pt,
+                   draw=slate, rounded corners=2.5pt},
+    verdict/.style={font=\sffamily\scriptsize, align=center, text width=31mm},
+    lane/.style={font=\sffamily\scriptsize\bfseries, anchor=east, align=right},
+  ]
+
+\def\XQ{0} \def\XM{3.6} \def\XG{7.2} \def\XR{10.8}
+\def\YA{0} \def\YB{-3.2}
+
+% ------------------------------------------------------- chaîne sans ancrage
+\node[boite, d]  (qa)  at (\XQ,\YA) {Question du citoyen};
+\node[boite, m]  (ma)  at (\XM,\YA) {Modèle de langage\\seul};
+\node[sortie, faux] (ra) at (\XR,\YA) {«\,L'article 217 prévoit\\six semaines\,»};
+
+\draw[fleche] (qa) -- (ma);
+% Le vide de cette travée est le propos : rien n'est consulté entre la
+% question et la réponse.
+\draw[fleche] (ma) -- node[font=\sffamily\scriptsize\itshape, text=anrtred!70!black,
+                           above, inner sep=3pt] {aucune source consultée} (ra);
+
+\node[verdict, text=anrtred!70!black, anchor=north] at ($(ra.south)+(0,-2mm)$)
+  {\textbf{Invérifiable.} Aucun texte ne fonde ce numéro, et rien dans la forme
+   ne le signale.};
+
+% ------------------------------------------------------- chaîne ancrée (RAG)
+\node[boite, d]  (qb)  at (\XQ,\YB) {Question du citoyen};
+\node[boite, t]  (rb)  at (\XM,\YB) {Recherche dans\\le corpus};
+\node[boite, m]  (mb)  at (\XG,\YB) {Modèle de langage\\+ articles fournis};
+\node[sortie, vrai] (rr) at (\XR,\YB) {«\,Quatorze semaines\\(article 152)\,»};
+
+\draw[fleche] (qb) -- (rb);
+\draw[fleche] (rb) -- node[font=\sffamily\scriptsize, text=slate, above,
+                           inner sep=2pt] {articles} (mb);
+\draw[fleche] (mb) -- (rr);
+
+% Le corpus alimente la recherche par le bas : il n'est traversé par aucune
+% autre arête.
+\node[boite, d, minimum height=8mm] (corpus) at (\XM,{\YB-1.9})
+  {Corpus\\\NbArticles{} articles};
+\draw[fleche] (corpus) -- (rb);
+
+\node[verdict, text=leafgreen!40!black, anchor=north] at ($(rr.south)+(0,-2mm)$)
+  {\textbf{Vérifiable.} Le numéro cité renvoie à un article réellement fourni
+   au modèle.};
+
+% ------------------------------------------------------------- libellés de voie
+\node[lane, text=anrtred!70!black]   at ($(qa.west)+(-4mm,0)$) {SANS\\RAG};
+\node[lane, text=leafgreen!40!black] at ($(qb.west)+(-4mm,0)$) {AVEC\\RAG};
+
+% Séparation des deux voies
+\draw[rule, line width=0.5pt, dash pattern=on 2.5pt off 2pt]
+  ($(qa.south west)+(-14mm,-11mm)$) -- ($(ra.south east)+(0,-11mm)$);
+
+\end{tikzpicture}

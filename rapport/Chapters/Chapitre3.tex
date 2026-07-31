@@ -1,0 +1,181 @@
+\chapter{Conception et architecture}
+\label{chap:conception}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce chapitre présente l'architecture retenue et justifie les choix technologiques. L'accent est mis
+sur les décisions structurantes --- celles qui, une fois prises, contraignent tout le reste --- et
+sur les arbitrages assumés, y compris les trois qui restent ouverts et sont énoncés comme tels en
+fin de chapitre.
+
+\section{Architecture générale}
+
+Le système se décompose en deux pipelines distincts : un pipeline d'\textbf{indexation} exécuté
+une seule fois hors ligne, et un pipeline de \textbf{requête} exécuté à chaque question
+(figure~\ref{fig:architecture}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-architecture}
+  \caption[Architecture générale du système]{Architecture générale. La requête se lit de haut en
+  bas ; la chaîne d'indexation, exécutée une seule fois hors ligne, occupe la colonne de droite.
+  Les deux pipelines ne se rencontrent qu'en \emph{un seul point} --- la remise des deux index aux
+  deux recherches (flèches bleues). Le modèle d'embedding apparaît des deux côtés : c'est
+  volontairement le même, et c'est cette identité qui donne un sens à la comparaison entre une
+  question et un article.}
+  \label{fig:architecture}
+\end{figure}
+
+\medskip
+\centerline{\legendeschema}
+\medskip
+
+Le modèle BGE-M3 intervient \textbf{deux fois} : à l'indexation, pour vectoriser les articles ; à
+la requête, pour vectoriser la question. Il ne s'agit pas d'une commodité d'implémentation mais
+d'une nécessité : deux modèles différents produiraient des vecteurs situés dans des espaces sans
+rapport, et la similarité calculée entre eux n'aurait aucune signification.
+
+\subsection{Deux principes structurants}
+
+\paragraph{Le garde-fou d'abstention est placé \emph{avant} le modèle}
+Il s'agit d'un test de seuil sur le score de recherche, donc d'un mécanisme
+\textbf{indépendant du modèle}. Il ne dépend pas de la bonne volonté du LLM à dire «~je ne sais
+pas~» --- ce sur quoi les petits modèles locaux se révèlent peu fiables, comme le
+chapitre~\ref{chap:evaluation} le montrera concrètement. Ce choix a un effet secondaire mesurable
+et non recherché : lorsqu'il se déclenche, le modèle n'est pas appelé du tout, et la réponse est
+rendue en une fraction du temps habituel.
+
+\paragraph{La recherche et la génération restent séparables}
+À tout moment il est possible d'afficher les articles retrouvés \emph{avant} l'appel au modèle.
+Face à une mauvaise réponse, cette séparation permet de déterminer immédiatement si le problème
+vient de la recherche ou de la génération --- distinction impossible à faire si l'on n'observe que
+la sortie finale. Elle rend aussi l'évaluation comparative possible : on peut mesurer la recherche
+seule, sans que le modèle n'intervienne dans le résultat.
+
+\section{Séquence d'une requête}
+
+La figure~\ref{fig:sequence} détaille le trajet d'une question, en indiquant à chaque étape le
+temps médian mesuré au chapitre~\ref{chap:evaluation}.
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-sequence}
+  \caption[Séquence d'une requête]{Séquence d'une requête, avec les deux issues possibles. La
+  branche d'abstention court-circuite l'étape la plus coûteuse : c'est pourquoi une question hors
+  périmètre reçoit sa réponse \FacteurGarde{} fois plus vite qu'une question traitée.}
+  \label{fig:sequence}
+\end{figure}
+
+\section{Rôle de chaque module}
+
+Le système compte cinq modules, chacun responsable d'une seule étape de la chaîne
+(tableau~\ref{tab:modules}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Répartition des responsabilités entre modules}
+  \label{tab:modules}
+  \small
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.7cm} R R@{}}
+    \toprule
+    \sffamily\bfseries\color{navy}Module &
+    \sffamily\bfseries\color{navy}Rôle &
+    \sffamily\bfseries\color{navy}Entrée $\rightarrow$ sortie \\
+    \midrule
+    \module{parser.py}    & Extraction du PDF, découpage par article, métadonnées de hiérarchie
+                          & PDF source $\rightarrow$ corpus JSONL \\
+    \module{database.py}  & Calcul des embeddings, construction de l'index dense
+                          & JSONL $\rightarrow$ collection Chroma \\
+    \module{retriever.py} & Recherche dense et lexicale, fusion RRF, renvoi par numéro explicite
+                          & Question $\rightarrow$ articles + score \\
+    \module{generator.py} & Prompt ancré, appel au modèle local
+                          & Question + articles $\rightarrow$ réponse \\
+    \module{app.py}       & Orchestration, abstention, contrôle des citations
+                          & Question $\rightarrow$ réponse affichée \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Chaque composant est isolé derrière une fonction simple, ce qui permet de remplacer une brique
+sans toucher aux autres : changer de modèle de langage n'affecte que \module{generator.py} ;
+passer du dense seul à l'hybride n'affecte que \module{retriever.py}. Cette contrainte est
+délibérée, et sa justification est l'évaluation : elle permet de ne faire varier qu'une chose à la
+fois. Seul le modèle d'embeddings fait exception --- il est partagé entre \module{database.py} et
+\module{retriever.py}, pour la raison exposée plus haut.
+
+\section{Choix technologiques}
+
+\subsection{Deux filtres derrière chaque décision}
+
+La quasi-totalité des choix découle de deux contraintes, appliquées dans cet ordre.
+
+\begin{enumerate}
+  \item \textbf{Souveraineté $\rightarrow$ tout doit s'exécuter en local.} Ce seul critère élimine
+        les embeddings par interface distante, les services de reclassement commerciaux et les
+        modèles de génération propriétaires.
+  \item \textbf{Corpus borné et durée courte $\rightarrow$ optimiser la maîtrise, pas le passage à
+        l'échelle.} À l'échelle de quelques centaines d'articles, toutes les bases vectorielles
+        répondent instantanément : la performance brute n'est jamais le facteur décisif, et
+        l'invoquer pour trancher aurait été un faux argument.
+\end{enumerate}
+
+\subsection{Décisions par composant}
+
+Le tableau~\ref{tab:techno} récapitule les choix retenus couche par couche. Dans la majorité des
+cas, la justification se ramène à l'un des deux filtres ci-dessus.
+
+\begin{longtable}{@{}p{2.5cm} p{2.7cm} p{\dimexpr\textwidth-6.4cm\relax}@{}}
+\caption{Choix technologiques et justifications}\label{tab:techno}\\
+\toprule
+\sffamily\bfseries\color{navy}Couche &
+\sffamily\bfseries\color{navy}Choix &
+\sffamily\bfseries\color{navy}Justification \\
+\midrule
+\endfirsthead
+\toprule
+\sffamily\bfseries\color{navy}Couche &
+\sffamily\bfseries\color{navy}Choix &
+\sffamily\bfseries\color{navy}Justification \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Extraction PDF & PyMuPDF & Rapide, fidélité Unicode fiable. Surtout : contrôle direct sur la façon dont la loi est découpée, là où un parseur automatique masque ce contrôle --- or c'est précisément ce découpage qui devait être vérifiable. \\[4pt]
+Embeddings & BGE-M3 & La souveraineté exclut les embeddings distants. Parmi les modèles locaux : bonne couverture français et arabe, contexte long (8192 jetons), donc aucun article tronqué à l'indexation. \\[4pt]
+Base vectorielle & Chroma & À cette échelle, la performance est hors sujet ; l'expérience de développement a donc primé. Chroma est embarquée (aucun serveur à administrer), persiste sur disque et filtre par métadonnées. \\[4pt]
+Recherche lexicale & BM25 (\module{rank\_bm25}) & Les requêtes juridiques sont riches en jetons exacts --- numéros d'articles, «~Loi~65-99~» --- précisément là où le lexical bat les embeddings. \\[4pt]
+Exécution du LLM & Ollama & Une commande télécharge et sert un modèle quantifié derrière une interface locale propre, sans qu'aucune requête ne sorte de la machine. \\[4pt]
+Modèle de génération & Mistral~7B & La souveraineté exclut les modèles frontières distants. La classe 7B est le point d'équilibre : suffisante en suivi d'instructions, exécutable sur du matériel étudiant. Mistral pour la qualité de son français. \\[4pt]
+Cadriciel RAG & \textbf{aucun} & Pour un corpus borné, la boucle RAG tient en environ 150 lignes. L'écrire soi-même permet de comprendre chaque étape, de déboguer directement, et d'expliquer son propre pipeline en soutenance. \\[4pt]
+Format du corpus & JSONL & Un article par ligne : lisible, métadonnées imbriquées, comparable ligne à ligne sous Git, lecture en flux. \\
+\end{longtable}
+
+\subsection{Les arbitrages réellement discutables}
+
+Il serait malhonnête de présenter tous ces choix comme évidents. Trois d'entre eux restent
+ouverts, et sont énoncés ici pour ce qu'ils sont.
+
+\begin{itemize}
+  \item \textbf{BGE-M3 contre multilingual-e5.} Appel serré : e5 est plus léger et suffirait
+        vraisemblablement. BGE-M3 l'emporte sur la largeur multilingue et la longueur de contexte,
+        deux propriétés utiles pour l'extension envisagée --- donc un pari sur la suite, pas une
+        supériorité mesurée.
+  \item \textbf{Sans cadriciel contre LlamaIndex.} L'arbitrage le plus discutable. Un cadriciel se
+        justifierait si le projet grossissait : sources multiples, agents, routage. Le refuser est
+        un choix pédagogique assumé, dont le coût serait payé par le prochain développeur.
+  \item \textbf{Dense seul contre hybride.} L'hybride est peu coûteux et le texte juridique
+        favorise la correspondance exacte ; l'argument théorique lui est favorable. La position
+        honnête est cependant \emph{«~je l'ai mesuré, voici l'écart~»} --- et le
+        chapitre~\ref{chap:evaluation} montre que cet écart dépend surtout des questions qu'on
+        pose. Mesuré deux fois sur deux jeux de questions différents, il change de signe.
+\end{itemize}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+L'architecture retenue place délibérément le garde-fou d'abstention hors du modèle et maintient
+la recherche séparable de la génération. Ces deux décisions, prises tôt, ont conditionné tout ce
+qui a pu être débogué et mesuré ensuite : sans la première, l'abstention aurait dépendu du modèle
+lui-même ; sans la seconde, aucune des deux causes possibles d'une mauvaise réponse n'aurait pu
+être distinguée de l'autre. Le chapitre suivant décrit leur mise en œuvre concrète.

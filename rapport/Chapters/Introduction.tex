@@ -1,64 +1,84 @@
 \chapter*{Introduction générale}
 \addcontentsline{toc}{chapter}{Introduction générale}
+\markboth{Introduction générale}{}
 
 \section*{Contexte}
 
 Le Maroc a fait de l'intelligence artificielle souveraine une priorité nationale, portée
-notamment par la feuille de route « Maroc IA 2030 », l'initiative « AI Made in Morocco » et le
-réseau des Instituts Al Jazari. L'un des principes directeurs de cette stratégie est la
+notamment par la feuille de route «~Maroc Digital 2030~», l'initiative «~AI Made in Morocco~» et
+le réseau des instituts Al Jazari. L'un des principes directeurs de cette stratégie est la
 \textbf{maîtrise de la donnée} : une information sensible produite au Maroc doit pouvoir être
-traitée localement, sans dépendance critique vis-à-vis d'infrastructures étrangères.
+traitée sur le territoire, sans dépendance critique vis-à-vis d'infrastructures étrangères.
 
 Ce principe prend un relief particulier dans le domaine juridique. Une question posée par un
-citoyen sur ses droits --- son licenciement, son congé de maternité, son salaire --- est une
-information intime. La confier à un service en ligne étranger revient à la faire sortir du
-territoire, avec les conséquences que cela implique en matière de confidentialité et de
-dépendance technologique.
+citoyen sur ses droits --- son licenciement, son congé de maternité, son salaire --- n'est pas
+une requête anodine : c'est une information intime, souvent formulée dans un moment de
+vulnérabilité. La confier à un service en ligne étranger revient à la faire sortir du territoire,
+avec les conséquences que cela emporte en matière de confidentialité et de dépendance
+technologique.
 
 \section*{Problématique}
 
 L'accès du citoyen à l'information juridique reste aujourd'hui difficile. Les textes --- Code du
 travail, Code de la famille, Bulletin Officiel --- sont publics, mais rédigés dans une langue
 dense, structurés en centaines d'articles se renvoyant les uns aux autres, et parfois disponibles
-uniquement en arabe. Il n'existe pas d'outil fiable permettant de répondre à une question simple
-posée en langage courant tout en garantissant que la réponse provient du texte officiel.
+uniquement en arabe. Il n'existe pas d'outil largement accessible permettant de répondre à une
+question simple, posée en langage courant, tout en garantissant que la réponse provient bien du
+texte officiel.
 
-Les assistants conversationnels généralistes ne comblent pas ce manque, pour deux raisons.
-D'une part, ils connaissent mal le droit marocain et peuvent \textbf{inventer des références
-inexistantes} --- un numéro d'article plausible mais faux est particulièrement trompeur en
-matière juridique. D'autre part, ils font transiter les questions des citoyens vers des serveurs
-étrangers, en contradiction directe avec l'exigence de souveraineté.
+Les assistants conversationnels généralistes ne comblent pas ce manque, pour deux raisons
+distinctes. D'une part, ils connaissent mal le droit marocain et peuvent \textbf{inventer des
+références inexistantes} : un numéro d'article plausible mais faux est plus dangereux qu'un aveu
+d'ignorance, parce que rien dans sa forme ne le distingue d'une référence exacte. D'autre part,
+ils font transiter les questions des citoyens vers des serveurs étrangers, en contradiction
+directe avec l'exigence de souveraineté rappelée plus haut.
+
+La question à laquelle ce stage s'attaque peut donc se formuler ainsi : \emph{comment construire
+un système qui répond à une question juridique en langage naturel, en garantissant que chaque
+affirmation est rattachée à un texte officiel vérifiable, et sans qu'aucune donnée ne quitte la
+machine~?}
 
 \section*{Contribution}
 
-Ce stage, effectué au sein de Pulsaride Solutions du 1\textsuperscript{er} juillet au 31 août
-2026, a consisté à concevoir, réaliser et évaluer un assistant de recherche juridique
-\textbf{souverain} fondé sur l'architecture RAG (\textit{Retrieval-Augmented Generation}),
-appliqué au Code du travail marocain (Loi n\textsuperscript{o}~65-99). Le système livré :
+Ce stage, effectué au sein de Pulsaride Solutions du 1\textsuperscript{er}~juillet au
+31~août~2026, a consisté à concevoir, réaliser et évaluer un assistant de recherche juridique
+souverain fondé sur l'architecture RAG (\anglais{Retrieval-Augmented Generation}), appliqué au
+Code du travail marocain (Loi n\textsuperscript{o}~65-99). Le système livré :
 
 \begin{itemize}
-    \item s'appuie sur un corpus de \textbf{589 articles} construit à la main depuis le PDF
-    officiel, reproductible à l'identique ;
-    \item retrouve les articles pertinents par une recherche combinant méthodes sémantique et
-    lexicale ;
-    \item génère une réponse fondée \emph{uniquement} sur ces articles, en citant
-    systématiquement leurs numéros ;
-    \item \textbf{s'abstient} explicitement lorsque l'information demandée ne figure pas dans le
-    corpus ;
-    \item s'exécute \textbf{entièrement en local}, sans aucun appel à une API externe.
+  \item s'appuie sur un corpus de \textbf{\NbArticles{} articles} construit depuis le PDF
+        officiel, reproductible à l'identique ;
+  \item retrouve les articles pertinents en combinant recherche sémantique et recherche
+        lexicale ;
+  \item génère une réponse fondée \emph{uniquement} sur ces articles, en citant systématiquement
+        leurs numéros ;
+  \item \textbf{s'abstient} explicitement lorsque l'information demandée ne figure pas dans le
+        corpus ;
+  \item s'exécute \textbf{entièrement en local}, sans aucun appel à une interface de
+        programmation externe.
 \end{itemize}
 
-L'ensemble a été évalué sur un jeu de référence de 37 questions : 97~\% des réponses citent au
-moins un article, l'abstention est correcte sur 100~\% des questions hors périmètre, et le temps
-de réponse médian est de 3{,}5 secondes.
+L'apport ne se limite pas au prototype. Le stage a produit un \textbf{banc de mesure rejouable}
+qui a permis d'établir des constats que ni l'intuition ni des tests ponctuels n'auraient
+révélés --- au premier rang desquels une hallucination inter-codes que les tests manuels n'avaient
+jamais déclenchée.
 
-\section*{Plan du rapport}
+Ce banc a lui-même fait l'objet d'un audit, et c'est peut-être le résultat le plus instructif du
+stage : son jeu de questions initial n'exerçait pas plusieurs comportements du système, et son
+élargissement a \emph{inversé} deux conclusions que l'on croyait établies, sans qu'une seule ligne
+du moteur ait changé. Ces résultats, et la manière dont ils ont été obtenus, occupent une place
+centrale dans ce rapport.
 
-Ce rapport est structuré en quatre chapitres. Le premier présente le contexte du projet ---
-l'organisme d'accueil, les objectifs et le périmètre du stage --- ainsi que les fondements
-techniques mobilisés. Le deuxième expose la conception du système : son architecture, ses
-principes structurants et les choix technologiques opérés. Le troisième détaille la réalisation,
-de la constitution du corpus aux garde-fous de génération, en passant par les difficultés
-techniques rencontrées. Le quatrième présente le protocole d'évaluation et l'ensemble des
-résultats mesurés. Le rapport se termine par une conclusion générale dressant le bilan du stage
-et ses perspectives.
+\section*{Organisation du rapport}
+
+Le rapport est structuré en cinq chapitres. Le
+chapitre~\ref{chap:contexte} présente le cadre du stage : l'organisme d'accueil, les objectifs,
+le périmètre volontairement borné et l'organisation du travail. Le chapitre~\ref{chap:fondements}
+expose les fondements techniques mobilisés, et en particulier la raison pour laquelle un grand
+modèle de langage seul ne peut pas répondre de façon fiable à une question juridique. Le
+chapitre~\ref{chap:conception} traduit ces principes en une architecture concrète et justifie les
+choix technologiques, y compris ceux qui restent discutables. Le chapitre~\ref{chap:realisation}
+décrit la réalisation, de la constitution du corpus aux garde-fous de génération, en accordant
+une place explicite aux difficultés rencontrées. Le chapitre~\ref{chap:evaluation} présente le
+protocole d'évaluation et l'ensemble des résultats mesurés, limites comprises. Une conclusion
+générale dresse le bilan du stage et ses perspectives.

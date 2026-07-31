@@ -1,37 +1,62 @@
-{"question": "Quelle est la durée de la période d'essai pour un cadre en contrat à durée indéterminée ?", "expected_articles": ["14"], "type": "retrieval"}
-{"question": "À quel âge minimum un mineur peut-il être employé au Maroc ?", "expected_articles": ["143"], "type": "retrieval"}
-{"question": "Quelle est la durée du congé de maternité ?", "expected_articles": ["152"], "type": "retrieval"}
-{"question": "Quelle est la durée légale du travail dans les activités non agricoles ?", "expected_articles": ["184"], "type": "retrieval"}
-{"question": "Dans quel délai faut-il saisir le tribunal après un licenciement contesté ?", "expected_articles": ["65"], "type": "retrieval"}
-{"question": "À quel âge un salarié est-il mis à la retraite ?", "expected_articles": ["526"], "type": "retrieval"}
-{"question": "Le harcèlement sexuel commis par l'employeur est-il une faute grave ?", "expected_articles": ["40"], "type": "retrieval"}
-{"question": "Peut-on employer un mineur de moins de 18 ans dans les mines ?", "expected_articles": ["179"], "type": "retrieval"}
-{"question": "Combien d'heures par mois un délégué des salariés a-t-il pour exercer ses fonctions ?", "expected_articles": ["456"], "type": "retrieval"}
-{"question": "Quelles catégories de salariés sont régies par des statuts spéciaux ?", "expected_articles": ["3"], "type": "retrieval"}
-{"question": "Pour combien de temps peut-on conclure un CDD à l'ouverture d'une nouvelle entreprise ?", "expected_articles": ["17"], "type": "retrieval"}
-{"question": "Combien de jours de congé annuel payé acquiert-on par mois de service ?", "expected_articles": ["231"], "type": "retrieval"}
-{"question": "Quelle est la durée minimale du repos hebdomadaire ?", "expected_articles": ["205"], "type": "retrieval"}
-{"question": "Combien de jours de congé un salarié a-t-il à l'occasion d'une naissance ?", "expected_articles": ["269"], "type": "retrieval"}
-{"question": "À partir de quelle ancienneté la prime d'ancienneté est-elle due, et à quel taux ?", "expected_articles": ["350"], "type": "retrieval"}
-{"question": "Quelles sont les fautes graves pouvant justifier le licenciement d'un salarié ?", "expected_articles": ["39"], "type": "retrieval"}
-{"question": "Comment sont calculés les dommages-intérêts en cas de licenciement abusif ?", "expected_articles": ["41"], "type": "retrieval"}
-{"question": "Comment est calculée l'indemnité de licenciement ?", "expected_articles": ["53"], "type": "retrieval"}
-{"question": "L'employeur peut-il licencier une salariée enceinte ?", "expected_articles": ["159"], "type": "retrieval"}
-{"question": "Une mère salariée a-t-elle droit à un repos pour allaiter son enfant ?", "expected_articles": ["161"], "type": "retrieval"}
-{"question": "Est-il permis de faire travailler les salariés pendant les jours de fête payés ?", "expected_articles": ["217"], "type": "retrieval"}
-{"question": "La discrimination salariale entre hommes et femmes est-elle autorisée ?", "expected_articles": ["346"], "type": "retrieval"}
-{"question": "À partir de combien de salariés doit-on élire des délégués des salariés ?", "expected_articles": ["430"], "type": "retrieval"}
-{"question": "À partir de combien de salariés faut-il créer un comité d'entreprise ?", "expected_articles": ["464"], "type": "retrieval"}
-{"question": "Faut-il une autorisation pour recruter un salarié étranger ?", "expected_articles": ["516"], "type": "retrieval"}
-{"question": "Le salarié doit-il être entendu avant d'être licencié ?", "expected_articles": ["62"], "type": "retrieval"}
-{"question": "Quelle est la durée maximale d'une mission d'intérim ?", "expected_articles": ["500"], "type": "retrieval"}
-{"question": "À partir de combien de salariés un comité de sécurité et d'hygiène est-il obligatoire ?", "expected_articles": ["336"], "type": "retrieval"}
-{"question": "Que doit faire un salarié malade pour justifier son absence ?", "expected_articles": ["271"], "type": "retrieval"}
-{"question": "Combien de jours d'absence a-t-on pour son propre mariage ?", "expected_articles": ["274"], "type": "retrieval"}
-{"question": "Quelles obligations de sécurité et de santé l'employeur a-t-il envers ses salariés ?", "expected_articles": ["24", "281"], "type": "retrieval"}
-{"question": "Un salarié appelé au service militaire retrouve-t-il son poste au retour ?", "expected_articles": ["510"], "type": "retrieval"}
-{"question": "Quelle est la procédure pour divorcer au Maroc ?", "expected_articles": [], "type": "abstention"}
-{"question": "Comment créer une société anonyme au Maroc ?", "expected_articles": [], "type": "abstention"}
-{"question": "Quelle est la peine encourue pour vol qualifié ?", "expected_articles": [], "type": "abstention"}
-{"question": "Quelle est la recette du couscous royal ?", "expected_articles": [], "type": "abstention"}
-{"question": "Quelle est la capitale de la France ?", "expected_articles": [], "type": "abstention"}
+{"question": "Quelle est la durée de la période d'essai pour un cadre en contrat à durée indéterminée ?", "expected_articles": ["14"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "À quel âge minimum un mineur peut-il être employé au Maroc ?", "expected_articles": ["143"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelle est la durée du congé de maternité ?", "expected_articles": ["152"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelle est la durée légale du travail dans les activités non agricoles ?", "expected_articles": ["184"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Dans quel délai faut-il saisir le tribunal après un licenciement contesté ?", "expected_articles": ["65"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "À quel âge un salarié est-il mis à la retraite ?", "expected_articles": ["526"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Le harcèlement sexuel commis par l'employeur est-il une faute grave ?", "expected_articles": ["40"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Peut-on employer un mineur de moins de 18 ans dans les mines ?", "expected_articles": ["179"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Combien d'heures par mois un délégué des salariés a-t-il pour exercer ses fonctions ?", "expected_articles": ["456"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelles catégories de salariés sont régies par des statuts spéciaux ?", "expected_articles": ["3"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Pour combien de temps peut-on conclure un CDD à l'ouverture d'une nouvelle entreprise ?", "expected_articles": ["17"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Combien de jours de congé annuel payé acquiert-on par mois de service ?", "expected_articles": ["231"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelle est la durée minimale du repos hebdomadaire ?", "expected_articles": ["205"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Combien de jours de congé un salarié a-t-il à l'occasion d'une naissance ?", "expected_articles": ["269"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "À partir de quelle ancienneté la prime d'ancienneté est-elle due, et à quel taux ?", "expected_articles": ["350"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelles sont les fautes graves pouvant justifier le licenciement d'un salarié ?", "expected_articles": ["39"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Comment sont calculés les dommages-intérêts en cas de licenciement abusif ?", "expected_articles": ["41"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Comment est calculée l'indemnité de licenciement ?", "expected_articles": ["53"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "L'employeur peut-il licencier une salariée enceinte ?", "expected_articles": ["159"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Une mère salariée a-t-elle droit à un repos pour allaiter son enfant ?", "expected_articles": ["161"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Est-il permis de faire travailler les salariés pendant les jours de fête payés ?", "expected_articles": ["217"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "La discrimination salariale entre hommes et femmes est-elle autorisée ?", "expected_articles": ["346"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "À partir de combien de salariés doit-on élire des délégués des salariés ?", "expected_articles": ["430"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "À partir de combien de salariés faut-il créer un comité d'entreprise ?", "expected_articles": ["464"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Faut-il une autorisation pour recruter un salarié étranger ?", "expected_articles": ["516"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Le salarié doit-il être entendu avant d'être licencié ?", "expected_articles": ["62"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelle est la durée maximale d'une mission d'intérim ?", "expected_articles": ["500"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "À partir de combien de salariés un comité de sécurité et d'hygiène est-il obligatoire ?", "expected_articles": ["336"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Que doit faire un salarié malade pour justifier son absence ?", "expected_articles": ["271"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Combien de jours d'absence a-t-on pour son propre mariage ?", "expected_articles": ["274"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelles obligations de sécurité et de santé l'employeur a-t-il envers ses salariés ?", "expected_articles": ["24", "281"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Un salarié appelé au service militaire retrouve-t-il son poste au retour ?", "expected_articles": ["510"], "type": "retrieval", "famille": "origine_perimetre"}
+{"question": "Quelle est la procédure pour divorcer au Maroc ?", "expected_articles": [], "type": "abstention", "famille": "origine_abstention"}
+{"question": "Comment créer une société anonyme au Maroc ?", "expected_articles": [], "type": "abstention", "famille": "origine_abstention"}
+{"question": "Quelle est la peine encourue pour vol qualifié ?", "expected_articles": [], "type": "abstention", "famille": "origine_abstention"}
+{"question": "Quelle est la recette du couscous royal ?", "expected_articles": [], "type": "abstention", "famille": "origine_abstention"}
+{"question": "Quelle est la capitale de la France ?", "expected_articles": [], "type": "abstention", "famille": "origine_abstention"}
+{"question": "Que dit l'article 32 du Code du travail ?", "expected_articles": ["32"], "type": "retrieval", "famille": "reference_explicite"}
+{"question": "Que prévoit l'article 152 ?", "expected_articles": ["152"], "type": "retrieval", "famille": "reference_explicite"}
+{"question": "Quel est le contenu de l'article 256 ?", "expected_articles": ["256"], "type": "retrieval", "famille": "reference_explicite"}
+{"question": "Que dispose l'article 39 ?", "expected_articles": ["39"], "type": "retrieval", "famille": "reference_explicite"}
+{"question": "Que dit l'article premier du Code du travail ?", "expected_articles": ["1"], "type": "retrieval", "famille": "reference_explicite"}
+{"question": "Que prévoit l'article 217 ?", "expected_articles": ["217"], "type": "retrieval", "famille": "reference_explicite"}
+{"question": "Qui est chargé de l'inspection du travail ?", "expected_articles": ["530"], "type": "retrieval", "famille": "livre_v"}
+{"question": "L'employeur doit-il tenir un registre des mises en demeure ?", "expected_articles": ["536"], "type": "retrieval", "famille": "livre_v"}
+{"question": "Quelle est la valeur juridique des procès-verbaux dressés par l'inspection du travail ?", "expected_articles": ["539"], "type": "retrieval", "famille": "livre_v"}
+{"question": "Quelle amende sanctionne le défaut d'ouverture du registre des mises en demeure ?", "expected_articles": ["547"], "type": "retrieval", "famille": "livre_v"}
+{"question": "Qu'est-ce qu'un conflit collectif du travail ?", "expected_articles": ["549"], "type": "retrieval", "famille": "livre_vi"}
+{"question": "Dans quel délai l'arbitre doit-il rendre sa décision ?", "expected_articles": ["574"], "type": "retrieval", "famille": "livre_vi"}
+{"question": "Dans quel délai peut-on contester une décision d'arbitrage ?", "expected_articles": ["577"], "type": "retrieval", "famille": "livre_vi"}
+{"question": "Comment l'arbitre est-il désigné en cas de conflit collectif ?", "expected_articles": ["568"], "type": "retrieval", "famille": "livre_vi"}
+{"question": "Dans quels cas le conflit est-il soumis à la commission nationale d'enquête et de conciliation ?", "expected_articles": ["565"], "type": "retrieval", "famille": "livre_vi"}
+{"question": "Quand le Code du travail entre-t-il en vigueur ?", "expected_articles": ["589"], "type": "retrieval", "famille": "livre_vii"}
+{"question": "Quelles obligations l'employeur a-t-il envers les agents de l'inspection du travail ?", "expected_articles": ["536", "538"], "type": "retrieval", "famille": "multi_articles"}
+{"question": "Que se passe-t-il si l'employeur ne respecte pas une mise en demeure d'hygiène et de sécurité ?", "expected_articles": ["540", "542"], "type": "retrieval", "famille": "multi_articles"}
+{"question": "Quelles sont les étapes de la procédure de règlement d'un conflit collectif ?", "expected_articles": ["551", "565"], "type": "retrieval", "famille": "multi_articles"}
+{"question": "Le service militaire suspend-il le contrat de travail ?", "expected_articles": ["32"], "type": "retrieval", "famille": "amende_2021"}
+{"question": "Le salarié appelé au service militaire est-il indemnisé pour son congé annuel non pris ?", "expected_articles": ["256"], "type": "retrieval", "famille": "amende_2021"}
+{"question": "Quelles sont les conditions pour obtenir un passeport marocain ?", "expected_articles": [], "type": "abstention", "famille": "abstention_administratif"}
+{"question": "Comment calculer l'impôt sur le revenu au Maroc ?", "expected_articles": [], "type": "abstention", "famille": "abstention_fiscal"}
+{"question": "Quel est le meilleur moment de l'année pour visiter Marrakech ?", "expected_articles": [], "type": "abstention", "famille": "abstention_tourisme"}
+{"question": "Quelles sont les règles du hors-jeu au football ?", "expected_articles": [], "type": "abstention", "famille": "abstention_sport"}

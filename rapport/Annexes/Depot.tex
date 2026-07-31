@@ -1,0 +1,90 @@
+\chapter{Dépôt et reproduction des résultats}
+\label{ann:depot}
+
+\section{Organisation du dépôt}
+
+Le dépôt sépare strictement ce qui est saisi de ce qui est calculé
+(figure~\ref{fig:depot}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-depot}
+  \caption[Organisation du dépôt de code]{Organisation du dépôt. Les éléments grisés ne sont pas
+  versionnés : ils se reconstruisent depuis les sources, ce qui est la condition pour que la
+  reproduction annoncée ci-dessous ait un sens.}
+  \label{fig:depot}
+\end{figure}
+
+\section{Reproduction des résultats}
+
+L'ensemble des chiffres de ce rapport se régénère par les commandes suivantes, exécutées depuis la
+racine du dépôt. Les deux premières reconstruisent les données ; les trois suivantes produisent
+les mesures ; la dernière convertit ces mesures en macros et coordonnées de figures.
+
+\begin{lstlisting}[language=bash,caption={Commandes de reproduction},label={lst:repro}]
+# 1. Construction du corpus a partir du PDF officiel
+python src/parser.py
+
+# 2. Indexation (telecharge le modele d'embeddings au premier lancement)
+python src/database.py
+
+# 3. Metriques de recherche : Recall@k et MRR, sans appel au LLM
+python eval/run_eval.py
+
+# 4. Evaluation des reponses generees (necessite Ollama en fonctionnement)
+python eval/run_answer_eval.py
+
+# 5. Mesures de latence et taxonomie des resultats
+python eval/run_measures.py
+
+# 6. Conversion des mesures en donnees de rapport
+python rapport/build_data.py
+\end{lstlisting}
+
+\section{Chaîne des chiffres du rapport}
+
+Le script \module{rapport/build\_data.py} lit deux fichiers en entrée :
+
+\begin{itemize}
+  \item \module{eval/mesures-performance.json} --- toutes les mesures d'exécution ;
+  \item \module{data/processed/corpus\_chunks.jsonl} --- le corpus structuré.
+\end{itemize}
+
+\noindent Il en produit deux sortes de fichiers :
+
+\begin{itemize}
+  \item \module{Figures/data/chiffres.tex}, qui définit une macro LaTeX pour chaque nombre cité
+        dans le texte --- \verb|\TauxCitation|, \verb|\LatTotale|, \verb|\NbArticles|, etc. ;
+  \item \module{Figures/data/fig-*.tex}, qui contiennent les coordonnées lues par les figures.
+\end{itemize}
+
+Aucun nombre n'est donc écrit en dur dans les chapitres. Une nouvelle exécution du banc suivie
+d'une recompilation met à jour simultanément le texte et les figures, ce qui rend impossible la
+divergence habituelle entre une phrase et le graphique censé l'illustrer.
+
+\section{Prérequis d'exécution}
+
+Les prérequis diffèrent selon l'étape (tableau~\ref{tab:prerequis}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Prérequis pour rejouer la chaîne complète}
+  \label{tab:prerequis}
+  \small
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm} R@{}}
+    \toprule
+    \sffamily\bfseries\color{navy}Élément &
+    \sffamily\bfseries\color{navy}Remarque \\
+    \midrule
+    Python 3.11 ou supérieur & Dépendances listées dans \module{requirements.txt} \\
+    Ollama & Nécessaire aux étapes 4 et 5 uniquement ; modèle \ModeleLLM{} à télécharger au
+             préalable \\
+    BGE-M3 & Téléchargé automatiquement au premier lancement de l'étape 2 \\
+    PDF source & Présent dans \module{data/raw/}, jamais modifié par la chaîne \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Les étapes 1 à 3 ne requièrent aucun modèle de génération : la qualité de la recherche peut donc
+être reproduite sans Ollama, ce qui était l'un des objectifs de la séparation entre recherche et
+génération.

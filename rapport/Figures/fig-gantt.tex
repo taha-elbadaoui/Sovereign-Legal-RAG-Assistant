@@ -1,0 +1,48 @@
+% Déroulement du stage sur huit semaines. Chaque phase porte un livrable, et
+% les jalons marquent les points où le travail devenait vérifiable.
+\begin{ganttchart}[
+    hgrid, vgrid,
+    x unit=1.3cm,
+    y unit title=0.62cm,
+    y unit chart=0.58cm,
+    title height=1,
+    canvas/.style={draw=rule, line width=0.5pt, fill=none},
+    bar top shift=0.16,
+    group top shift=0.2,
+    group height=0.36,
+    group right shift=0,
+    group left shift=0,
+    milestone top shift=0.28,
+    milestone height=0.44,
+    bar incomplete/.append style={fill=mist},
+    progress label text={},
+  ]{1}{8}
+
+\gantttitle{Phasage prévu \textcolor{slate!70}{— stage du 1\textsuperscript{er} juillet au 31 août 2026}}{8} \\
+\gantttitlelist{1,...,8}{1} \\
+
+% ------------------------------------------------------------------- corpus
+\ganttgroup{Corpus}{1}{2} \\
+\ganttbar{Extraction, découpage par article}{1}{1} \\
+\ganttbar{Hiérarchie, métadonnées, JSONL}{2}{2} \\
+\ganttmilestone{corpus reproductible}{2} \\
+
+% ------------------------------------------------------------------- moteur
+\ganttgroup{Moteur}{3}{5} \\
+\ganttbar{Pipeline RAG bout-en-bout}{3}{3} \\
+\ganttbar{Ancrage, citation, abstention}{4}{4} \\
+\ganttbar{Recherche hybride, jeu de référence}{5}{5} \\
+\ganttmilestone{réponses citées et sourcées}{4} \\
+
+% --------------------------------------------------------- mesure et clôture
+\ganttgroup{Mesure et clôture}{6}{8} \\
+\ganttbar{Évaluation, analyse d'erreurs}{6}{6} \\
+\ganttbar{Durcissement, reproductibilité}{7}{7} \\
+\ganttbar{Rapport, démonstration, soutenance}{8}{8} \\
+\ganttmilestone{banc de mesure rejouable}{6} \\
+
+% Pas de \ganttlink : la numérotation « elem » compte aussi les groupes et les
+% jalons, ce qui reliait des éléments arbitraires. L'enchaînement des phases se
+% lit déjà dans leur succession hebdomadaire.
+
+\end{ganttchart}

@@ -1,0 +1,19 @@
+% Captures de l'interface web, prises sur le système en fonctionnement.
+%
+% Produites par eval/capture_ui.js, qui pilote un navigateur sans affichage,
+% pose réellement les questions au moteur local et enregistre l'écran. Ce ne
+% sont donc pas des maquettes.
+%
+% Recadrées sur la zone de conversation — la barre latérale et l'espace vide
+% sont retirés — et posées pleine largeur : à cette taille le texte de
+% l'interface reste lisible à l'impression.
+\newcommand{\captureui}[3]{%
+  % #1 fichier, #2 titre, #3 commentaire
+  \begingroup
+  \setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.5pt}%
+  \noindent\fcolorbox{rule}{white}{%
+    \includegraphics[width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax]{#1}}%
+  \par\vspace{3pt}
+  {\sffamily\scriptsize\raggedright
+   \textbf{\color{navy}#2}\; \textcolor{slate}{#3}\par}
+  \endgroup}

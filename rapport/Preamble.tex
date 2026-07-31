@@ -1,0 +1,238 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Préambule — identité typographique et graphique du rapport
+%  Compilation : pdfLaTeX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ----------------------------------------------------------------- encodage
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+% Le français est la langue principale (dernière de la liste) ; l'anglais n'est
+% chargé que pour la césure correcte de l'abstract.
+\usepackage[english,french]{babel}
+\frenchsetup{ThinSpaceInFrenchNumbers=true}
+
+% -------------------------------------------------------------------- fontes
+% Libertinus : empattements pour le corps, linéale assortie pour les titres et
+% les figures. L'ensemble partage les mêmes proportions, ce qui évite la
+% rupture visuelle habituelle entre texte et schémas.
+\usepackage{libertinus}
+\usepackage[varqu,varl]{inconsolata}   % monospace lisible pour le code
+\usepackage{microtype}                 % césure et crénage optiques
+
+% ------------------------------------------------------------------ couleurs
+% Palette dérivée des logos de l'institut : le bleu est celui du logo INPT,
+% le rouge celui du logo ANRT. Chaque couleur porte un sens unique et s'y
+% tient dans tout le document, texte et figures compris.
+\usepackage{xcolor}
+\definecolor{inptblue}{HTML}{0082C8}   % accent : liens, numéros, mise en avant
+\definecolor{navy}{HTML}{0B2E4F}       % titres
+\definecolor{anrtred}{HTML}{BF162B}    % échec, abstention, danger
+\definecolor{leafgreen}{HTML}{0E8F5E}  % modèle, succès
+\definecolor{amberdark}{HTML}{B26A00}  % décision, garde-fou
+\definecolor{plum}{HTML}{8B4FB0}       % quatrième série des figures de données
+\definecolor{ink}{HTML}{1A1A1A}        % corps de texte
+\definecolor{slate}{HTML}{5A6672}      % texte secondaire
+\definecolor{mist}{HTML}{EEF2F6}       % fonds
+\definecolor{rule}{HTML}{C9D3DC}       % filets
+
+\color{ink}
+
+% ---------------------------------------------------------------- géométrie
+\usepackage[a4paper,left=3cm,right=2.5cm,top=2.7cm,bottom=2.7cm,
+            headsep=14pt,footskip=28pt]{geometry}
+
+\usepackage{setspace}
+\setstretch{1.2}
+
+% --------------------------------------------------------------- structures
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{afterpage}
+\usepackage{emptypage}
+
+\setlist{itemsep=2pt,parsep=0pt,topsep=4pt}
+\setlist[itemize]{label=\textcolor{inptblue}{\small$\bullet$}}
+\setlist[enumerate]{label=\textcolor{inptblue}{\bfseries\arabic*.}}
+
+% Colonne X centrée / alignée à droite pour tabularx
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.25}
+
+% ------------------------------------------------------------------- titres
+\usepackage{titlesec}
+
+% Chapitre : numéro en très grand corps clair, titre en linéale foncée,
+% filet fin de séparation. Pas de page de garde de chapitre.
+\titleformat{\chapter}[display]
+  {\normalfont\sffamily\bfseries\color{navy}}
+  {\hfill\fontsize{72}{72}\selectfont\color{inptblue!35}\thechapter}
+  {-14pt}
+  {\Huge\raggedright}
+  [\vspace{6pt}{\color{rule}\titlerule[1pt]}]
+
+\titleformat{name=\chapter,numberless}[display]
+  {\normalfont\sffamily\bfseries\color{navy}}
+  {}
+  {0pt}
+  {\Huge\raggedright}
+  [\vspace{6pt}{\color{rule}\titlerule[1pt]}]
+
+\titlespacing*{\chapter}{0pt}{-24pt}{28pt}
+\titlespacing*{name=\chapter,numberless}{0pt}{0pt}{28pt}
+
+\titleformat{\section}
+  {\normalfont\sffamily\Large\bfseries\color{navy}}
+  {\color{inptblue}\thesection}{0.7em}{}
+\titleformat{\subsection}
+  {\normalfont\sffamily\large\bfseries\color{navy!90}}
+  {\color{inptblue}\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}
+  {\normalfont\sffamily\normalsize\bfseries\color{navy!80}}
+  {\color{inptblue}\thesubsubsection}{0.5em}{}
+
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titlespacing*{\subsubsection}{0pt}{12pt}{4pt}
+
+% Le paragraphe nommé sert de micro-titre dans les sections d'analyse.
+\titleformat{\paragraph}[runin]
+  {\normalfont\sffamily\bfseries\color{navy!85}}{}{0pt}{}[\;---]
+\titlespacing*{\paragraph}{0pt}{10pt}{6pt}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% ------------------------------------------------------------ en-têtes/pieds
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\footnotesize\sffamily\color{slate}\nouppercase{\leftmark}}
+\fancyhead[R]{\footnotesize\sffamily\color{slate}\thepage}
+% Filet sous l'en-tête, dessiné à la main pour en contrôler la couleur.
+\renewcommand{\headrule}{\color{rule}\rule{\headwidth}{0.4pt}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[C]{\footnotesize\sffamily\color{slate}\thepage}%
+}
+
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+
+% ---------------------------------------------------------------- légendes
+\usepackage[font=small,labelfont={sf,bf,color=navy},
+            textfont={color=slate},labelsep=period,
+            width=0.92\textwidth]{caption}
+\captionsetup[figure]{skip=8pt}
+\captionsetup[table]{skip=6pt,position=top}
+
+% ------------------------------------------------------------------- encadrés
+\usepackage[most]{tcolorbox}
+
+% Encadré neutre : exemple, illustration.
+\newtcolorbox{encadre}[1][]{%
+  enhanced, breakable,
+  colback=mist, colframe=inptblue,
+  boxrule=0pt, leftrule=2.5pt,
+  arc=0pt, outer arc=0pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  fonttitle=\sffamily\bfseries\color{navy},
+  coltitle=navy, colbacktitle=mist,
+  attach boxed title to top left={yshift=-2pt},
+  boxed title style={boxrule=0pt, arc=0pt, left=0pt, right=0pt},
+  #1}
+
+% Encadré « constat » : un résultat que le lecteur doit retenir.
+\newtcolorbox{constat}[1][]{%
+  enhanced, breakable,
+  colback=leafgreen!6, colframe=leafgreen,
+  boxrule=0pt, leftrule=2.5pt,
+  arc=0pt, outer arc=0pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  #1}
+
+% Encadré « limite » : une réserve, une défaillance, un coût assumé.
+\newtcolorbox{limite}[1][]{%
+  enhanced, breakable,
+  colback=anrtred!5, colframe=anrtred,
+  boxrule=0pt, leftrule=2.5pt,
+  arc=0pt, outer arc=0pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  #1}
+
+% ---------------------------------------------------------------------- code
+\usepackage{listings}
+\lstdefinestyle{clair}{
+  basicstyle=\ttfamily\footnotesize\color{ink},
+  keywordstyle=\color{navy}\bfseries,
+  commentstyle=\color{slate}\itshape,
+  stringstyle=\color{leafgreen},
+  numberstyle=\ttfamily\scriptsize\color{rule},
+  backgroundcolor=\color{mist},
+  frame=leftline, framerule=2pt, rulecolor=\color{rule},
+  framexleftmargin=6pt, framexrightmargin=4pt,
+  xleftmargin=8pt, xrightmargin=2pt,
+  aboveskip=12pt, belowskip=8pt,
+  breaklines=true, breakatwhitespace=false,
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false, tabsize=2,
+  captionpos=b,
+  literate={é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {à}{{\`a}}1
+           {ç}{{\c c}}1 {û}{{\^u}}1 {î}{{\^\i}}1 {ô}{{\^o}}1
+           {É}{{\'E}}1 {È}{{\`E}}1 {«}{{\guillemotleft}}1 {»}{{\guillemotright}}1
+}
+\lstset{style=clair}
+\renewcommand{\lstlistingname}{Extrait}
+
+% ------------------------------------------------------------------- figures
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{pgfgantt}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{calc,positioning,arrows.meta,shapes.geometric,shapes.multipart,
+                fit,backgrounds,decorations.pathreplacing,patterns,babel,
+                chains,shadows.blur}
+\usepgfplotslibrary{statistics}
+
+\input{Figures/styles}
+
+% ---------------------------------------------------------------- références
+\usepackage{glossaries}
+
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=navy,
+  citecolor=inptblue,
+  urlcolor=inptblue,
+  pdfauthor={Taha El Badaoui},
+  pdftitle={Assistant juridique souverain — RAG sur le Code du travail marocain},
+  pdfsubject={Rapport de stage de fin de première année — INPT, filière ASEDS},
+  pdfkeywords={RAG, souveraineté numérique, TAL, recherche sémantique, droit du travail},
+  pdfpagemode=UseOutlines,
+  bookmarksnumbered=true,
+}
+\urlstyle{same}
+
+% --------------------------------------------------------------- raccourcis
+\newcommand{\module}[1]{\texttt{\small #1}}
+\newcommand{\anglais}[1]{\textit{#1}}
+\newcommand{\artref}[1]{article~#1}
+
+% Page blanche technique (après la page de garde).
+\newcommand{\pageblanche}{%
+  \null\thispagestyle{empty}\addtocounter{page}{-1}\newpage}
+
+% Chiffres générés depuis les fichiers de mesure — voir rapport/build_data.py.
+\input{Figures/data/chiffres}

@@ -1,198 +1,196 @@
-# Sovereign Legal RAG Assistant
+<div align="center">
 
-Assistant conversationnel (RAG) sur le **droit du travail marocain** (Loi n° 65‑99 — Code du travail).
-Français d'abord, **citation obligatoire des articles sources**, **abstention explicite** hors périmètre,
-et exécution **entièrement locale / open-source** — aucune donnée ni requête ne quitte la machine.
+# Assistant juridique souverain
 
-> Stage — Pulsaride Solutions · 8 semaines · démarré le 1ᵉʳ juillet 2026.
+**Un système RAG qui répond aux questions de droit du travail marocain — en citant ses sources, en refusant de répondre hors périmètre, et sans qu'aucune donnée ne quitte la machine.**
 
-## Principe
+<sub><i>A sovereign RAG assistant over Moroccan labour law: every answer cites its legal sources, abstains when out of scope, and runs 100 % locally.</i></sub>
+
+<p>
+<img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
+<img alt="100% local" src="https://img.shields.io/badge/ex%C3%A9cution-100%25%20locale-0E8F5E">
+<img alt="Corpus" src="https://img.shields.io/badge/corpus-589%20articles-0082C8">
+<img alt="Évaluation" src="https://img.shields.io/badge/%C3%A9valuation-62%20questions-B26A00">
+<img alt="Aucun framework RAG" src="https://img.shields.io/badge/framework%20RAG-aucun-8B4FB0">
+</p>
+
+<img src="docs/assets/interface-reponse.png" width="88%" alt="Réponse citée dans l'interface web">
+
+</div>
+
+---
+
+## Le problème
+
+Le Code du travail marocain est public, mais illisible pour qui n'est pas juriste : 589 articles qui se renvoient les uns aux autres. Un assistant généraliste ne comble pas ce manque — il connaît mal le droit marocain, **invente des numéros d'articles plausibles mais faux**, et fait sortir la question du citoyen du territoire.
+
+Un numéro d'article inventé est plus dangereux qu'un « je ne sais pas » : rien, dans sa forme, ne le distingue d'une vraie référence.
+
+## L'approche
 
 ```
 Question en langage naturel
         │
         ▼
-Recherche hybride (dense + lexicale, fusionnées par RRF)
+Recherche hybride  ──────  dense (BGE-M3 + Chroma) + lexicale (BM25), fusion RRF
         │
         ▼
-Génération ancrée : réponse fondée UNIQUEMENT sur les articles retrouvés
+◇ Garde-fou d'abstention  ─  test de seuil AVANT le modèle : indépendant du LLM
+        │ oui                 (si non → abstention en 0,13 s, le modèle n'est jamais appelé)
+        ▼
+Génération ancrée  ───────  Mistral 7B local, prompt strict, température 0,1
         │
         ▼
-Citation systématique des numéros d'articles + abstention si l'info n'y est pas
+Contrôle des citations  ──  chaque numéro cité est-il vraiment dans le contexte fourni ?
+        │
+        ▼
+Réponse citée + avertissement d'usage
 ```
 
-Le système relève de la **restitution d'information juridique**, pas du conseil juridique personnalisé —
-toute réponse rappelle qu'elle est informative.
+Deux décisions structurantes :
 
-## Stack technique
+- **Le garde-fou est hors du modèle.** C'est un test de seuil, pas une consigne de prompt — il ne dépend pas de la bonne volonté d'un 7B à dire « je ne sais pas ».
+- **Recherche et génération restent séparables.** On peut inspecter les articles retrouvés *avant* l'appel au LLM, donc distinguer une erreur de recherche d'une erreur de génération.
 
-| Couche | Choix |
+## Résultats mesurés
+
+Jeu de référence : **62 questions** (53 dans le périmètre, 9 hors périmètre), toutes étiquetées à la main contre le texte réel du corpus.
+
+**Qualité de la recherche** — `python eval/run_eval.py`
+
+| Méthode | Recall@5 | MRR |
+|---|---:|---:|
+| Dense seul | 0,849 | **0,778** |
+| BM25 seul | 0,660 | 0,535 |
+| **Hybride (RRF)** | **0,868** | 0,775 |
+
+**Qualité des réponses** — `python eval/run_measures.py`
+
+| Critère | Résultat |
 |---|---|
-| Extraction PDF | PyMuPDF |
-| Embeddings | BGE‑M3 (multilingue, local) |
-| Base vectorielle | Chroma (persistante, embarquée) |
-| Recherche lexicale | BM25 (`rank_bm25`), fusion RRF avec le dense |
-| LLM | Mistral 7B via Ollama (local) |
-| Format du corpus | JSONL |
+| Citation systématique | **96 %** (49/51) |
+| L'article attendu est cité | **88 %** (45/51) |
+| Abstention correcte hors périmètre | **100 %** (9/9) |
+| Citations vérifiées présentes dans le contexte | 81 % (77/95) |
+| Refus à tort | 2/53 |
+| Répond alors qu'il devrait s'abstenir | **0** |
+| Latence médiane | 3,98 s — dont 0,16 s de recherche |
+| Latence en cas d'abstention | 0,13 s |
 
-Aucun framework RAG (LangChain/LlamaIndex) : pipeline codé à la main pour rester compréhensible et
-défendable ligne par ligne. Justification détaillée de chaque choix : [docs/Plan-Action-Projet.md](docs/Plan-Action-Projet.md) §4.
+## Le résultat le plus intéressant : mon banc de test se trompait
 
-## Structure du dépôt
+Une première version du jeu de référence comptait 37 questions et donnait un résultat net : **la recherche dense battait l'hybride** (0,969 contre 0,875). C'était mesuré, reproductible — et faux.
 
-```
-├── data/
-│   ├── raw/                       # PDF sources (Code du travail FR + AR), non modifiés
-│   ├── processed/
-│   │   └── corpus_chunks.jsonl    # Corpus structuré, un article par ligne
-│   └── chroma/                    # Base vectorielle (générée, non versionnée)
-├── docs/                          # Plan de conception, analyses, arbitrages techniques
-│   └── Plan-Action-Projet.md      # Document de conception technique complet
-├── eval/
-│   ├── questions-test.md          # Jeu de test manuel (questions + réponses attendues)
-│   ├── reference_qa.jsonl         # Jeu de référence (37 questions, articles attendus)
-│   ├── run_eval.py                # Métriques de recherche (Recall@k, MRR) — sans LLM
-│   ├── run_answer_eval.py         # Évaluation bout en bout des réponses — avec LLM
-│   └── resultats-evaluation.md    # Rapport généré par run_answer_eval.py
-├── src/
-│   ├── parser.py                  # PDF → corpus JSONL (extraction, hiérarchie, nettoyage)
-│   ├── database.py                # Corpus → index vectoriel Chroma (embeddings BGE-M3)
-│   ├── retriever.py               # Recherche hybride (dense + BM25 + RRF), reranking optionnel
-│   ├── generator.py               # Génération ancrée via Ollama (Mistral 7B)
-│   └── app.py                     # Orchestrateur : abstention + citations + vérification (CLI)
-├── web/                            # Interface web (React + Vite), chat type Gemini/ChatGPT
-│   └── src/                       # Composants : Sidebar (historique), Message, Composer
-├── serve.py                       # Serveur web local (stdlib côté API, sert web/dist/ en prod)
-├── demo.py                        # Démonstration scriptée (8 scènes) pour la soutenance
-├── JOURNAL.md                     # Carnet de bord quotidien (décisions, bugs, résultats)
-└── requirements.txt
-```
+Un audit de couverture a montré que ce jeu n'exerçait pas plusieurs chemins du code. Aucune de ses 37 questions ne nommait un article par son numéro, alors que `retriever.py` contient une branche dédiée à ce cas. Trois Livres du corpus sur huit n'étaient couverts par aucune question.
+
+Après élargissement à 62 questions ciblant exactement ces angles morts, **la conclusion s'inverse** — sans qu'une seule ligne du moteur ait changé :
+
+| Méthode | 37 questions | 62 questions |
+|---|---:|---:|
+| Dense seul | **0,969** | 0,849 |
+| BM25 seul | 0,781 | 0,660 |
+| Hybride (RRF) | 0,875 | **0,868** |
+
+Les 32 questions d'origine étaient toutes des reformulations en langage courant — la configuration exactement favorable aux embeddings. Le dense ne gagnait pas parce qu'il est meilleur, mais parce qu'on ne lui posait que les questions qu'il sait traiter.
+
+Le même biais faussait la calibration du seuil d'abstention : avec 5 questions hors périmètre, les bandes de score paraissaient nettement séparées. Avec 9, **elles se recouvrent** — « conditions pour obtenir un passeport marocain » score 0,603, au-dessus de la question de droit du travail la moins bien classée (0,596). Aucun seuil unique ne peut les séparer.
+
+> **La leçon :** un banc d'évaluation est un artefact conçu, avec ses angles morts. Tant que sa couverture n'a pas été auditée, il mesure les hypothèses de son auteur autant que le système qu'il juge.
+
+## Choix techniques
+
+| Couche | Choix | Pourquoi |
+|---|---|---|
+| Extraction PDF | PyMuPDF | Contrôle direct du découpage, là où un parseur automatique le masque |
+| Embeddings | BGE-M3 | Local (la souveraineté exclut les API), FR + AR, contexte 8192 jetons |
+| Base vectorielle | Chroma | Embarquée, persistante ; à 589 articles la performance est hors sujet |
+| Recherche lexicale | BM25 (`rank_bm25`) | Les requêtes juridiques sont riches en jetons exacts |
+| LLM | Mistral 7B via Ollama | Local ; la classe 7B est le point d'équilibre qualité / matériel ordinaire |
+| Cadriciel RAG | **aucun** | ~150 lignes ; l'écrire soi-même permet de déboguer et de l'expliquer |
+
+## Ce que le projet garantit
+
+- **Corpus reproductible.** Un clone vierge + `python src/parser.py` régénère un corpus **identique octet pour octet**, vérifié par empreinte SHA-256.
+- **Aucun chiffre saisi à la main.** Tous les nombres du rapport, texte et figures compris, sont générés depuis les fichiers de mesure par `rapport/build_data.py`.
+- **Captures d'écran réelles.** Les images de ce README sont produites par `eval/capture_ui.js`, qui pilote un navigateur sans affichage et pose réellement les questions au moteur.
+- **Limites documentées.** Le contrôle des citations est *syntaxique* : il vérifie qu'un article cité figurait dans le contexte, pas qu'il dise ce que la réponse lui attribue.
+
+<div align="center">
+<img src="docs/assets/interface-abstention.png" width="82%" alt="Abstention hors périmètre">
+<br><sub>Hors périmètre : phrase d'abstention exacte, aucune source, aucun contenu inventé.</sub>
+</div>
 
 ## Installation
 
 ```bash
-git clone <repo>
-cd "Sovereign Legal RAG Assistant"
+git clone https://github.com/taha-elbadaoui/Sovereign-Legal-RAG-Assistant.git
+cd Sovereign-Legal-RAG-Assistant
 python -m venv .venv
-.venv\Scripts\activate        # Windows (PowerShell)
-# source .venv/bin/activate   # macOS / Linux
+.venv\Scripts\activate          # Windows · source .venv/bin/activate sur macOS/Linux
 pip install -r requirements.txt
-```
-
-Le LLM local tourne via [Ollama](https://ollama.com/download) :
-
-```bash
-ollama pull mistral:7b
-```
-
-Optionnel mais recommandé — un compte Hugging Face évite les limites de débit au premier téléchargement
-des poids BGE‑M3 (~2.2 Go, mis en cache ensuite) :
-
-```bash
-hf auth login
+ollama pull mistral:7b          # https://ollama.com/download
 ```
 
 ## Utilisation
 
-**Préparation** (une seule fois — construit le corpus puis l'index vectoriel) :
+**Préparation** (une fois — construit le corpus puis l'index vectoriel) :
 
 ```bash
-python src/parser.py       # PDF -> data/processed/corpus_chunks.jsonl (589 articles)
-python src/database.py     # Corpus -> index vectoriel Chroma (télécharge BGE-M3, ~2.2 Go)
+python src/parser.py            # PDF → 589 articles JSONL
+python src/database.py          # corpus → index Chroma (télécharge BGE-M3, ~2,2 Go)
 ```
 
-**Interface web conversationnelle** (recommandé — chat type Gemini/ChatGPT, historique de
-conversations, réponses en streaming). Nécessite [Node.js](https://nodejs.org/) pour la construire
-une première fois :
+**Interface web** (nécessite Node.js pour la première construction) :
 
 ```bash
-cd web
-npm install
-npm run build
-cd ..
-python serve.py
+cd web && npm install && npm run build && cd ..
+python serve.py                 # puis http://localhost:8000
 ```
 
-Puis ouvrir **http://localhost:8000**. Une fois construite (`web/dist/`), il suffit de relancer
-`python serve.py` pour les usages suivants — pas besoin de refaire `npm install`/`npm run build`
-tant que le code de l'interface ne change pas. Le backend (API, streaming, garde-fous) reste en
-bibliothèque standard Python ; seul le frontend a une étape de build (React/Vite).
-
-**Ou en ligne de commande :**
+**Ligne de commande** — expose toute la traçabilité : score de recherche, articles retrouvés, citations non vérifiées.
 
 ```bash
 python src/app.py "Un employeur peut-il licencier une salariée enceinte ?"
+python src/retriever.py "Quelle est la durée du congé annuel payé ?"   # recherche seule
+python demo.py                  # démonstration scriptée, 8 scènes
 ```
 
-Les deux passent par le même moteur (`src/app.py`) : recherche → garde-fou d'abstention
-→ génération citée → vérification que chaque article cité était bien dans le contexte.
-
-Pour inspecter la seule recherche (sans génération) :
+**Évaluation** :
 
 ```bash
-python src/retriever.py "Quelle est la durée du congé annuel payé ?"
+python eval/run_eval.py         # Recall@k, MRR — sans LLM
+python eval/run_measures.py     # latence, taxonomie, figures — avec LLM
+python rapport/build_data.py    # mesures → chiffres et données de figures du rapport
 ```
 
-**Démonstration scriptée** (8 scènes : corpus, recherche hybride, réponse citée, abstention,
-article inexistant, recherche par numéro, métriques) :
+## Structure du dépôt
 
-```bash
-python demo.py            # toutes les scènes
-python demo.py 4          # une scène précise
+```
+src/
+  parser.py         PDF → corpus JSONL (extraction, hiérarchie, nettoyage)
+  database.py       corpus → index vectoriel Chroma
+  retriever.py      recherche hybride : dense + BM25 + RRF, renvoi par numéro explicite
+  generator.py      génération ancrée via Ollama
+  app.py            orchestrateur : abstention + contrôle des citations
+eval/
+  reference_qa.jsonl    jeu de référence, 62 questions étiquetées
+  run_eval.py           métriques de recherche, sans LLM
+  run_measures.py       latence, taxonomie, figures
+  capture_ui.js         captures d'écran de l'interface, via CDP sans dépendance npm
+  crop_captures.py      recadrage des captures sur la zone de conversation
+rapport/            rapport de stage LaTeX (57 pages, 13 figures vectorielles)
+  build_data.py     mesures → macros LaTeX et coordonnées de figures
+web/                interface React (Vite)
+JOURNAL.md          carnet de bord quotidien : décisions, bugs, impasses
 ```
 
-### Évaluation
+## Périmètre assumé
 
-```bash
-python eval/run_eval.py
-```
+Ce système relève de la **restitution d'information juridique**, pas du conseil juridique personnalisé — chaque réponse le rappelle. Quatre interdictions tenues du premier au dernier jour : pas de *fine-tuning*, pas de mémoire multi-tours, pas d'autre code que le Code du travail, aucune API externe dans le cœur du système.
 
-Compare dense seul / BM25 seul / hybride sur le [jeu de référence](eval/reference_qa.jsonl)
-(37 questions). Résultats mesurés (Recall@5 / MRR) :
+---
 
-| Méthode | Recall@5 | MRR |
-|---|---|---|
-| Dense seul | **0.969** | **0.891** |
-| BM25 seul | 0.781 | 0.628 |
-| Hybride (RRF) | 0.875 | 0.794 |
-
-> Sur des questions en langage naturel, la recherche dense domine — les reformulations favorisent
-> le sémantique. L'hybride aiderait davantage sur des requêtes à tokens exacts. Constat mesuré, pas
-> supposé (cf. [JOURNAL.md](JOURNAL.md)).
-
-Évaluation **bout en bout** des réponses générées (nécessite Ollama, ~3 min) :
-
-```bash
-python eval/run_answer_eval.py
-```
-
-Produit [`eval/resultats-evaluation.md`](eval/resultats-evaluation.md). Derniers résultats :
-
-| Critère de succès | Résultat |
-|---|---|
-| Citation systématique | **97 %** (30/31) |
-| Abstention correcte (hors périmètre) | **100 %** (5/5) |
-| Vérification des citations | **91 %** (49/54) |
-| *(bonus)* L'article attendu est cité | 84 % (26/31) |
-| Abstentions à tort | 1/32 |
-
-> Les citations « non vérifiées » restantes sont des **renvois internes** (« …prévu par l'article N
-> ci-dessous ») repris depuis le texte d'un article bien fourni — pas des hallucinations. Limite
-> connue : la vérification contrôle la *présence* de l'article dans le contexte, pas le fait qu'il
-> dise réellement ce que la réponse lui attribue.
-
-## État d'avancement
-
-| Phase | Contenu | Statut |
-|---|---|---|
-| S1‑S2 | Extraction, découpage par article, métadonnées de hiérarchie, corpus JSONL | ✅ |
-| S3 | Pipeline RAG bout‑en‑bout : embeddings, recherche hybride, génération citée | ✅ |
-| S4 | Abstention pré‑LLM, vérification des citations, orchestrateur CLI + interface web | ✅ |
-| S5 | Reranking par cross‑encodeur (option), jeu de référence (37 questions) | ✅ |
-| S6 | Évaluation : recherche (Recall@k, MRR) **et** réponses (citation, abstention, vérification) | ✅ |
-| S7 | Durcissement, reproductibilité | 🔶 en cours |
-| S8 | Rapport de stage, soutenance | ⬜ |
-| — | Extension multi‑codes + multilingue (FR/EN/AR) | ⬜ à venir |
-
-Journal détaillé : [JOURNAL.md](JOURNAL.md). Plan complet et justification des choix techniques :
-[docs/Plan-Action-Projet.md](docs/Plan-Action-Projet.md).
+<div align="center">
+<sub>Stage de fin de première année · <b>INPT</b>, filière ASEDS · <b>Pulsaride Solutions</b> · juillet–août 2026<br>
+Journal de bord détaillé : <a href="JOURNAL.md">JOURNAL.md</a></sub>
+</div>

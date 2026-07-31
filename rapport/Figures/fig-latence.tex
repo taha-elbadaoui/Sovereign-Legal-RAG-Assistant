@@ -1,0 +1,72 @@
+% Latence, en deux lectures : de quoi le temps de réponse est fait, puis
+% comment il se distribue d'une question à l'autre.
+\input{Figures/data/fig-latence-data}
+\begin{tikzpicture}
+
+% ------------------------------------------- (a) composition du temps médian
+\begin{axis}[
+  name=compo,
+  socle,
+  xbar stacked,
+  height=3.2cm, width=0.9\linewidth,
+  bar width=12pt,
+  xmin=0, xmax=4.3,
+  xmajorgrids, axis y line=none,
+  ytick={0,1}, y dir=reverse,
+  yticklabels={},
+  enlarge y limits=0.75,
+  xlabel={secondes},
+  title={\textbf{(a)}~~Composition du temps de réponse médian},
+  title style={at={(0,1.32)}, anchor=south west},
+  legend style={at={(1,1.32)}, anchor=south east},
+]
+\addplot[draw=white, line width=0.7pt, fill=inptblue, fill opacity=0.9]
+  coordinates {(\LatMedRecherche,0) (\LatMedAbstention,1)};
+\addplot[draw=white, line width=0.7pt, fill=amberdark, fill opacity=0.85]
+  coordinates {(\LatMedGeneration,0) (0,1)};
+\legend{recherche \LatRecherche{} s, génération \LatGeneration{} s}
+
+\node[font=\sffamily\scriptsize\bfseries, text=ink, anchor=west]
+  at (axis cs:3.52,0) {\LatTotale{} s};
+\node[font=\sffamily\scriptsize\bfseries, text=anrtred, anchor=west]
+  at (axis cs:0.24,1) {\LatAbstention{} s};
+
+\node[font=\sffamily\scriptsize, text=slate, anchor=east]
+  at (axis cs:-0.05,0) {réponse complète};
+\node[font=\sffamily\scriptsize, text=slate, anchor=east]
+  at (axis cs:-0.05,1) {abstention};
+\end{axis}
+
+% ------------------------------------- (b) distribution question par question
+\begin{axis}[
+  socle,
+  at={($(compo.south west)-(0,2.5cm)$)}, anchor=north west,
+  height=5.4cm, width=0.9\linewidth,
+  xmin=0.5, xmax=\LatNbCourbe+0.5,
+  ymin=0, ymax=15,
+  ytick={0,5,10},
+  ymajorgrids,
+  xlabel={les \LatNbCourbe{} questions transmises au modèle, triées par temps total},
+  ylabel={secondes},
+  title={\textbf{(b)}~~Distribution du temps de réponse},
+  title style={at={(0,1.06)}, anchor=south west},
+]
+\addplot[ybar, bar width=4.2pt, draw=none, fill=amberdark, fill opacity=0.6]
+  coordinates {\LatCourbeTotal};
+\addplot[ybar, bar width=4.2pt, draw=none, fill=inptblue]
+  coordinates {\LatCourbeRecherche};
+
+\draw[slate, line width=0.7pt, dash pattern=on 3pt off 2pt]
+  (axis cs:0.5,3.486) -- (axis cs:\LatNbCourbe+0.5,3.486);
+\node[font=\sffamily\scriptsize, text=slate, anchor=south west]
+  at (axis cs:1,3.6) {médiane \LatTotale{} s};
+
+\node[font=\sffamily\scriptsize, text=slate, anchor=north west, align=left,
+      text width=52mm]
+  at (axis cs:1.5,14.6) {la part bleue reste plate d'un bout à l'autre :
+                         tout l'écart vient de l'inférence};
+\draw[slate, line width=0.5pt, -{Stealth[length=1.8mm]}]
+  (axis cs:11,11.2) to[out=-25,in=150] (axis cs:20,0.9);
+\end{axis}
+
+\end{tikzpicture}

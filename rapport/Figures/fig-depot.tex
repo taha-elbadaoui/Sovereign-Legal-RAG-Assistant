@@ -1,0 +1,66 @@
+% Organisation du dépôt. Arbre vectoriel plutôt que listing ASCII : la
+% couleur y distingue ce qui est versionné de ce qui est régénéré.
+\begin{tikzpicture}[font=\sffamily\scriptsize,
+    dossier/.style={draw=navy, fill=navy!6, text=navy, rounded corners=2pt,
+                    line width=0.6pt, minimum height=5.4mm, inner xsep=5pt,
+                    font=\sffamily\scriptsize\bfseries, anchor=west},
+    fichier/.style={draw=rule, fill=white, text=ink, rounded corners=2pt,
+                    line width=0.5pt, minimum height=5.4mm, inner xsep=5pt,
+                    font=\ttfamily\scriptsize, anchor=west},
+    genere/.style={fichier, draw=slate!45, fill=mist, text=slate},
+    note/.style={font=\sffamily\scriptsize, text=slate, anchor=west},
+    branche/.style={draw=rule, line width=0.5pt}]
+
+\def\ind{0.55}   % retrait par niveau
+\def\pas{0.62}   % pas vertical
+
+% #1 niveau, #2 ligne, #3 style, #4 libellé, #5 commentaire
+\newcommand{\entree}[5]{%
+  \node[#3] (n#2) at ({#1*\ind},{-#2*\pas}) {#4};
+  \node[note] at ({5.6},{-#2*\pas}) {#5};}
+
+\entree{0}{0}{dossier}{sovereign-legal-rag/}{}
+\entree{1}{1}{dossier}{data/}{}
+\entree{2}{2}{fichier}{raw/}{PDF sources, jamais modifiés}
+\entree{2}{3}{genere}{processed/corpus\_chunks.jsonl}{régénéré par le parseur}
+\entree{2}{4}{genere}{chroma/}{base vectorielle, régénérée}
+\entree{1}{5}{dossier}{src/}{}
+\entree{2}{6}{fichier}{parser.py}{PDF $\rightarrow$ corpus structuré}
+\entree{2}{7}{fichier}{database.py}{corpus $\rightarrow$ index dense}
+\entree{2}{8}{fichier}{retriever.py}{dense + BM25 + fusion RRF}
+\entree{2}{9}{fichier}{generator.py}{prompt ancré, appel Ollama}
+\entree{2}{10}{fichier}{app.py}{abstention et contrôle des citations}
+\entree{1}{11}{dossier}{eval/}{}
+\entree{2}{12}{fichier}{reference\_qa.jsonl}{jeu de référence, \NbQuestions{} questions}
+\entree{2}{13}{fichier}{run\_eval.py}{Recall@k et MRR, sans LLM}
+\entree{2}{14}{fichier}{run\_answer\_eval.py}{critères portant sur la réponse}
+\entree{2}{15}{fichier}{run\_measures.py}{latence et taxonomie}
+\entree{2}{16}{genere}{mesures-performance.json}{source des chiffres du rapport}
+\entree{1}{17}{dossier}{rapport/}{}
+\entree{2}{18}{fichier}{build\_data.py}{mesures $\rightarrow$ macros et tables}
+\entree{1}{19}{fichier}{web/ et serve.py}{interface de démonstration}
+\entree{1}{20}{fichier}{JOURNAL.md}{carnet de bord quotidien}
+
+% ------------------------------------------------------------------ branches
+% Verticale du niveau 1, des enfants directs de la racine.
+\draw[branche] ({0.5*\ind},{-0.34}) -- ({0.5*\ind},{-20*\pas});
+\foreach \r in {1,5,11,17,19,20}
+  \draw[branche] ({0.5*\ind},{-\r*\pas}) -- ({1*\ind-0.03},{-\r*\pas});
+
+% Verticales de niveau 2, une par dossier parent.
+\foreach \parent/\premier/\dernier in {1/2/4, 5/6/10, 11/12/16, 17/18/18} {
+  \draw[branche] ({1.5*\ind},{-\parent*\pas-0.28}) --
+                 ({1.5*\ind},{-\dernier*\pas});
+  \foreach \r in {\premier,...,\dernier}
+    \draw[branche] ({1.5*\ind},{-\r*\pas}) -- ({2*\ind-0.03},{-\r*\pas});
+}
+
+% -------------------------------------------------------------------- légende
+\node[fichier, minimum width=0pt, text width=0pt, minimum height=3.4mm]
+  (lg1) at (0,{-21.4*\pas}) {};
+\node[note, right=1.5mm of lg1] (lt1) {versionné};
+\node[genere, minimum width=0pt, text width=0pt, minimum height=3.4mm,
+      right=5mm of lt1] (lg2) {};
+\node[note, right=1.5mm of lg2] {régénéré (absent du dépôt)};
+
+\end{tikzpicture}

@@ -1,0 +1,52 @@
+% Chaîne d'extraction du corpus, et l'endroit exact où chacun des trois
+% défauts de la section correspondante se manifeste.
+\begin{tikzpicture}[font=\sffamily\scriptsize, node distance=6mm,
+                    bloc/.append style={text width=23mm}]
+
+\node[donnee, haut] (pdf) {PDF officiel\\472 pages};
+\node[traitement, haut, right=of pdf] (txt)
+  {Extraction du texte\\(PyMuPDF)};
+\node[traitement, haut, right=of txt] (split)
+  {Découpage par article\\expression régulière};
+\node[traitement, haut, right=of split] (hier)
+  {Reconstruction de\\la hiérarchie};
+\node[donnee, haut, right=of hier] (out)
+  {Corpus JSONL\\\NbArticles{} articles};
+
+\draw[flux] (pdf) -- (txt);
+\draw[flux] (txt) -- (split);
+\draw[flux] (split) -- (hier);
+\draw[flux] (hier) -- (out);
+
+% ------------------------------------------- défauts, rattachés à leur étape
+% Les pastilles se posent sur le coin du nœud, à cheval sur le bord, pour ne
+% jamais recouvrir le texte qu'elles annotent.
+\node[puce] at (txt.north east)   (p1) {1};
+\node[puce] at (split.north east) (p2) {2};
+\node[puce] at (hier.north east)  (p3) {3};
+
+\node[annot, below=14mm of txt.south, text width=28mm, anchor=north]
+  (a1) {\textbf{1.} L'exposant est perdu :\\
+        «\,Article 334\textsuperscript{50}\,» ressort\\
+        en \texttt{33450}.};
+\node[annot, below=14mm of split.south, text width=28mm, anchor=north]
+  (a2) {\textbf{2.} Un espace parasite\\
+        casse l'ancrage : l'article\\
+        135 disparaît en silence.};
+\node[annot, below=14mm of hier.south, text width=28mm, anchor=north]
+  (a3) {\textbf{3.} 32 titres se replient\\
+        sur deux lignes : métadonnées\\
+        tronquées, fin de titre\\
+        absorbée par l'article.};
+
+\draw[rejet, line width=0.5pt] (a1.north) -- (txt.south);
+\draw[rejet, line width=0.5pt] (a2.north) -- (split.south);
+\draw[rejet, line width=0.5pt] (a3.north) -- (hier.south);
+
+% ------------------------------------------------------------ contrôle final
+\node[bloc, draw=leafgreen, fill=leafgreen!8, text=leafgreen!45!black,
+      text width=23mm, below=14mm of out.south, anchor=north] (ctrl)
+  {Contrôle : séquence\\1--\NbArticles{} complète,\\empreinte SHA-256\\stable};
+\draw[usage, draw=leafgreen!70] (out.south) -- (ctrl.north);
+
+\end{tikzpicture}

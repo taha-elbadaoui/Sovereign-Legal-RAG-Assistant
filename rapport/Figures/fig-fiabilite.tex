@@ -1,0 +1,43 @@
+% Indicateurs de fiabilité. Une seule série, donc une seule teinte et pas de
+% légende : le titre de l'axe suffit à la nommer. Le rail clair rappelle que
+% l'échelle va jusqu'à 100 %, ce qu'une barre nue laisse deviner.
+\input{Figures/data/fig-fiabilite-data}
+\begin{tikzpicture}[
+  detail/.style={font=\sffamily\scriptsize, text=slate, anchor=west}]
+\begin{axis}[
+  barresH,
+  height=4.8cm,
+  % Largeur réduite : les libellés à gauche et les effectifs à droite
+  % s'ajoutent à l'aire tracée.
+  width=0.62\linewidth,
+  xmin=0, xmax=134,
+  xtick={0,25,50,75,100},
+  xticklabel={\pgfmathprintnumber{\tick}\,\%},
+  ytick={0,...,3},
+  % Libellés en clair : pgfplots ne développe pas une macro donnée à
+  % « yticklabels ». L'ordre suit celui de la liste « fiab » dans
+  % rapport/build_data.py, qui fixe l'ordre des barres.
+  yticklabels={{Citation systématique},{Citations vérifiées},
+               {Article attendu cité},{Abstention hors périmètre}},
+  yticklabel style={font=\sffamily\scriptsize, text=ink, align=right},
+  xlabel={part des cas conformes},
+  bar width=11pt,
+  every axis plot/.append style={bar shift=0},
+]
+% Rail de fond : la portion non atteinte.
+\addplot[draw=none, fill=mist, forget plot]
+  coordinates {(100,0) (100,1) (100,2) (100,3)};
+\addplot[draw=inptblue, fill=inptblue, fill opacity=0.9,
+         nodes near coords={\pgfmathprintnumber[precision=0]{\pgfplotspointmeta}\,\%},
+         nodes near coords style={font=\sffamily\scriptsize\bfseries, text=ink,
+                                  anchor=west, xshift=3pt}]
+  coordinates {\FiabiliteCoords};
+
+% Effectif réel derrière chaque pourcentage : 93 % sur 45 citations n'a pas
+% le même poids que 100 % sur 5 questions, et la figure doit le dire.
+\node[detail] at (axis cs:116,0) {\FiabiliteDetailA};
+\node[detail] at (axis cs:116,1) {\FiabiliteDetailB};
+\node[detail] at (axis cs:116,2) {\FiabiliteDetailC};
+\node[detail] at (axis cs:116,3) {\FiabiliteDetailD};
+\end{axis}
+\end{tikzpicture}

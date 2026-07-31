@@ -1,0 +1,77 @@
+\chapter{Le prompt système}
+\label{ann:prompt}
+
+Le prompt qui encadre la génération constitue l'un des éléments les plus déterminants du système :
+c'est lui qui traduit l'exigence de fiabilité en contraintes que le modèle peut suivre. Sa version
+finale impose les règles suivantes.
+
+\begin{enumerate}
+  \item Répondre uniquement à partir des articles fournis, sans recourir à aucune autre
+        connaissance ni à aucune supposition.
+  \item Citer systématiquement les numéros d'articles utilisés, sous la forme
+        \texttt{(Article~N)}.
+  \item Employer une phrase d'abstention \emph{exacte} lorsque les articles fournis ne permettent
+        pas de répondre. La formulation est imposée mot pour mot, afin qu'elle soit détectable
+        automatiquement par le banc d'évaluation.
+  \item Ne jamais compléter un aveu d'absence par une supposition sur le contenu d'un article
+        manquant --- y compris présentée comme approximative ou incertaine.
+  \item Répondre \emph{par défaut} lorsque les articles fournis contiennent de quoi le faire,
+        l'abstention étant réservée aux cas où le sujet n'est réellement pas traité.
+  \item Ne jamais citer un numéro de loi, un numéro d'article, une procédure ou une règle
+        provenant d'un autre code, et ne jamais affirmer avoir «~consulté~» un texte : les seuls
+        textes disponibles sont les articles fournis.
+  \item Ne jamais donner de conseil juridique personnalisé.
+  \item Répondre de façon claire et concise, dans la langue de la question.
+\end{enumerate}
+
+\section{Genèse des règles 4, 5 et 6}
+
+Ces trois règles n'ont pas été écrites d'emblée : elles sont la trace de défaillances observées, et
+leur ordre d'apparition est instructif (tableau~\ref{tab:regles}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Ajouts successifs au prompt et leur effet mesuré}
+  \label{tab:regles}
+  \small
+  \begin{tabularx}{\textwidth}{@{}>{\centering\arraybackslash}p{1.1cm} R R@{}}
+    \toprule
+    \sffamily\bfseries\color{navy}Règle &
+    \sffamily\bfseries\color{navy}Défaillance à l'origine &
+    \sffamily\bfseries\color{navy}Effet observé \\
+    \midrule
+    4 & Le modèle constatait l'absence d'un article, puis en devinait le contenu
+      & Suppression du comportement, sans effet de bord notable \\
+    6 & Hallucination inter-codes : citation d'un «~Code civil marocain~» inexistant
+      & Abstention correcte portée à \TauxAbstention~\%, mais refus à tort triplés \\
+    5 & Sur-correction introduite par la règle~6
+      & Bénéfice de la règle~6 conservé, coût partiellement résorbé \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La règle~5 est donc un correctif de correctif. Elle illustre un point développé au
+chapitre~\ref{chap:evaluation} : durcir un prompt déplace le compromis entre prudence et utilité,
+et sans mesure on n'observe que le côté du compromis qu'on regardait déjà.
+
+\section{Phrase d'abstention}
+
+La phrase imposée par la règle~3 est reproduite ci-dessous. Sa formulation exacte importe autant
+que son contenu : le banc d'évaluation la reconnaît par appariement, et toute reformulation par le
+modèle serait comptée comme une réponse.
+
+\begin{encadre}
+«~Je ne dispose pas d'information suffisante dans le corpus fourni (Code du travail, Loi~65-99)
+pour répondre à cette question.~»
+\end{encadre}
+
+\section{Avertissement joint à chaque réponse}
+
+Toute réponse non abstentionniste est accompagnée de l'avertissement suivant, qui matérialise le
+non-objectif énoncé au chapitre~\ref{chap:contexte} : le système restitue de l'information
+juridique, il ne conseille pas.
+
+\begin{encadre}
+«~Réponse fournie à titre informatif, fondée sur les textes cités ; elle ne constitue pas un
+conseil juridique. Pour une situation particulière, consultez un professionnel du droit.~»
+\end{encadre}

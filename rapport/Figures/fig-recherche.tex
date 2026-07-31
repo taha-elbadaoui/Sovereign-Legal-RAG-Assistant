@@ -1,0 +1,42 @@
+% Qualité de la recherche : les deux métriques sont bornées entre 0 et 1 et
+% partagent donc un axe unique. Aucun axe secondaire.
+%
+% Barres horizontales, comme les autres graphiques du chapitre : l'étiquette
+% de valeur se place au bout de chaque barre, ce qui rend toute collision
+% impossible — en barres verticales, « 0,969 » et « 0,891 » se touchaient.
+\input{Figures/data/fig-recherche-data}
+\begin{tikzpicture}
+\begin{axis}[
+  socle,
+  xbar, bar width=8pt,
+  height=5.2cm, width=0.72\linewidth,
+  xmin=0, xmax=1.18,
+  xtick={0,0.25,0.5,0.75,1},
+  xmajorgrids, ymajorgrids=false,
+  axis x line*=bottom, axis y line*=left,
+  y axis line style={draw=none}, ytick style={draw=none},
+  ytick={0,1,2}, y dir=reverse,
+  yticklabels={{Dense seul},{BM25 seul},{Hybride (RRF)}},
+  yticklabel style={font=\sffamily\small, text=ink, align=right},
+  enlarge y limits=0.28,
+  xlabel={valeur de la métrique},
+  nodes near coords,
+  % « fixed zerofill » : sans lui, 0,660 s'affiche « 0,66 » alors que le
+  % tableau voisin écrit trois décimales.
+  nodes near coords style={font=\sffamily\scriptsize, text=ink,
+                           anchor=west, xshift=2.5pt,
+                           /pgf/number format/fixed,
+                           /pgf/number format/fixed zerofill,
+                           /pgf/number format/precision=3},
+  legend style={at={(0.5,1.03)}, anchor=south},
+  legend image post style={line width=2.5pt},
+]
+% L'axe est inversé (y dir=reverse) : un décalage positif place la barre plus
+% haut. Recall@5 vient donc en premier, dans l'ordre de la légende.
+\addplot[draw=inptblue,  fill=inptblue,  fill opacity=0.9,  bar shift=5pt]
+  coordinates {\RechercheRecall};
+\addplot[draw=amberdark, fill=amberdark, fill opacity=0.9,  bar shift=-5pt]
+  coordinates {\RechercheMrr};
+\legend{Recall@5, MRR}
+\end{axis}
+\end{tikzpicture}

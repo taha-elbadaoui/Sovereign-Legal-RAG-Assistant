@@ -1,0 +1,4 @@
+methode,recall,mrr
+Dense seul,0.849,0.778
+BM25 seul,0.660,0.535
+Hybride (RRF),0.868,0.775

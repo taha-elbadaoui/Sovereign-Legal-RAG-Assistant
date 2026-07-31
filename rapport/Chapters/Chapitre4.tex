@@ -1,0 +1,304 @@
+\chapter{Réalisation}
+\label{chap:realisation}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce chapitre décrit la mise en œuvre du système, de l'extraction du corpus jusqu'aux interfaces.
+Une place particulière y est accordée aux difficultés rencontrées : les défauts d'extraction
+décrits en section~\ref{sec:bugs} ont représenté une part importante du temps de travail, et
+illustrent une leçon qui vaut au-delà de ce projet --- la qualité du corpus conditionne tout ce
+qui est construit dessus, et ses défauts ne produisent aucun message d'erreur.
+
+\section{Constitution du corpus}
+
+\subsection{Extraction et découpage}
+
+Le texte a été extrait du PDF officiel du Code du travail à l'aide de PyMuPDF. Le découpage en
+articles repose sur une expression régulière ancrée en début de ligne, appliquée au texte
+\emph{complet} plutôt que page par page --- un article pouvant s'étendre sur deux pages, un
+traitement page à page l'aurait systématiquement coupé.
+
+Chaque article est enrichi de sa position exacte dans la hiérarchie de la loi (livre, titre,
+chapitre, section), reconstruite en parcourant le texte dans l'ordre : les en-têtes de hiérarchie
+annoncent ce qui suit, ils sont donc mémorisés au fil de la lecture et appliqués aux articles
+suivants jusqu'au prochain en-tête.
+
+Le corpus final compte \textbf{\NbArticles{} articles} répartis sur \NbLivres{} livres
+(figure~\ref{fig:corpus}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-corpus-structure}
+  \caption[Structure du corpus extrait]{Structure du corpus extrait. Le déséquilibre est celui de
+  la loi elle-même : le Livre~II concentre à lui seul 261 des \NbArticles{} articles, ce qui
+  explique que le jeu de référence du chapitre~\ref{chap:evaluation} y puise une large part de ses
+  questions. Chaque article porte en métadonnée son chemin complet --- livre, titre, chapitre,
+  section --- reconstruit à la lecture ; ce chemin n'est pas vectorisé, il sert au filtrage et à
+  l'affichage des sources, pas à la mesure de similarité.}
+  \label{fig:corpus}
+\end{figure}
+
+Le résultat est sérialisé au format JSONL, un article par ligne :
+
+\begin{lstlisting}[caption={Structure d'un article du corpus},label={lst:article}]
+{
+  "article_number": "152",
+  "article_text": "La salariee en etat de grossesse attestee par certificat
+                   medical dispose d'un conge de maternite de quatorze
+                   semaines, sauf stipulations plus favorables...",
+  "amende_2021": false,
+  "livre": "Livre II: Des conditions de travail et de la remuneration du salarie",
+  "titre": "Titre II : De la protection du mineur et de la femme",
+  "chapitre": "Chapitre II : De la protection de la maternite",
+  "section": null
+}
+\end{lstlisting}
+
+\subsection{Difficultés d'extraction rencontrées}
+\label{sec:bugs}
+
+Trois familles de défauts, invisibles à la lecture rapide, ont été découvertes puis corrigées
+(figure~\ref{fig:pipeline}). Elles méritent d'être détaillées car elles illustrent un point
+méthodologique : \textbf{une vérification par échantillonnage ne suffit pas}. Aucun de ces trois
+défauts n'a été trouvé à l'œil ; tous l'ont été par balayage systématique du corpus entier.
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-pipeline-corpus}
+  \caption[Chaîne d'extraction et défauts rencontrés]{Chaîne d'extraction du corpus, et l'étape à
+  laquelle chacun des trois défauts se manifeste. Aucun ne produit d'erreur : ils dégradent le
+  corpus en silence.}
+  \label{fig:pipeline}
+\end{figure}
+
+\paragraph{Numéros d'articles corrompus par des appels de note}
+PyMuPDF ne préserve pas la mise en exposant. Un appel de note collé à un numéro d'article dans le
+PDF --- «~Article~334\textsuperscript{50}~» --- ressort donc comme une seule suite de chiffres sans
+séparateur : \texttt{33450}. L'expression régulière, gourmande, consommait la suite entière et
+produisait un article au numéro absurde. La correction consiste à plafonner la capture à trois
+chiffres, ce qui est sûr puisque aucun article de cette loi ne dépasse \NbArticles{}.
+
+\paragraph{Un article entièrement absent}
+Le corpus comptait 588 articles au lieu de \NbArticles{}. Un espace parasite avant «~Article~135~»
+dans le texte extrait cassait l'ancrage en début de ligne pour cette seule occurrence ; le contenu
+de l'article était silencieusement absorbé dans le corps du précédent. Le défaut a été détecté en
+cherchant les trous dans la séquence 1--\NbArticles{} --- un contrôle qui ne coûte rien et qu'il
+aurait fallu écrire dès le premier jour.
+
+\paragraph{Titres de hiérarchie repliés sur plusieurs lignes}
+Trente-deux titres de section sont trop longs pour tenir sur une ligne du PDF et se replient sur
+une deuxième, parfois une troisième. L'expression régulière ne capturant que la première ligne,
+deux conséquences se cumulaient : les métadonnées de hiérarchie restaient tronquées pour
+\emph{tous} les articles concernés, et la fin du titre fuyait dans le corps de l'article adjacent,
+polluant le texte effectivement vectorisé.
+
+\paragraph{La même cause, sur les en-têtes de hiérarchie}
+Le plafonnement à trois chiffres corrige les \emph{numéros} d'articles, mais la perte de la mise
+en exposant frappe aussi les titres. Un balayage systématique de tous les libellés de hiérarchie
+du corpus --- et non des seuls articles --- a révélé quatre en-têtes portant encore un appel de
+note soudé à leur dernier mot :
+
+\begin{center}\small\ttfamily
+\begin{tabular}{@{}l@{}}
+Titre IV : De l'hygiène et de la sécurité des salariés\textcolor{anrtred}{37}\\
+Section II : Du salaire minimum légal\textcolor{anrtred}{54}\\
+Section III : De la saisie-arrêt\textcolor{anrtred}{60} et de la cession des salaires\\
+Chapitre premier : Des agents chargés de l'inspection du travail\textcolor{anrtred}{88}\\
+\end{tabular}
+\end{center}
+
+\noindent La correction retire tout groupe de un à trois chiffres soudé à une lettre dans un
+en-tête. La règle est sûre : un titre qui numérote le fait avec une espace («~Section~2~») ou à
+l'intérieur d'une référence de loi («~65-99~»), deux formes que le motif ne touche pas.
+
+\begin{constat}
+La régénération du corpus après cette correction ne modifie \textbf{aucun texte d'article} : elle
+ne touche que 83 champs de métadonnées, sur les quatre libellés ci-dessus. Le contrôle est
+important, car il établit que la correction ne pouvait pas déplacer les résultats du
+chapitre~\ref{chap:evaluation} : ces champs ne sont pas vectorisés
+(section~\ref{sec:indexation}), donc invisibles pour la recherche.
+
+\smallskip
+Ce défaut avait d'abord été documenté comme une limite assumée, au motif qu'y toucher obligerait à
+rejouer toute l'évaluation. La vérification ci-dessus montre que cet argument était faux : le
+champ n'étant pas vectorisé, aucun chiffre ne pouvait bouger. Le corriger ne coûtait donc rien.
+\end{constat}
+
+\subsection{Traitement d'un cas particulier : les articles abrogés}
+
+Les articles~32 et~256 sont abrogés dans la version française de 2011 utilisée --- leurs
+dispositions relatives au service militaire ayant été supprimées par la loi~48-06 --- mais ont été
+rétablis par la loi~02.21 en 2021. Le texte de remplacement, vérifié contre la version arabe en
+vigueur, a été réintégré dans le corpus.
+
+Ces deux articles portent un indicateur explicite (\texttt{amende\_2021}) afin que cette
+déviation par rapport au PDF source reste visible \emph{dans la donnée elle-même}, et pas seulement
+dans la documentation. Le principe est général : une donnée qui s'écarte de sa source doit
+transporter le signal de cet écart, faute de quoi il se perd à la première reprise du projet.
+
+\subsection{Reproductibilité du corpus}
+
+La chaîne d'extraction est déterministe : un clone vierge du dépôt suivi d'une réexécution du
+parseur produit un corpus \textbf{identique octet pour octet} au corpus versionné. Cette propriété
+a été vérifiée explicitement par comparaison d'empreintes SHA-256, et non simplement supposée.
+
+\section{Indexation}
+\label{sec:indexation}
+
+Les \NbArticles{} articles sont vectorisés avec BGE-M3 puis stockés dans une collection Chroma
+persistante. Seul le \emph{texte légal} est embarqué : la hiérarchie est conservée comme
+métadonnée filtrable plutôt qu'incluse dans le vecteur.
+
+Ce choix mérite une justification, car l'inverse est fréquent. Inclure «~Livre~II, Titre~III, De
+la durée du travail~» en tête de chaque article ajoute à tous les articles d'une même section un
+vocabulaire commun qui ne les distingue pas les uns des autres : le signal recherché par la
+requête s'en trouve dilué, sans gain de précision.
+
+Les vecteurs sont normalisés à l'indexation, ce qui permet de calculer la similarité cosinus par
+simple produit scalaire, conformément à l'équation~\eqref{eq:cosinus}, indépendamment de la
+métrique de distance configurée dans la base.
+
+\section{Recherche hybride}
+
+La recherche interroge les deux index puis fusionne les classements par RRF selon
+l'équation~\eqref{eq:rrf}, avec une constante d'amortissement $k = 60$ et vingt candidats par
+méthode.
+
+\subsection{Une limite structurelle de la recherche par similarité}
+\label{sec:refexplicite}
+
+Un cas particulier a nécessité un traitement dédié. À la question «~Que dit l'article~32~?~», la
+recherche sémantique échoue --- et elle échoue \emph{structurellement}, pas accidentellement. La
+formulation de la question ne partage aucun vocabulaire avec le \emph{contenu} de l'article~32
+(suspension du contrat, service militaire, grève) : la similarité entre les deux est donc faible,
+alors même que l'article existe bel et bien dans le corpus. La recherche compare la question au
+corps des articles, or une question \emph{sur} un article ne ressemble pas à cet article.
+
+La correction consiste à détecter les références explicites («~article~N~») dans la question
+elle-même et à garantir la présence de l'article correspondant dans le contexte, sans le faire
+concourir dans un classement de similarité qu'il ne pouvait pas gagner. Le score d'abstention est
+également forcé à 1,0 dans ce cas : un article nommé est par définition pertinent, et il serait
+absurde que le garde-fou rejette une question dont on sait qu'elle porte sur un article réel du
+corpus.
+
+\begin{limite}
+Ce chemin de code est resté \textbf{non testé pendant toute la durée du développement}. Le jeu de
+référence d'origine ne comportait aucune question nommant un article par son numéro : la branche
+existait, elle était raisonnée, mais rien ne prouvait qu'elle fonctionnait. Six questions ont été
+ajoutées pour la couvrir (chapitre~\ref{chap:evaluation}).
+
+\smallskip
+Le forçage du score a par ailleurs une conséquence sur la mesure elle-même : les scores de
+recherche de ces six questions valent 1,0 par construction et ne mesurent aucune similarité. Ils
+sont donc exclus des statistiques de score du chapitre~\ref{chap:evaluation}, faute de quoi ils
+gonfleraient artificiellement la bande «~droit du travail~».
+\end{limite}
+
+\section{Génération ancrée et garde-fous}
+
+\subsection{Le prompt système}
+
+La génération est encadrée par un prompt système imposant des règles strictes : répondre
+uniquement à partir des articles fournis, citer systématiquement leurs numéros, employer une
+phrase d'abstention exacte lorsque l'information est absente, et ne jamais donner de conseil
+juridique personnalisé. Sa version finale est reproduite en annexe~\ref{ann:prompt}.
+
+Trois règles n'y figuraient pas au départ. Elles ont été ajoutées en cours de projet, en réaction
+à des défaillances observées lors de l'évaluation (section~\ref{sec:hallucination}) :
+l'interdiction de compléter un aveu d'absence par une supposition, l'interdiction absolue de citer
+un numéro de loi ou d'article provenant d'un autre code, et --- pour compenser l'effet des deux
+premières --- une consigne de rééquilibrage énonçant que \emph{par défaut, le modèle répond}.
+
+Le modèle est appelé à basse température (0,1), avec une pénalité de répétition et un plafond de
+longueur. Ces deux derniers paramètres n'étaient pas prévus : ils ont été ajoutés après avoir
+observé qu'une génération à basse température peut dégénérer en répétition indéfinie d'un même
+mot, une fois le modèle à court de jetons dont il est confiant.
+
+\subsection{Contrôle des citations}
+
+Après génération, les numéros d'articles cités par le modèle sont extraits par expression
+régulière, puis confrontés à la liste des articles réellement fournis. Tout numéro cité mais
+absent du contexte est signalé.
+
+Ce contrôle a lui-même fait l'objet d'une correction significative. Sa première version n'appariait
+que la forme au singulier («~Article~152~») et manquait donc \emph{toutes} les citations au pluriel
+(«~Articles~154 et~156~»), pourtant très fréquentes dans les réponses réellement produites. Le
+garde-fou était ainsi partiellement inopérant, et les métriques d'évaluation sous-estimaient le
+taux de citation --- un cas où l'instrument de mesure était lui-même défectueux, et où l'erreur
+allait dans le sens de la sévérité, donc ne se signalait pas comme un problème.
+
+\begin{constat}
+Un garde-fou non testé est une hypothèse, pas une garantie. Les deux garde-fous du système ont
+chacun révélé un défaut à l'usage : le contrôle des citations ignorait le pluriel, et le seuil
+d'abstention s'est révélé mal calibré à sa première valeur. Aucun des deux ne se serait manifesté
+sans un banc de mesure.
+\end{constat}
+
+\section{Interfaces}
+
+Deux interfaces partagent exactement le même moteur.
+
+\begin{itemize}
+  \item Une \textbf{interface en ligne de commande}, qui constitue le livrable de référence. Elle
+        expose la totalité de la traçabilité : score de recherche, articles retrouvés, citations
+        non vérifiées. C'est celle qui a servi à toutes les mesures.
+  \item Une \textbf{interface web conversationnelle} (React), destinée à la démonstration. Elle
+        affiche les réponses au fil de leur génération, met en évidence les citations dans le
+        texte, et permet de déplier chaque article source avec son chemin hiérarchique complet.
+\end{itemize}
+
+La surface technique reste volontairement du côté de la ligne de commande : l'interface web ne
+montre que la réponse, ses sources et l'avertissement d'usage
+(figure~\ref{fig:interface}). Un score de similarité affiché à un citoyen ne l'aiderait pas à
+décider s'il peut faire confiance à la réponse ; il lui donnerait une apparence de rigueur sans le
+moyen de l'interpréter.
+
+\input{Figures/fig-interface}
+
+\begin{figure}[htbp]
+  \centering
+  \captureui{Figures/captures/01-reponse-citee-crop.png}{(a)~~Réponse citée}{%
+    les numéros d'articles sont mis en évidence dans le texte ; les sources apparaissent en
+    pastilles sous la réponse, suivies de l'avertissement d'usage.}
+
+  \vspace{10pt}
+
+  \captureui{Figures/captures/02-source-depliee-crop.png}{(b)~~Source dépliée}{%
+    un clic sur une pastille ouvre l'article : son chemin hiérarchique complet, puis son texte
+    légal, tels qu'ils figurent dans le corpus.}
+
+  \caption[Interface web : réponse citée et source dépliée]{Interface web en fonctionnement. Ces
+  vues ne sont pas des maquettes : elles sont produites par \module{eval/capture\_ui.js}, qui
+  pilote un navigateur sans affichage, pose réellement les questions au moteur local et
+  enregistre l'écran. Chaque réponse visible a donc été générée par Mistral~7B au moment de la
+  capture.}
+  \label{fig:interface}
+\end{figure}
+
+Le passage de (a) à (b) matérialise ce que le chapitre~\ref{chap:fondements} appelait la
+vérifiabilité : le lecteur ne reçoit pas seulement un numéro d'article, il peut ouvrir le texte
+cité et le lire, avec sa position exacte dans la loi. C'est la propriété que le RAG apporte et
+qu'un modèle seul ne peut pas offrir.
+
+La troisième vue (figure~\ref{fig:interface-abstention}) montre le comportement inverse : celui
+où le système refuse.
+
+\begin{figure}[htbp]
+  \centering
+  \captureui{Figures/captures/03-abstention-crop.png}{(c)~~Abstention}{%
+    hors périmètre, le système rend la phrase d'abstention exacte, sans source ni contenu inventé.}
+  \caption[Interface web : abstention]{Abstention affichée à l'utilisateur. Aucune source n'est
+  proposée, et le score de recherche qui a déclenché le refus n'est pas montré : il relève de la
+  traçabilité technique, exposée en ligne de commande, pas de ce que le citoyen a besoin de lire.}
+  \label{fig:interface-abstention}
+\end{figure}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+La réalisation confirme un point souvent sous-estimé : la qualité du corpus conditionne celle des
+réponses, et ses défauts ne lèvent aucune alerte. Les trois familles de bugs d'extraction, toutes
+invisibles à la lecture rapide, auraient dégradé silencieusement le système si elles n'avaient pas
+été cherchées méthodiquement --- et l'une d'elles laisse encore un résidu, signalé plus haut. Le
+chapitre suivant présente l'évaluation quantitative du système ainsi construit.

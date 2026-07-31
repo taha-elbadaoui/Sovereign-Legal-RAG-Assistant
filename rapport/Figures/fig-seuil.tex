@@ -1,0 +1,57 @@
+% Score de recherche de chacune des 37 questions, réparti selon le périmètre.
+% Le point de la figure est la position du seuil : il sépare proprement la
+% bande basse, et pas les deux bandes hautes — c'est délibéré.
+%
+% Les trois bandes forment une série catégorielle (bleu, ambre, prune) et non
+% une échelle de statut : une question hors périmètre n'est pas un échec, elle
+% relève d'un autre domaine. Le vert et le rouge, réservés au succès et à
+% l'échec ailleurs dans le rapport, sont donc écartés ici.
+\input{Figures/data/fig-scores-data}
+\begin{tikzpicture}
+\begin{axis}[
+  bandesY,
+  height=5.8cm,
+  xmin=0.26, xmax=0.85,
+  ymin=-0.75, ymax=3.05,
+  xtick={0.3,0.4,0.5,0.6,0.7,0.8},
+  xticklabel style={/pgf/number format/fixed,
+                    /pgf/number format/precision=1},
+  xlabel={score de recherche \textcolor{slate}{(similarité cosinus maximale)}},
+  ytick={0,1,2},
+  yticklabels={},
+  legend style={at={(0.5,1.1)}, anchor=south},
+]
+% Seuil : filet vertical plein hauteur, étiquette posée en haut pour ne
+% croiser ni les graduations ni les libellés de zone.
+\draw[anrtred, line width=0.8pt, dash pattern=on 3pt off 2pt]
+  (axis cs:0.42,-0.75) -- (axis cs:0.42,3.05);
+\node[font=\sffamily\scriptsize\bfseries, text=anrtred, anchor=south east]
+  at (axis cs:0.415,3.05) {seuil \SeuilAbstention~};
+
+\addplot[only marks, mark=*, mark size=1.9pt,
+         draw=inptblue, fill=inptblue, fill opacity=0.7]
+  coordinates {\ScoresTravail};
+\addplot[only marks, mark=*, mark size=1.9pt,
+         draw=amberdark, fill=amberdark, fill opacity=0.8]
+  coordinates {\ScoresJuridique};
+\addplot[only marks, mark=*, mark size=1.9pt,
+         draw=plum, fill=plum, fill opacity=0.8]
+  coordinates {\ScoresHorsDroit};
+\legend{droit du travail, autre domaine juridique, hors du droit}
+
+% Étiquettes de bande, à gauche du nuage : elles remplacent les graduations
+% de l'axe vertical, qui ne porte aucune quantité.
+\node[font=\sffamily\scriptsize, text=inptblue!70!black, anchor=east]
+  at (axis cs:0.272,2) {\NbInScope{} questions};
+\node[font=\sffamily\scriptsize, text=amberdark!70!black, anchor=east]
+  at (axis cs:0.272,1) {3 questions};
+\node[font=\sffamily\scriptsize, text=plum!70!black, anchor=east]
+  at (axis cs:0.272,0) {2 questions};
+
+% Les deux zones que le seuil sépare réellement, sous le nuage.
+\node[font=\sffamily\scriptsize\itshape, text=anrtred, anchor=north east]
+  at (axis cs:0.412,-0.42) {rejeté avant le modèle};
+\node[font=\sffamily\scriptsize\itshape, text=slate, anchor=north west]
+  at (axis cs:0.428,-0.42) {transmis au modèle, qui peut encore s'abstenir};
+\end{axis}
+\end{tikzpicture}

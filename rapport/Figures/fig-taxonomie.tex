@@ -1,0 +1,49 @@
+% Taxonomie des réponses. Les catégories sont des états, pas des séries :
+% la couleur suit donc une échelle de statut, du vert (résultat visé) au
+% rouge (échec), et chaque barre porte son libellé — l'identité ne repose
+% jamais sur la seule couleur.
+%
+% Deux réglages non évidents :
+%   - les libellés d'axe sont écrits en clair : pgfplots ne développe pas une
+%     macro passée à « yticklabels », quelle que soit la manière de la lui
+%     donner. Leur ORDRE doit rester celui de TAXONOMY_ORDER dans
+%     rapport/build_data.py, qui fixe l'ordre des barres ;
+%   - « bar shift=0 » : en mode xbar, chaque \addplot reçoit sinon un décalage
+%     propre et les barres se retrouvent échelonnées au lieu d'être alignées
+%     sur leur ordonnée.
+\input{Figures/data/fig-taxonomie-data}
+\begin{tikzpicture}
+\begin{axis}[
+  barresH,
+  height=6cm,
+  % La largeur de pgfplots ne compte que l'aire tracée : les libellés de
+  % catégorie s'y ajoutent. On la réduit pour que l'ensemble tienne dans la
+  % justification.
+  width=0.74\linewidth,
+  xmin=0, xmax=\TaxonomieMax*1.16,
+  ytick={0,...,5},
+  yticklabels={{Sourcée, article attendu},{Sourcée, autre article},
+               {Abstention correcte},{Citation non vérifiée},
+               {Sans citation},{Refus à tort}},
+  yticklabel style={font=\sffamily\scriptsize, text=ink, align=right},
+  xlabel={nombre de questions \textcolor{slate}{(sur \TaxonomieTotal)}},
+  nodes near coords,
+  bar width=11pt,
+  every axis plot/.append style={bar shift=0},
+]
+\addplot[draw=leafgreen, fill=leafgreen, fill opacity=0.88] coordinates {\TaxonomieBarA};
+\addplot[draw=leafgreen, fill=leafgreen, fill opacity=0.45] coordinates {\TaxonomieBarB};
+\addplot[draw=inptblue,  fill=inptblue,  fill opacity=0.85] coordinates {\TaxonomieBarC};
+\addplot[draw=amberdark, fill=amberdark, fill opacity=0.85] coordinates {\TaxonomieBarD};
+\addplot[draw=amberdark, fill=amberdark, fill opacity=0.5]  coordinates {\TaxonomieBarE};
+\addplot[draw=anrtred,   fill=anrtred,   fill opacity=0.85] coordinates {\TaxonomieBarF};
+\end{axis}
+
+% La catégorie absente est le vrai résultat : aucune réponse produite hors
+% corpus. Elle est posée sous la figure, hors de l'axe, pour ne pas se
+% confondre avec une barre de valeur nulle.
+\node[font=\sffamily\scriptsize, text=leafgreen!40!black, anchor=north west,
+      align=left, inner sep=0pt]
+  at ($(current bounding box.south west)+(0,-3mm)$)
+  {\textbf{Répond alors qu'il devrait s'abstenir : 0} \textcolor{slate}{— catégorie vide}};
+\end{tikzpicture}

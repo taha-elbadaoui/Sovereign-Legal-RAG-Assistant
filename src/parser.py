@@ -24,6 +24,17 @@ HEADER_RE = re.compile(
     r"(?:\n(?!\s*(?:Livre|Titre|Chapitre|Section|Article)\b)[^\n]*)*",
     re.MULTILINE,
 )
+# Footnote calls fused into hierarchy titles. PyMuPDF drops superscript
+# formatting, so a footnote marker attached to the last word of a heading comes
+# out glued to it: "...de la sécurité des salariés37", "...du travail88",
+# "...du salaire minimum légal54", "...de la saisie-arrêt60 et de la cession".
+# Same root cause as the corrupted article numbers, but on headings instead.
+#
+# A heading never carries a number welded to a letter -- when a heading does
+# number something it does so with a space ("Section 2") or inside a law
+# reference ("65-99"), neither of which this pattern touches.
+FOOTNOTE_IN_HEADER_RE = re.compile(r"(?<=[A-Za-zÀ-ÿ])\d{1,3}(?![\d\-])")
+
 LEVEL_KEY = {"Livre": "livre", "Titre": "titre", "Chapitre": "chapitre", "Section": "section"}
 # When a header at one level appears, everything below it resets (a new Titre means
 # the old Chapitre/Section no longer apply until a new one is announced).
@@ -67,7 +78,10 @@ def apply_headers_and_advance(text):
     for match in HEADER_RE.finditer(text):
         key = LEVEL_KEY[match.group(1)]
         # wrapped titles span multiple physical lines; collapse them to one clean string
-        hierarchy[key] = re.sub(r"\s+", " ", match.group(0)).strip()
+        title = re.sub(r"\s+", " ", match.group(0)).strip()
+        # then drop any footnote call welded to a word by the PDF extraction
+        title = FOOTNOTE_IN_HEADER_RE.sub("", title)
+        hierarchy[key] = re.sub(r"\s+", " ", title).strip()
         for lower_key in RESET_BELOW[key]:
             hierarchy[lower_key] = None
 

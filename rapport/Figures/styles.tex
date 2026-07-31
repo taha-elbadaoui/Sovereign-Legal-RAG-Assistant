@@ -1,0 +1,198 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Langage graphique commun à toutes les figures.
+%
+%  Les treize figures du rapport partagent ces styles : une forme et une
+%  couleur y ont partout le même sens. Le lecteur n'a donc à apprendre la
+%  légende qu'une seule fois.
+%
+%     gris    donnée, fichier, artefact          rectangle
+%     bleu    traitement déterministe (code)     rectangle
+%     vert    modèle appris (embeddings, LLM)    rectangle
+%     ambre   décision, garde-fou                losange
+%     rouge   arrêt, abstention, échec           rectangle
+%
+%  Palette de données validée pour la vision des couleurs (deutan/protan/
+%  tritan) : bleu, ambre, vert, prune. Le rouge est réservé au statut
+%  « échec » et n'est jamais employé comme simple série.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ============================================================== SCHÉMAS TikZ
+
+\tikzset{
+  % --- boîtes ---------------------------------------------------------------
+  bloc/.style={
+    draw, rounded corners=2.5pt, line width=0.7pt,
+    minimum height=11mm, text width=23mm, align=center,
+    inner sep=3pt, font=\sffamily\scriptsize},
+  donnee/.style={bloc, draw=slate, fill=mist,          text=ink},
+  traitement/.style={bloc, draw=inptblue, fill=inptblue!8,  text=navy},
+  modele/.style={bloc, draw=leafgreen, fill=leafgreen!8, text=leafgreen!45!black},
+  arret/.style={bloc, draw=anrtred, fill=anrtred!7,    text=anrtred!70!black},
+  decision/.style={
+    draw=amberdark, fill=amberdark!10, line width=0.7pt,
+    diamond, aspect=2.1, align=center, inner sep=1pt,
+    text width=17mm, font=\sffamily\scriptsize, text=amberdark!60!black},
+  % variantes de gabarit
+  large/.style={text width=30mm},
+  etroit/.style={text width=18mm},
+  haut/.style={minimum height=14mm},
+  %
+  % --- liens ----------------------------------------------------------------
+  flux/.style={-{Stealth[length=2.2mm,width=1.6mm]}, line width=0.65pt, draw=slate},
+  fluxfort/.style={flux, line width=1pt, draw=navy},
+  usage/.style={-{Stealth[length=2.2mm,width=1.6mm]}, line width=0.55pt,
+                draw=slate!70, dash pattern=on 2pt off 1.6pt},
+  rejet/.style={-{Stealth[length=2.2mm,width=1.6mm]}, line width=0.65pt, draw=anrtred},
+  %
+  % --- textes ---------------------------------------------------------------
+  etiq/.style={font=\sffamily\scriptsize, text=slate, inner sep=2pt},
+  etiqfort/.style={font=\sffamily\scriptsize\bfseries, text=navy, inner sep=2pt},
+  annot/.style={font=\sffamily\scriptsize\itshape, text=slate, align=left,
+                inner sep=2pt},
+  %
+  % --- conteneurs -----------------------------------------------------------
+  bande/.style={
+    draw=rule, line width=0.7pt, rounded corners=3pt,
+    dash pattern=on 3pt off 2pt, inner sep=6mm},
+  bandepleine/.style={draw=rule, line width=0.7pt, rounded corners=3pt,
+                      fill=mist!45, inner sep=6mm},
+  titrebande/.style={
+    font=\sffamily\scriptsize\bfseries, text=slate,
+    anchor=west, fill=white, inner xsep=4pt, inner ysep=1pt},
+  %
+  % --- pastille de renvoi vers le texte -------------------------------------
+  puce/.style={
+    circle, draw=anrtred, fill=white, text=anrtred, line width=0.6pt,
+    inner sep=0.6pt, minimum size=3.6mm, font=\sffamily\bfseries\tiny},
+}
+
+% Titre posé sur le bord supérieur gauche d'un conteneur.
+% #1 = nœud conteneur, #2 = libellé
+%
+% Le décalage passe par « xshift » et non par la syntaxe calc « $...$ » :
+% celle-ci ne survit pas à un \resizebox, qui réinterprète le signe dollar.
+\newcommand{\bandetitre}[2]{%
+  \node[titrebande, xshift=6mm] at (#1.north west) {#2};}
+
+% Légende compacte des types de nœud, à poser sous un schéma.
+\newcommand{\legendeschema}{%
+  \begin{tikzpicture}[baseline]
+    \node[donnee, text width=0pt, minimum width=5mm, minimum height=3.2mm] (a) {};
+    \node[etiq, right=1.2mm of a] (la) {donnée};
+    \node[traitement, text width=0pt, minimum width=5mm, minimum height=3.2mm,
+          right=4mm of la] (b) {};
+    \node[etiq, right=1.2mm of b] (lb) {traitement};
+    \node[modele, text width=0pt, minimum width=5mm, minimum height=3.2mm,
+          right=4mm of lb] (c) {};
+    \node[etiq, right=1.2mm of c] (lc) {modèle appris};
+    \node[decision, text width=0pt, minimum width=5mm, minimum height=2.2mm,
+          right=4mm of lc] (d) {};
+    \node[etiq, right=1.2mm of d] (ld) {décision};
+    \node[arret, text width=0pt, minimum width=5mm, minimum height=3.2mm,
+          right=4mm of ld] (e) {};
+    \node[etiq, right=1.2mm of e] {arrêt};
+  \end{tikzpicture}}
+
+% ============================================================ FIGURES pgfplots
+
+% Séparateur décimal français dans toutes les figures : le corps du texte
+% écrit « 0,969 », les graphiques doivent en faire autant.
+\pgfkeys{/pgf/number format/.cd, use comma, 1000 sep={\,}}
+
+\pgfplotsset{
+  % Socle commun : pas de cadre, une seule grille (celle de l'axe des
+  % valeurs), graduations discrètes. Tout ce qui n'aide pas à lire un chiffre
+  % est retiré.
+  socle/.style={
+    width=\linewidth, height=6.4cm,
+    font=\sffamily\small,
+    axis line style={draw=rule, line width=0.6pt},
+    axis x line*=bottom, axis y line*=left,
+    every axis label/.style={font=\sffamily\small, text=slate},
+    tick label style={font=\sffamily\scriptsize, text=slate},
+    label style={font=\sffamily\scriptsize, text=slate},
+    title style={font=\sffamily\small\bfseries, text=navy, align=left},
+    major tick length=2.5pt, minor tick length=0pt,
+    tick align=outside,
+    grid style={draw=rule!55, line width=0.4pt},
+    legend style={
+      draw=none, fill=none, font=\sffamily\scriptsize, text=slate,
+      cells={anchor=west}, legend columns=-1,
+      /tikz/every even column/.append style={column sep=8pt}},
+    legend image post style={line width=2pt},
+    clip=false,
+  },
+  % Barres horizontales : la catégorie se lit à plat, sans tête penchée.
+  barresH/.style={
+    socle,
+    xbar, bar width=9pt,
+    xmajorgrids, ymajorgrids=false,
+    ytick=data, y dir=reverse,
+    enlarge y limits=0.14,
+    % L'axe vertical ne porte aucune quantité : on efface son trait et ses
+    % graduations, mais surtout PAS « axis y line=none », qui emporterait
+    % aussi les libellés de catégorie.
+    axis x line*=bottom, axis y line*=left,
+    y axis line style={draw=none},
+    ytick style={draw=none},
+    nodes near coords style={font=\sffamily\scriptsize, text=ink,
+                             anchor=west, xshift=2pt},
+  },
+  % Barres verticales groupées.
+  barresV/.style={
+    socle,
+    ybar, bar width=13pt,
+    ymajorgrids, xmajorgrids=false,
+    enlarge x limits=0.22,
+    xtick=data,
+    nodes near coords style={font=\sffamily\scriptsize, text=ink,
+                             anchor=south, yshift=1pt},
+  },
+  % Nuage de points en bandes (scores d'abstention).
+  bandesY/.style={
+    socle,
+    ymajorgrids=false, xmajorgrids=true,
+    axis y line=none,
+    enlarge y limits=0.3,
+  },
+}
+
+% Cycle de couleurs des séries — ordre fixe, jamais recyclé.
+\pgfplotscreateplotcyclelist{serie}{
+  {draw=inptblue,  fill=inptblue},
+  {draw=amberdark, fill=amberdark},
+  {draw=leafgreen, fill=leafgreen},
+  {draw=plum,      fill=plum},
+}
+\pgfplotsset{cycle list name=serie}
+
+% Extrémité de barre arrondie côté valeur, ancrée sur la ligne de base.
+\pgfplotsset{
+  bout arrondi/.style={
+    /pgfplots/every axis plot post/.append style={
+      rounded corners=1.6pt}},
+}
+
+% Filet vertical de seuil, avec son étiquette.
+% #1 = abscisse, #2 = libellé
+\newcommand{\seuil}[2]{%
+  \draw[anrtred, line width=0.8pt, dash pattern=on 3pt off 2pt]
+    ({axis cs:#1,0}|-{rel axis cs:0,0}) -- ({axis cs:#1,0}|-{rel axis cs:0,1});
+  \node[font=\sffamily\scriptsize\bfseries, text=anrtred, anchor=south, rotate=90]
+    at ({axis cs:#1,0}|-{rel axis cs:0,0.02}) {\;#2};}
+
+% ================================================================ DIAGRAMME
+% Gantt : mêmes couleurs, mêmes fontes que le reste.
+\ganttset{
+  bar height=0.55,
+  bar/.append style={draw=inptblue!70, fill=inptblue!25, rounded corners=1pt},
+  bar label font=\sffamily\scriptsize\color{ink},
+  group/.append style={draw=navy, fill=navy},
+  group label font=\sffamily\scriptsize\bfseries\color{navy},
+  milestone/.append style={draw=amberdark, fill=amberdark},
+  milestone label font=\sffamily\scriptsize\color{amberdark!60!black},
+  title label font=\sffamily\scriptsize\color{slate},
+  title/.append style={draw=none, fill=none},
+  link/.style={-{Stealth[length=1.6mm]}, draw=slate, line width=0.5pt},
+  vgrid={*1{draw=rule!60, line width=0.4pt}},
+}

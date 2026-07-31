@@ -1,0 +1,106 @@
+% Architecture générale.
+%
+% Principes de tracé, tenus strictement :
+%   - flux principal vertical, une seule colonne : la requête se lit de haut
+%     en bas sans jamais revenir en arrière ;
+%   - la chaîne hors ligne occupe une colonne parallèle et ne rejoint la
+%     colonne principale qu'en un seul point — l'étape de recherche, qui est
+%     précisément le seul endroit où les deux pipelines se rencontrent ;
+%   - routage orthogonal exclusivement, aucun segment oblique ;
+%   - aucun croisement d'arêtes ;
+%   - gabarits de nœuds uniformes par colonne.
+\begin{tikzpicture}[
+    font=\sffamily\scriptsize,
+    boite/.style={draw, line width=0.7pt, rounded corners=2pt,
+                  text width=34mm, minimum height=9.5mm, align=center,
+                  inner sep=3pt},
+    principal/.style={boite, minimum height=10.5mm},
+    horsligne/.style={boite, text width=30mm, minimum height=8.5mm},
+    d/.style={draw=slate,     fill=mist,          text=ink},          % donnée
+    t/.style={draw=inptblue,  fill=inptblue!8,    text=navy},         % traitement
+    m/.style={draw=leafgreen, fill=leafgreen!8,   text=leafgreen!40!black}, % modèle
+    stop/.style={draw=anrtred, fill=anrtred!6,    text=anrtred!70!black},
+    choix/.style={draw=amberdark, fill=amberdark!10, text=amberdark!55!black,
+                  line width=0.7pt, diamond, aspect=2.3, align=center,
+                  inner sep=1pt, text width=19mm},
+    fleche/.style={-{Stealth[length=2.3mm,width=1.7mm]}, line width=0.7pt,
+                   draw=slate, rounded corners=2.5pt},
+    remise/.style={fleche, draw=inptblue!75, line width=0.9pt},
+    refus/.style={fleche, draw=anrtred},
+    tag/.style={font=\sffamily\scriptsize, text=slate, inner sep=2pt},
+  ]
+
+% ============================================================ grille
+\def\XA{0}      % colonne principale (requête)
+\def\XB{5.6}    % colonne hors ligne (indexation)
+\def\XR{-4.5}   % dérivation d'abstention
+
+% ============================================ colonne principale : la requête
+\node[principal, d] (q)      at (\XA, 0)      {Question du citoyen};
+\node[principal, m] (vec)    at (\XA,-1.75)   {Vectorisation\\BGE-M3};
+\node[principal, t] (rdense) at (\XA,-3.5)    {Recherche dense};
+\node[principal, t] (rlex)   at (\XA,-4.75)   {Recherche lexicale};
+\node[principal, t] (rrf)    at (\XA,-6.4)    {Fusion RRF};
+\node[choix]        (gate)   at (\XA,-8.05)   {score $\geq$\\\SeuilAbstention{} ?};
+\node[principal, m] (gen)    at (\XA,-9.9)    {Génération\\Mistral 7B via Ollama};
+\node[principal, t] (verif)  at (\XA,-11.65)  {Contrôle des citations};
+\node[principal, d] (rep)    at (\XA,-13.4)   {Réponse citée\\+ avertissement};
+
+\draw[fleche] (q)      -- (vec);
+\draw[fleche] (vec)    -- (rdense);
+\draw[fleche] (rlex)   -- (rrf);
+\draw[fleche] (rrf)    -- (gate);
+\draw[fleche] (gate)   -- node[tag, right=1pt, pos=0.35] {oui} (gen);
+\draw[fleche] (gen)    -- (verif);
+\draw[fleche] (verif)  -- (rep);
+
+% Les deux recherches sont menées en parallèle sur la même question : la
+% dérivation part du même point et les rejoint toutes deux.
+\draw[fleche] (vec.west) -- ++(-1.05,0) |- (rlex.west);
+
+% =================================== colonne hors ligne : la chaîne d'indexation
+% Les deux index sont posés exactement sur les ordonnées des deux recherches
+% qu'ils alimentent : la remise se fait par un segment horizontal pur.
+\node[horsligne, d] (pdf)   at (\XB, 1.9)   {PDF officiel\\Loi 65-99};
+\node[horsligne, t] (pars)  at (\XB, 0.5)   {\module{parser.py}\\extraction, découpage};
+\node[horsligne, d] (jsonl) at (\XB,-0.9)   {Corpus JSONL\\\NbArticles{} articles};
+\node[horsligne, m] (emb)   at (\XB,-2.3)   {Vectorisation\\BGE-M3};
+\node[horsligne, d] (ichr)  at (\XB,-3.5)   {Index dense\\Chroma};
+\node[horsligne, d] (ibm)   at (\XB,-4.75)  {Index lexical\\BM25};
+
+\draw[fleche] (pdf)   -- (pars);
+\draw[fleche] (pars)  -- (jsonl);
+\draw[fleche] (jsonl) -- (emb);
+\draw[fleche] (emb)   -- (ichr);
+% BM25 indexe le texte, pas les vecteurs : il dérive du corpus, pas du modèle.
+\draw[fleche] (jsonl.east) -- ++(1.15,0) |- (ibm.east);
+
+% ============================ point de rencontre unique entre les deux chaînes
+\draw[remise] (ichr.west) -- (rdense.east);
+\draw[remise] (ibm.west)  -- (rlex.east);
+
+% ================================================ dérivation d'abstention
+\node[principal, stop] (abst) at (\XR,-8.05) {Abstention immédiate\\le modèle n'est pas appelé};
+\draw[refus] (gate.west) -- node[tag, above, text=anrtred] {non} (abst.east);
+
+% Aucune annotation en prose dans la figure : le commentaire appartient à la
+% légende et au corps du texte, pas au schéma.
+
+% Cadres de regroupement, posés en arrière-plan.
+\begin{scope}[on background layer]
+  \node[draw=rule, line width=0.7pt, rounded corners=3pt, dash pattern=on 3pt off 2pt,
+        inner xsep=4mm, inner ysep=5mm, fit=(pdf)(pars)(jsonl)(emb)(ichr)(ibm)] (bhl) {};
+  % L'abstention fait partie du pipeline de requête : le cadre l'englobe.
+  \node[draw=rule, line width=0.7pt, rounded corners=3pt, dash pattern=on 3pt off 2pt,
+        inner xsep=4mm, inner ysep=5mm,
+        fit=(q)(vec)(rdense)(rlex)(rrf)(gate)(gen)(verif)(rep)(abst)] (ben) {};
+\end{scope}
+
+\node[font=\sffamily\scriptsize\bfseries, text=slate, anchor=south, align=center]
+  at (bhl.north) {INDEXATION\\[-1pt]\scriptsize\mdseries hors ligne, une seule fois};
+% Le cadre de requête étant élargi par la dérivation d'abstention, son titre
+% se cale sur la colonne principale plutôt que sur le milieu du cadre.
+\node[font=\sffamily\scriptsize\bfseries, text=slate, anchor=south, align=center]
+  at (q.north |- ben.north) {REQUÊTE\\[-1pt]\scriptsize\mdseries en ligne, à chaque question};
+
+\end{tikzpicture}

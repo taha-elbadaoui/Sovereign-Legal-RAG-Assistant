@@ -1,0 +1,168 @@
+\chapter{Contexte du stage}
+\label{chap:contexte}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce chapitre situe le stage dans son cadre. Il présente l'organisme d'accueil, l'objectif
+poursuivi, et surtout le périmètre volontairement borné du projet --- car dans un stage de huit
+semaines, ce qu'on décide de \emph{ne pas} faire compte autant que ce qu'on entreprend. Il décrit
+enfin l'organisation du travail et l'instrument qui l'a rendue traçable : un journal de bord tenu
+quotidiennement.
+
+\section{Organisme d'accueil}
+
+Pulsaride Solutions est une société française du domaine \anglais{deeptech}, dont le siège est
+situé rue Henri Dunant à Pessac, en Gironde.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Fiche signalétique de l'organisme d'accueil}
+  \label{tab:entreprise}
+  \small
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.4cm} R@{}}
+    \toprule
+    \sffamily\bfseries\color{navy}Élément &
+    \sffamily\bfseries\color{navy}Description \\
+    \midrule
+    Raison sociale   & Pulsaride Solutions \textsc{sarl} \\
+    Siège            & Pessac, Gironde, France \\
+    Domaine          & Cybersécurité et conformité réglementaire \\
+    Spécialité       & Attestation cryptographique du comportement des systèmes logiciels et des agents d'intelligence artificielle \\
+    Marché visé      & Institutions financières européennes soumises aux réglementations DORA, NIS2 et au règlement européen sur l'intelligence artificielle \\
+    Encadrant        & M. Lyazid \textsc{Salihi}, fondateur et dirigeant \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+L'entreprise développe une plateforme de défense opérant au niveau du noyau du système
+d'exploitation, qui capture les appels système, les signe cryptographiquement et produit des
+certificats vérifiables \emph{hors ligne} --- c'est-à-dire sans qu'aucune donnée ne soit confiée à
+un service tiers pour être contrôlée.
+
+Ce détail n'est pas anecdotique pour le présent stage : il explique le sujet. La proposition de
+l'entreprise tient en une idée --- fournir une \textbf{preuve vérifiable} plutôt qu'une assurance
+sur parole, et la fournir sans dépendance à une infrastructure distante. Le sujet confié
+transpose exactement cette idée au domaine juridique : un assistant qui \emph{cite ses sources}
+pour qu'on puisse les vérifier, et qui s'exécute \emph{localement} pour que la question ne quitte
+pas la machine. Les deux exigences structurantes de ce rapport --- vérifiabilité et souveraineté
+--- sont donc celles de l'entreprise, appliquées à un autre objet.
+
+Le stage s'est ainsi inscrit dans l'axe «~intelligence artificielle appliquée~» de l'entreprise,
+sur un sujet articulant traitement automatique du langage et souveraineté des données.
+L'encadrement a été assuré par M. Lyazid \textsc{Salihi}.
+
+\section{Objectif et missions}
+
+L'objectif est de concevoir et d'évaluer un assistant de recherche juridique souverain fondé sur
+l'architecture RAG. Le citoyen pose une question en langage naturel ; le système recherche le
+passage pertinent dans le corpus juridique, puis formule une réponse claire \textbf{en citant
+systématiquement la source officielle}.
+
+Le principe de fiabilité est central, et il a une formulation opérationnelle précise : le système
+s'appuie sur les textes réels et \textbf{indique honnêtement lorsqu'il ne dispose pas de
+l'information}, plutôt que de produire une réponse vraisemblable.
+
+\begin{encadre}[title=Exemple d'interaction visée]
+\textbf{Citoyen} \quad «~J'ai droit à combien de jours de congé de maternité~?~»
+
+\medskip
+\textbf{Assistant} \quad «~Selon l'article~152 du Code du travail (Loi~65-99), la salariée
+bénéficie d'un congé de maternité de quatorze semaines. Le contrat de travail est suspendu, non
+rompu, pendant cette période.
+
+\smallskip
+\textit{Source : Code du travail, article~152.}
+
+\smallskip
+Réponse fournie à titre informatif ; pour une situation particulière, consultez un
+professionnel du droit.~»
+\end{encadre}
+
+Le stage s'articule autour de quatre missions.
+
+\begin{enumerate}
+  \item \textbf{Constitution et préparation du corpus juridique.} Collecter, nettoyer et découper
+        le corpus par article. La qualité de ce découpage conditionne directement la qualité des
+        réponses : un article tronqué produit une réponse tronquée, sans qu'aucun signal ne le
+        révèle en aval.
+  \item \textbf{Moteur de recherche sémantique et génération.} Indexer le corpus, retrouver les
+        passages pertinents à partir d'une question, puis générer une réponse claire et sourcée,
+        en garantissant l'ancrage dans les textes réels et la gestion explicite du «~je ne sais
+        pas~».
+  \item \textbf{Évaluation de la fiabilité.} Construire un jeu de questions-réponses de référence
+        et mesurer la précision du système. L'analyse honnête des limites fait partie intégrante
+        du livrable, au même titre que les résultats favorables.
+  \item \textbf{Extension multilingue} \textit{(ambition complémentaire)}. Explorer une couche de
+        normalisation linguistique permettant de comprendre une question posée en arabe ou en
+        darija, tout en conservant l'ancrage des réponses dans le texte officiel d'origine.
+\end{enumerate}
+
+\section{Périmètre et non-objectifs}
+
+Pour garantir la faisabilité en huit semaines, le sujet a été volontairement borné : un
+\textbf{périmètre juridique unique} --- le droit du travail --- et un fonctionnement
+\textbf{monolingue solide} en français. L'extension multilingue et l'élargissement à d'autres
+codes constituent des ambitions complémentaires, non des engagements.
+
+Le cadrage négatif est ici aussi important que le cadrage positif. Le système n'est explicitement
+pas :
+
+\begin{itemize}
+  \item \textbf{un outil de conseil juridique personnalisé.} Il relève de la \emph{restitution
+        d'information juridique} ; chaque réponse porte un avertissement en ce sens ;
+  \item \textbf{un système qui répond «~au mieux~».} Face à une question sans réponse dans le
+        corpus, \textbf{l'abstention est le comportement correct}, pas un échec ;
+  \item \textbf{un produit fini.} Le livrable est le moteur RAG, son évaluation et le dépôt
+        reproductible qui les accompagne.
+\end{itemize}
+
+Quatre interdictions ont été posées dès la conception et tenues jusqu'au terme du stage : pas de
+\anglais{fine-tuning} du modèle, pas de mémoire conversationnelle multi-tours, pas d'autre code
+juridique que le Code du travail, et aucune intégration d'interface de programmation externe dans
+le cœur du système. Chacune écarte une dérive dont le coût aurait été payé en fin de stage, au
+moment où il n'aurait plus été possible de revenir en arrière.
+
+\section{Organisation du travail}
+
+Le travail a été planifié en huit phases hebdomadaires, chacune assortie d'un livrable identifié à
+l'avance (figure~\ref{fig:gantt}). Le découpage suit une progression délibérée : rendre le corpus
+fiable avant de construire quoi que ce soit dessus, obtenir une chaîne complète avant de
+l'optimiser, et mesurer avant de conclure.
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-gantt}
+  \caption[Phasage prévu du stage]{Phasage \emph{prévu} du stage. Les jalons marquent les moments
+  où le travail devenait vérifiable par un tiers : un corpus qui se régénère à l'identique, des
+  réponses effectivement citées, un banc de mesure rejouable.}
+  \label{fig:gantt}
+\end{figure}
+
+\begin{constat}
+L'exécution réelle s'est écartée de ce plan, et l'écart est instructif. Le journal de bord montre
+que les trois premières semaines (2 au 20~juillet) ont été absorbées par le \emph{seul} corpus ---
+extraction, découpage, hiérarchie, correction des trois familles de défauts décrites au
+chapitre~\ref{chap:realisation} --- tandis que les phases S3 à~S6, du premier pipeline RAG jusqu'à
+l'évaluation complète, ont été menées en deux jours, les 24 et 25~juillet.
+
+Ce déséquilibre n'est pas un accident de planification : il est la manifestation directe de la
+thèse défendue dans ce rapport. Une fois le corpus fiable, le moteur RAG se construit vite ; c'est
+la donnée qui coûte, pas la boucle qui l'exploite.
+\end{constat}
+
+Un \textbf{journal de bord} a été tenu quotidiennement, consignant chaque décision, chaque
+résultat et chaque difficulté --- y compris les impasses et les corrections de corrections. Ce
+journal a servi de matière première à la rédaction du présent rapport, ce qui explique que les
+échecs y soient rapportés avec autant de précision que les succès : ils y avaient été écrits sur
+le moment, avant qu'on en connaisse l'issue.
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Le projet répond à un besoin concret --- rendre le droit du travail interrogeable en langage
+naturel --- sous une contrainte structurante, la souveraineté des données, et avec une exigence
+centrale, la fiabilité. Le périmètre a été borné dès le premier jour, et les quatre interdictions
+posées à ce moment-là n'ont pas été levées. Le chapitre suivant expose les fondements techniques
+sur lesquels le système repose, en commençant par la raison pour laquelle un modèle de langage
+seul ne suffit pas.

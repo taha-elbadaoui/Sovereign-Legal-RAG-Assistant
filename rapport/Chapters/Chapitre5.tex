@@ -1,0 +1,417 @@
+\chapter{Évaluation et résultats}
+\label{chap:evaluation}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce chapitre présente le protocole d'évaluation et les résultats obtenus. Conformément à l'objectif
+de fiabilité posé au chapitre~\ref{chap:contexte}, l'analyse des limites y occupe autant de place
+que celle des performances : un chiffre favorable dont on ne connaît pas la portée n'apprend rien.
+
+\section{Protocole}
+
+\subsection{Jeu de référence}
+
+Un jeu de référence de \textbf{\NbQuestions{} questions} a été construit à la main :
+\textbf{\NbInScope{} dans le périmètre}, chacune associée au ou aux articles attendus et vérifiée
+contre le texte réel du corpus, et \textbf{\NbOutScope{} hors périmètre} destinées à tester
+l'abstention.
+
+Le jeu a été construit en deux temps. Une première version de 37 questions a servi à l'essentiel
+du développement. Un audit de couverture, mené une fois le système stabilisé, a révélé que
+plusieurs comportements du code n'étaient exercés par \emph{aucune} question :
+
+\begin{itemize}
+  \item aucune question ne \textbf{nommait un article par son numéro}, alors que le module de
+        recherche comporte un chemin dédié à ce cas (section~\ref{sec:refexplicite}), doublé d'un
+        contournement du garde-fou. Cette branche n'était donc jamais testée ;
+  \item les \textbf{articles~32 et~256}, seuls textes réintroduits à la main dans le corpus,
+        n'apparaissaient dans aucune attente ;
+  \item \textbf{trois Livres sur huit} --- organes de contrôle, conflits collectifs, dispositions
+        finales, soit 60~articles --- n'étaient couverts par aucune question ;
+  \item une seule question sur 32 attendait \textbf{plusieurs articles}, alors que c'est le cas
+        courant en droit.
+\end{itemize}
+
+Vingt-cinq questions ont été ajoutées pour combler exactement ces manques
+(tableau~\ref{tab:familles}). Le biais que cela introduit doit être énoncé : ces questions ciblent
+des zones dont on \emph{savait} qu'elles existaient. Elles corrigent un angle mort, elles ne
+rendent pas le jeu représentatif de l'usage réel.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Composition du jeu de référence par famille}
+  \label{tab:familles}
+  \small
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm} c R@{}}
+    \toprule
+    \sffamily\bfseries\color{navy}Famille &
+    \sffamily\bfseries\color{navy}Questions &
+    \sffamily\bfseries\color{navy}Ce qu'elle exerce \\
+    \midrule
+    Périmètre d'origine     & 32 & Contrat, durée du travail, congés, maternité, délégués, sanctions, retraite \\
+    Référence explicite     & 6  & Le chemin de recherche par numéro d'article \\
+    Livre V                 & 4  & Inspection du travail, procès-verbaux, sanctions \\
+    Livre VI                & 5  & Conflits collectifs, conciliation, arbitrage \\
+    Livre VII               & 1  & Entrée en vigueur de la loi \\
+    Articles multiples      & 3  & Réponses fondées sur plusieurs textes \\
+    Articles rétablis       & 2  & Les articles 32 et 256, réintroduits à la main \\
+    Hors périmètre          & 9  & Autres domaines juridiques, administratif, fiscal, hors droit \\
+    \midrule
+    \textbf{Total}          & \textbf{\NbQuestions} & \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ce jeu reste petit, et ce chapitre s'abstient donc de toute précision décimale sur les taux : à
+cette échelle, un écart d'un point n'est pas un résultat, c'est du bruit.
+
+\subsection{Scripts d'évaluation}
+
+Trois scripts distincts, tous rejouables (tableau~\ref{tab:scripts}), produisent l'ensemble des
+chiffres présentés ici. \textbf{Aucune valeur de ce chapitre n'a été saisie à la main} : les
+nombres du texte comme les coordonnées des figures sont générés depuis les fichiers de mesure par
+un script dédié (annexe~\ref{ann:depot}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Scripts d'évaluation}
+  \label{tab:scripts}
+  \small
+  % Première colonne à 3,7 cm : « run_answer_eval.py » est le plus long libellé
+  % du rapport et débordait sur la colonne voisine à 2,7 cm.
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.7cm} R R@{}}
+    \toprule
+    \sffamily\bfseries\color{navy}Script &
+    \sffamily\bfseries\color{navy}Mesure &
+    \sffamily\bfseries\color{navy}Particularité \\
+    \midrule
+    \module{run\_eval.py}        & Recall@5, MRR
+                                 & N'appelle pas le modèle : mesure la recherche seule \\
+    \module{run\_answer\_eval.py} & Critères de succès
+                                 & Citation, abstention, contrôle des citations \\
+    \module{run\_measures.py}    & Latence, taxonomie
+                                 & Produit également les données des figures \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Identité du run et reproductibilité}
+
+Une précision méthodologique s'impose. La génération n'est pas déterministe : à température~0,1 le
+modèle reste légèrement variable, et deux exécutions du même banc sur les mêmes questions ne
+produisent pas exactement les mêmes réponses. Deux runs conservés dans le dépôt en témoignent :
+l'un donne un refus à tort, l'autre trois.
+
+\textbf{Tous les chiffres de ce chapitre proviennent d'un seul run}, celui du \DateMesure{} avec
+le modèle \ModeleLLM{}, enregistré dans \module{eval/mesures-performance.json}. Aucun résultat
+n'est composé à partir de plusieurs exécutions. Cette contrainte est plus sévère que nécessaire
+pour un rapport de stage, mais elle évite le mélange silencieux de mesures issues de conditions
+différentes --- lequel produit des synthèses flatteuses et fausses.
+
+\begin{limite}
+La conséquence à retenir est que les taux rapportés ici ne sont pas des constantes du système,
+mais les valeurs d'une exécution. Établir des intervalles demanderait de rejouer le banc un grand
+nombre de fois, ce qui n'a pas été fait : c'est une limite du protocole, pas une propriété des
+chiffres.
+\end{limite}
+
+\section{Qualité de la recherche}
+
+Les trois configurations ont été comparées sur les \NbInScope{} questions du périmètre, sans que
+le modèle n'intervienne (figure~\ref{fig:recherche}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-recherche}
+  \caption[Comparaison des méthodes de recherche]{Comparaison des trois méthodes de recherche sur
+  les \NbInScope{} questions du périmètre. Recall@5 mesure la présence de l'article attendu dans
+  les cinq premiers résultats, MRR sa position moyenne.}
+  \label{fig:recherche}
+\end{figure}
+
+\subsection{Un résultat qui s'est inversé quand le jeu de test a grandi}
+\label{sec:inversion}
+
+Sur les \NbInScope{} questions du périmètre, \textbf{la recherche hybride dépasse la recherche
+dense} en Recall@5 : \RecallHybride{} contre \RecallDense{}. Les deux méthodes sont en revanche
+départagées à l'inverse sur le MRR --- \MrrDense{} pour le dense contre \MrrHybride{} pour
+l'hybride --- soit un écart de trois millièmes, sans signification à cette taille d'échantillon.
+
+Cette conclusion est l'exact contraire de celle que produisait la première version du jeu de
+référence. Sur les 37 questions d'origine, les mêmes scripts donnaient un Recall@5 de 0,969 pour le
+dense contre 0,875 pour l'hybride --- un écart net, en faveur du dense, qui avait été présenté
+comme un résultat contre-intuitif du projet. Il n'en était pas un.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Effet de l'élargissement du jeu de référence sur la comparaison des méthodes}
+  \label{tab:inversion}
+  \small
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.4cm} c c R@{}}
+    \toprule
+    \sffamily\bfseries\color{navy}Méthode &
+    \sffamily\bfseries\color{navy}37 questions &
+    \sffamily\bfseries\color{navy}\NbQuestions{} questions &
+    \sffamily\bfseries\color{navy}Lecture \\
+    \midrule
+    Dense seul     & \textbf{0,969} & \RecallDense{} & Chute lourdement \\
+    BM25 seul      & 0,781 & \RecallBmXXV{} & Chute aussi \\
+    Hybride (RRF)  & 0,875 & \textbf{\RecallHybride{}} & \textbf{Seule méthode à peu près stable} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+L'explication tient entièrement à la \emph{composition} du jeu d'origine. Ses 32 questions étaient
+toutes des reformulations en langage courant, sans terme technique repris du texte de loi : la
+configuration exactement favorable aux embeddings et défavorable à BM25. Le dense y gagnait donc,
+non parce qu'il est meilleur, mais parce qu'on ne lui posait que les questions qu'il sait traiter.
+
+Les vingt-cinq questions ajoutées introduisent ce que le jeu d'origine ne contenait pas : des
+références explicites à des numéros d'articles, et le vocabulaire figé des Livres~V et~VI ---
+«~procès-verbal~», «~mise en demeure~», «~commission provinciale d'enquête et de conciliation~».
+Ce sont précisément les correspondances littérales sur lesquelles le chapitre~\ref{chap:fondements}
+annonçait que le lexical l'emporterait. La prédiction théorique était juste ; c'est la mesure qui
+était biaisée.
+
+\begin{constat}
+Le résultat à retenir n'est pas «~l'hybride gagne~» --- l'écart reste faible, et un troisième jeu
+de questions le déplacerait encore. C'est que \textbf{la première conclusion mesurait le jeu de
+test, pas le système}. Un banc d'évaluation ne devient un instrument de mesure qu'une fois vérifié
+qu'il exerce réellement toutes les capacités du système ; jusque-là, il mesure surtout les
+hypothèses de celui qui l'a écrit.
+
+\smallskip
+La conséquence pratique est que l'hybride est conservé. Il est la seule des trois configurations à
+ne pas s'effondrer quand la nature des questions change, ce qui est la propriété qui compte pour un
+système destiné à des questions qu'on ne choisit pas.
+\end{constat}
+
+\section{Qualité des réponses}
+
+\subsection{Taxonomie des résultats}
+
+Chaque réponse a été classée dans une catégorie unique (figure~\ref{fig:taxonomie}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-taxonomie}
+  \caption[Classement des réponses générées]{Classement des \NbQuestions{} réponses générées. La
+  catégorie la plus importante est celle qui n'apparaît pas : aucune réponse n'a été produite sur
+  un sujet absent du corpus.}
+  \label{fig:taxonomie}
+\end{figure}
+
+Pour un outil juridique, c'est bien l'absence de la dernière catégorie qui compte. Un système qui
+répondrait à côté sur une question qu'il ne couvre pas serait dangereux d'une manière que ne
+compenserait aucun taux de réussite par ailleurs.
+
+\subsection{Indicateurs de fiabilité}
+
+Quatre indicateurs résument la fiabilité des réponses (figure~\ref{fig:fiabilite}). Ils ne portent
+pas sur les mêmes populations, ce que la figure rend explicite.
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-fiabilite}
+  \caption[Indicateurs de fiabilité]{Indicateurs de fiabilité, avec l'effectif réel derrière
+  chaque taux. Les dénominateurs diffèrent : \TauxAbstention~\% sur \NbOutScope{} questions et
+  \TauxVerif~\% sur \NbCitations{} citations n'ont pas le même poids de preuve.}
+  \label{fig:fiabilite}
+\end{figure}
+
+Sur les \NbRepondues{} questions du périmètre auxquelles le système a effectivement répondu,
+\TauxCitation~\% citent au moins un article et \TauxSourceAttendue~\% citent l'article attendu.
+Sur les \NbCitations{} citations produites au total, \NbNonVerifiees{} ne correspondent à aucun
+article présent dans le contexte fourni, soit \TauxVerif~\% de citations vérifiées. Les
+\NbOutScope{} questions hors périmètre ont toutes été refusées.
+
+Ce taux de \TauxVerif~\% appelle un examen, car il est nettement inférieur à celui qu'affichait le
+jeu d'origine (93~\% sur 45~citations). Le nombre de citations produites a plus que doublé
+(\NbCitations{} contre 45), et le nombre de citations signalées a été multiplié par six.
+
+Le mécanisme principal reste le \textbf{renvoi interne} : le texte d'un article fourni mentionne
+lui-même d'autres articles («~\dots dans les conditions prévues par les articles~154 et~156~»),
+que le modèle reprend. Le contrôle les signale parce qu'ils ne figurent pas dans le contexte ; il
+sur-signale volontairement, plutôt que de risquer de manquer une véritable invention.
+
+\begin{limite}
+\textbf{Cette explication ne couvre cependant qu'une partie des cas, et le banc ne permet pas de
+statuer sur le reste.} Un recoupement automatique des \NbNonVerifiees{} citations signalées avec
+le texte des articles fournis confirme le renvoi interne dans six cas seulement. Les autres restent
+indéterminés --- notamment une réponse créditée des articles~1 à~6, une suite trop régulière pour
+être une citation juridique, et qui évoque plutôt un faux positif du détecteur.
+
+\smallskip
+La cause de cette incertitude est une lacune du banc lui-même : \module{run\_measures.py}
+enregistrait les numéros cités mais \emph{pas le texte de la réponse}, ce qui rend tout diagnostic
+a posteriori impossible. Le script a été corrigé pour conserver les réponses, mais la présente
+campagne de mesure a été exécutée avant cette correction. Le chiffre de \TauxVerif~\% doit donc
+être lu comme un \textbf{plancher} : il compte comme suspecte toute citation non retrouvée, y
+compris celles que le détecteur a lui-même mal extraites.
+\end{limite}
+
+\section{Le garde-fou d'abstention}
+
+\subsection{Calibration du seuil}
+
+Le seuil d'abstention a été calibré empiriquement, non choisi arbitrairement. La mesure des scores
+de recherche sur les deux populations de questions fait apparaître trois bandes
+(figure~\ref{fig:seuil}) :
+
+\begin{itemize}
+  \item questions de droit du travail : de \ScoreInMin{} à \ScoreInMax{} ;
+  \item questions d'un \emph{autre domaine juridique ou administratif} : de
+        \ScoreJuridiqueMin{} à \ScoreJuridiqueMax{} --- plus hautes que la bande suivante car
+        elles partagent le vocabulaire juridique français ;
+  \item questions sans rapport avec le droit : de \ScoreHorsDroitMin{} à \ScoreHorsDroitMax{}.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-seuil}
+  \caption[Séparation des scores de recherche]{Score de recherche par question. Les six questions
+  nommant un article par son numéro sont exclues : leur score est \emph{forcé} à 1,0 par le module
+  de recherche (section~\ref{sec:refexplicite}) et ne mesure aucune similarité. Les bandes se
+  chevauchent désormais, ce qui n'était pas visible sur le jeu d'origine.}
+  \label{fig:seuil}
+\end{figure}
+
+\begin{limite}
+\textbf{Les bandes se recouvrent, et aucun seuil ne peut donc les séparer.} La question
+«~Quelles sont les conditions pour obtenir un passeport marocain~?~» obtient \ScoreJuridiqueMax{},
+\emph{au-dessus} de la question de droit du travail la moins bien classée (\ScoreInMin{}, sur la
+durée maximale d'une mission d'intérim). Il n'existe aucune valeur de seuil qui accepterait la
+seconde tout en rejetant la première.
+
+\smallskip
+Le jeu d'origine, avec ses cinq seules questions hors périmètre, laissait croire à une séparation
+nette. Elle était un artefact de l'échantillon --- le même biais que celui décrit en
+section~\ref{sec:inversion}, sur une autre grandeur.
+\end{limite}
+
+Ce constat renforce, en le durcissant, l'argument de conception du
+chapitre~\ref{chap:conception} : \textbf{le seuil ne doit pas chercher à trancher la pertinence
+juridique}. Il n'en est pas capable, et le jour où le corpus s'étendra à un second code, ces
+questions devront de toute façon devenir répondables.
+
+Son rôle réel est plus modeste et parfaitement assumé : écarter à moindre coût la bande clairement
+non pertinente, avant d'engager l'inférence. Sur \NbOutScope{} questions hors périmètre, il n'en
+arrête que \NbGarde{} --- les sept autres franchissent le seuil et sont rattrapées en aval par
+l'abstention au niveau du prompt, qui les refuse toutes. C'est bien la \emph{combinaison} des deux
+garde-fous, et non le seuil seul, qui produit les \TauxAbstention~\% d'abstention correcte.
+
+\subsection{Coût de l'abstention}
+
+\NbRefusTort{} questions valides sur \NbInScope{} ont été refusées à tort. C'est le prix d'une
+abstention stricte, et l'arbitrage est assumé : pour un outil juridique, un refus injustifié est
+préférable à une réponse inventée. Le premier laisse l'usager où il était ; le second l'égare en
+lui donnant confiance.
+
+Cet équilibre reste néanmoins perfectible, et les deux cas concernés sont instructifs. Leurs scores
+de recherche --- 0,672 et 0,695 --- sont largement au-dessus du seuil : \emph{aucun des deux n'a
+été arrêté par le garde-fou}. Le refus vient donc du \textbf{modèle}, non de la recherche,
+c'est-à-dire de l'effet des règles ajoutées en section~\ref{sec:hallucination}. La marge de progrès
+est du côté du prompt, pas du seuil.
+
+Le second cas est le plus révélateur : à la question «~Comment l'arbitre est-il désigné en cas de
+conflit collectif~?~», l'article~568 attendu \emph{figurait} dans le contexte fourni, et le modèle
+a néanmoins refusé sans citer aucun article. Le sujet relève du Livre~VI, absent du jeu de
+référence d'origine : c'est une famille de questions sur laquelle le prompt n'avait jamais été
+éprouvé.
+
+\section{Latence}
+
+Le temps de réponse a été mesuré étape par étape sur les \NbQuestions{} questions du jeu de
+référence (figure~\ref{fig:latence}).
+
+\begin{figure}[htbp]
+  \centering
+  \input{Figures/fig-latence}
+  \caption[Répartition du temps de réponse]{Répartition du temps de réponse.
+  \textbf{(a)}~composition du temps médian ; \textbf{(b)}~distribution sur les questions
+  effectivement transmises au modèle. Les deux panneaux partagent le même code couleur :
+  bleu pour la recherche, ambre pour la génération.}
+  \label{fig:latence}
+\end{figure}
+
+Deux observations méritent d'être relevées.
+
+\paragraph{La recherche ne représente que \PartRecherche~\% du temps total}
+L'ensemble de la chaîne de recherche --- vectorisation de la question, interrogation des deux
+index, fusion --- coûte \LatRecherche~seconde. Tout le reste est de l'inférence. Optimiser
+davantage la recherche n'apporterait donc rien au temps de réponse perçu : c'est une conclusion
+utile, car l'intuition d'ingénieur pousse spontanément à optimiser la partie du système qu'on a
+écrite soi-même.
+
+\paragraph{Le garde-fou divise le temps de réponse par \FacteurGarde{}}
+Une question arrêtée avant le modèle reçoit sa réponse en \LatAbstention~seconde, contre
+\LatTotale~secondes pour une réponse complète. Le placement du garde-fou \emph{avant} le modèle,
+décidé pour des raisons de fiabilité au chapitre~\ref{chap:conception}, produit ainsi un bénéfice
+de performance qui n'était pas son objectif.
+
+La dispersion est par ailleurs importante : de 1,2 à \LatMax~secondes selon la longueur de la
+réponse produite. La médiane est donc un indicateur plus honnête que la moyenne, que quelques
+réponses longues suffisent à déplacer.
+
+\section{Défaillance observée et corrigée}
+\label{sec:hallucination}
+
+L'évaluation a mis au jour une défaillance qui n'était pas apparue lors des tests manuels. Elle
+est rapportée ici en détail, car elle constitue le mode d'échec le plus dangereux pour ce type de
+système.
+
+Interrogé sur la procédure de divorce --- question hors périmètre --- le modèle refusait
+correctement, \emph{puis inventait une réponse complète} citant un «~Code civil marocain
+(Loi~14-82)~» et son «~article~96~», en affirmant l'avoir consulté. Ces références n'existent
+pas : le droit de la famille marocain relève de la Moudawana (loi~70-03), et aucun texte de ce
+type n'avait été fourni au modèle.
+
+\begin{limite}
+Ce comportement --- reconnaître l'absence d'information, puis produire malgré tout un contenu
+inventé --- est \textbf{plus trompeur qu'une invention franche}. La prudence apparente du début de
+la réponse renforce la crédibilité de ce qui suit : le lecteur y voit un système qui connaît ses
+limites, donc digne de confiance sur le reste.
+\end{limite}
+
+La correction a consisté à interdire explicitement, dans le prompt système, toute mention d'un
+numéro de loi ou d'article provenant d'un autre code. Une première version de cette règle s'est
+révélée \textbf{trop stricte} : le taux d'abstention correcte est passé à \TauxAbstention~\%, mais
+les refus à tort ont triplé. Une règle de rééquilibrage --- \emph{par défaut, réponds} --- a permis
+de conserver le bénéfice sans en payer tout le coût.
+
+Cet épisode illustre l'intérêt d'un banc rejouable. Sans lui, la sur-correction serait passée
+inaperçue : le système aurait simplement paru «~plus prudent~», alors qu'il devenait moins utile.
+Une dégradation qui prend l'apparence d'une vertu est précisément le genre de régression qu'aucun
+test manuel ne détecte.
+
+\section{Limite de mesure assumée}
+
+Le contrôle des citations vérifie qu'un article cité \textbf{figurait dans le contexte fourni} ---
+pas qu'il \textbf{dise réellement} ce que la réponse lui attribue. Une réponse citant un article
+réel tout en en déformant le contenu est comptée ici comme sourcée.
+
+Détecter ce cas demanderait une vérification d'implication (\anglais{entailment}) ou une relecture
+humaine systématique. C'est hors du périmètre de ce stage, et le chiffre de \TauxVerif~\% de
+citations vérifiées doit être lu avec cette réserve : il mesure la \emph{traçabilité} des sources,
+non la \emph{fidélité sémantique} des affirmations. C'est un plancher de confiance, pas une
+garantie d'exactitude.
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Le système atteint les objectifs de fiabilité fixés : citation quasi systématique
+(\TauxCitation~\%), abstention correcte sur l'intégralité des questions hors périmètre, et aucune
+réponse produite sur un sujet absent du corpus.
+
+Trois résultats vont à l'encontre des attentes initiales, et aucun n'était accessible par
+l'intuition. L'hallucination inter-codes, d'abord, invisible aux tests manuels. Mais surtout, les
+deux constats produits par l'élargissement du jeu de référence : \textbf{la comparaison des
+méthodes de recherche s'est inversée} (section~\ref{sec:inversion}), et \textbf{les bandes de score
+d'abstention se recouvrent}, alors que le jeu d'origine les montrait nettement séparées.
+
+Ces deux derniers points ont une leçon commune, et c'est peut-être le principal acquis
+méthodologique de ce stage : les deux conclusions renversées n'étaient pas fausses parce que le
+système avait changé --- il n'avait pas changé --- mais parce que le \emph{jeu de test} ne
+l'exerçait pas complètement. Un banc d'évaluation dont on n'a pas vérifié la couverture mesure les
+hypothèses de son auteur autant que le système qu'il prétend juger.

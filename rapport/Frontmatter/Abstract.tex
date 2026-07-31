@@ -1,10 +1,14 @@
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
+\markboth{Abstract}{}
+\selectlanguage{english}
 
 Moroccan citizens still struggle to access legal information: the texts are public, but written
-in dense legal language and sometimes available only in Arabic. General-purpose conversational
-assistants know Moroccan law poorly, may invent non-existent references, and send citizens'
-questions outside the national territory.
+in dense legal language, structured as hundreds of cross-referencing articles, and sometimes
+available only in Arabic. General-purpose conversational assistants do not fill this gap: they
+know Moroccan law poorly, may invent non-existent references --- a plausible but wrong article
+number is particularly misleading in a legal setting --- and send citizens' questions outside
+the national territory.
 
 This internship covered the design, implementation and evaluation of a \textbf{sovereign} legal
 search assistant built on the RAG (Retrieval-Augmented Generation) architecture, applied to the
@@ -13,25 +17,39 @@ Moroccan Labour Code (Law no.~65-99). The system answers a natural-language ques
 and explicitly abstains when the requested information is not in the text. The entire chain ---
 corpus, embeddings, retrieval and generation --- runs locally, with no external API call.
 
-The corpus was built by hand from the official PDF: 589 articles extracted, cleaned and enriched
-with their hierarchy metadata, with regeneration verified byte-for-byte identical from the source.
-Retrieval combines a semantic method (BGE-M3 embeddings, Chroma vector store) with a lexical one
-(BM25), fused by Reciprocal Rank Fusion. Generation uses a Mistral~7B model running locally via
-Ollama, constrained by two guardrails: an abstention threshold applied \emph{before} the model is
-called, and a check that every cited article was actually present in the supplied context.
+The corpus was built from the official PDF: \NbArticles{} articles extracted, cleaned and
+enriched with their hierarchy metadata, with regeneration verified byte-for-byte identical from
+the source. Retrieval combines a semantic method (BGE-M3 embeddings, Chroma vector store) with a
+lexical one (BM25), fused by Reciprocal Rank Fusion. Generation uses a Mistral~7B model running
+locally via Ollama, constrained by two model-independent guardrails: an abstention threshold
+applied \emph{before} the model is called, and a check that every cited article was actually
+present in the supplied context.
 
-The system was evaluated on a 37-question reference set. Retrieval reaches Recall@5 of 0.97 and
-MRR of 0.89 in the dense configuration. On the answer side, 97~\% cite at least one article, 94~\%
-of citations are verified as genuinely supplied to the model, and abstention is correct on 100~\%
-of out-of-scope questions. Median response time is 3.5~seconds, dropping to 0.14~seconds when the
-abstention guardrail fires. Measurement limits --- notably the inability to automatically verify
-that a cited article \emph{actually says} what the answer attributes to it --- are documented
-explicitly.
+The system was evaluated on a \NbQuestions-question reference set. In its hybrid configuration,
+retrieval reaches Recall@5 of \RecallHybride{} and MRR of \MrrHybride{}. On the answer side,
+\TauxCitation~\% cite at least one article, \TauxVerif~\% of citations are verified as genuinely
+supplied to the model, and abstention is correct on \TauxAbstention~\% of out-of-scope questions
+--- no answer was ever produced on a topic absent from the corpus. Median response time is
+\LatTotale~seconds, dropping to \LatAbstention~seconds when the guardrail fires.
 
-\noindent\rule[2pt]{\textwidth}{0.5pt}
+A coverage audit, carried out once the system had stabilised, revealed that the initial reference
+set exercised none of several code paths. Growing it from 37 to \NbQuestions{} questions
+\textbf{reversed} two previously measured conclusions: the comparison between dense and hybrid
+retrieval, and the apparent separation of the abstention score bands. This methodological result
+--- an evaluation harness is a designed artefact and must be validated like the system it judges
+--- is central to this report, alongside the acknowledged measurement limits, chief among them the
+inability to automatically verify that a cited article \emph{actually says} what the answer
+attributes to it.
 
-{\textbf{Key Words :}}
+\vspace{0.6cm}
+{\color{rule}\rule{\textwidth}{0.8pt}}
+
+\vspace{2pt}
+\noindent{\sffamily\bfseries\color{navy}Keywords:}
 RAG, digital sovereignty, natural language processing, semantic search, large language models,
 Moroccan labour law, grounding, abstention.
-\\
-\noindent\rule[2pt]{\textwidth}{0.5pt}
+
+\vspace{2pt}
+{\color{rule}\rule{\textwidth}{0.8pt}}
+
+\selectlanguage{french}

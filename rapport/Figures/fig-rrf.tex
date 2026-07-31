@@ -1,0 +1,62 @@
+% Mécanique de la fusion RRF, et l'effet de dilution qu'elle produit quand
+% une seule des deux méthodes trouve le bon article.
+% Exemple construit pour l'exposé ; les rangs sont ceux qu'illustre le cas
+% « durée minimale du repos hebdomadaire » (article attendu : 205).
+\begin{tikzpicture}[font=\sffamily\scriptsize,
+    ligne/.style={draw=rule, line width=0.5pt, rounded corners=1.5pt,
+                  minimum height=6mm, text width=24mm, align=left,
+                  inner xsep=4pt, font=\sffamily\scriptsize, fill=white},
+    cible/.style={ligne, draw=leafgreen, fill=leafgreen!8, text=leafgreen!40!black,
+                  font=\sffamily\scriptsize\bfseries},
+    perdu/.style={ligne, draw=anrtred, fill=anrtred!5, text=anrtred!70!black,
+                  font=\sffamily\scriptsize\bfseries},
+    entete/.style={font=\sffamily\scriptsize\bfseries, text=navy, align=center},
+    rang/.style={font=\sffamily\scriptsize, text=slate, anchor=east}]
+
+\def\ya{0} \def\yb{-0.75} \def\yc{-1.5}
+
+% ------------------------------------------------------- colonne 1 : dense
+\node[entete] at (0,0.9) {Classement dense};
+\node[cible] (d1) at (0,\ya) {art. 205};
+\node[ligne] (d2) at (0,\yb) {art. 213};
+\node[ligne] (d3) at (0,\yc) {art. 206};
+\foreach \i/\y in {1/\ya, 2/\yb, 3/\yc}
+  \node[rang] at (-1.42,\y) {\i.};
+
+% -------------------------------------------------------- colonne 2 : BM25
+\node[entete] at (4.6,0.9) {Classement BM25};
+\node[ligne] (b1) at (4.6,\ya) {art. 206};
+\node[ligne] (b2) at (4.6,\yb) {art. 213};
+\node[perdu] (b3) at (4.6,\yc) {art. 205 \;absent};
+\foreach \i/\y in {1/\ya, 2/\yb}
+  \node[rang] at (3.18,\y) {\i.};
+\node[rang, text=anrtred] at (3.18,\yc) {--};
+
+% ------------------------------------------------------ colonne 3 : fusion
+\node[entete] at (9.6,0.9) {Après fusion RRF};
+\node[ligne] (f1) at (9.6,\ya) {art. 206 \hfill \tiny 0,0328};
+\node[ligne] (f2) at (9.6,\yb) {art. 213 \hfill \tiny 0,0328};
+\node[perdu] (f3) at (9.6,\yc) {art. 205 \hfill \tiny 0,0167};
+\foreach \i/\y in {1/\ya, 2/\yb, 3/\yc}
+  \node[rang] at (8.18,\y) {\i.};
+
+% ------------------------------------------------------------------ liaisons
+\draw[flux] (d1.east) to[out=0,in=180] (b3.west);
+\draw[flux] (d3.east) to[out=0,in=180] (b1.west);
+\draw[flux] (b1.east) to[out=0,in=180] (f1.west);
+\draw[flux] (b2.east) to[out=0,in=180] (f2.west);
+\draw[rejet] (b3.east) to[out=0,in=180] (f3.west);
+
+% ------------------------------------------------------------------- formule
+\node[anchor=north, font=\small, text=navy] at (4.6,-2.5)
+  {$\displaystyle \mathrm{RRF}(d)=\sum_{m}\frac{1}{k+\mathrm{rang}_m(d)}
+    \qquad k=60$};
+
+\node[annot, anchor=north, text width=0.86\linewidth, align=left] at (4.8,-3.6)
+  {L'article~205 est classé \textbf{premier} par la recherche dense, mais
+   n'apparaît pas dans les candidats BM25 : il ne reçoit le crédit que d'une
+   seule méthode. Les articles 206 et 213, moyennement classés par les
+   \emph{deux}, cumulent deux contributions et le dépassent. La fusion a
+   \textbf{dégradé} un classement dense pourtant correct.};
+
+\end{tikzpicture}

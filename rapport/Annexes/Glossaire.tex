@@ -1,0 +1,32 @@
+\chapter{Glossaire}
+\label{ann:glossaire}
+
+\begin{longtable}{@{}>{\sffamily\bfseries\color{navy}}p{3.4cm} p{\dimexpr\textwidth-4.2cm\relax}@{}}
+\toprule
+\multicolumn{1}{@{}l}{\sffamily\bfseries\color{navy}Terme} &
+\multicolumn{1}{l@{}}{\sffamily\bfseries\color{navy}Définition} \\
+\midrule
+\endfirsthead
+\toprule
+\multicolumn{1}{@{}l}{\sffamily\bfseries\color{navy}Terme} &
+\multicolumn{1}{l@{}}{\sffamily\bfseries\color{navy}Définition} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Abstention & Comportement par lequel le système refuse explicitement de répondre lorsque l'information demandée ne figure pas dans le corpus. Considérée ici comme un succès, non comme un échec. \\[4pt]
+Ancrage & \anglais{Grounding.} Fait de contraindre une réponse générée à s'appuyer uniquement sur des documents fournis, et non sur les connaissances internes du modèle. \\[4pt]
+Base vectorielle & Base de données spécialisée dans le stockage de vecteurs et la recherche de leurs plus proches voisins. \\[4pt]
+\anglais{Chunk} & Unité de découpage du corpus. Ici, un \anglais{chunk} correspond exactement à un article de loi --- découpage imposé par le domaine, et non choisi par commodité. \\[4pt]
+Cross-encodeur & Modèle qui évalue conjointement une paire (question, passage) pour en estimer la pertinence. Plus précis mais nettement plus coûteux qu'un calcul de similarité entre vecteurs pré-calculés. \\[4pt]
+Embedding & Représentation vectorielle d'un texte, construite de sorte que la proximité géométrique traduise la proximité de sens. \\[4pt]
+Hallucination & Production par un modèle de langage d'un contenu plausible mais faux --- typiquement, en contexte juridique, un numéro d'article inexistant assorti d'un contenu inventé. \\[4pt]
+MRR & \anglais{Mean Reciprocal Rank} : moyenne de l'inverse du rang du premier résultat pertinent. Mesure la capacité à placer le bon résultat en tête, là où le Recall se contente de sa présence. \\[4pt]
+Quantification & Réduction de la précision numérique des poids d'un modèle, afin de diminuer son empreinte mémoire et de permettre son exécution sur du matériel ordinaire. \\[4pt]
+RAG & \anglais{Retrieval-Augmented Generation} : architecture où la génération est précédée d'une recherche documentaire, dont les résultats sont fournis au modèle au moment de la question. \\[4pt]
+Recall@k & Proportion de questions pour lesquelles le document attendu figure parmi les $k$ premiers résultats. \\[4pt]
+Renvoi interne & Mention, dans le texte d'un article, d'un autre article de la même loi. Source des citations signalées comme non vérifiées au chapitre~\ref{chap:evaluation}. \\[4pt]
+Similarité cosinus & Mesure de proximité entre deux vecteurs, égale au cosinus de l'angle qu'ils forment. Bornée entre $-1$ et $1$. \\[4pt]
+Souveraineté & \emph{(des données)} Principe selon lequel une donnée produite sur un territoire doit pouvoir y être traitée, sans dépendance à une infrastructure étrangère. \\[4pt]
+Température & Paramètre de génération contrôlant la part d'aléatoire du modèle. Une valeur basse produit des réponses plus stables, sans les rendre déterministes pour autant. \\
+\end{longtable}

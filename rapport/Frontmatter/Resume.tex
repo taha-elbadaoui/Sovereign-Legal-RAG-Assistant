@@ -1,0 +1,57 @@
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+\markboth{Résumé}{}
+
+L'accès du citoyen marocain à l'information juridique reste difficile : les textes sont
+publics, mais rédigés dans une langue dense, structurés en centaines d'articles se renvoyant
+les uns aux autres, et parfois disponibles uniquement en arabe. Les assistants conversationnels
+généralistes ne comblent pas ce manque : ils connaissent mal le droit marocain, peuvent inventer
+des références inexistantes --- un numéro d'article plausible mais faux est particulièrement
+trompeur en matière juridique --- et font transiter les questions des citoyens hors du
+territoire national.
+
+Ce stage a consisté à concevoir, réaliser et évaluer un assistant de recherche juridique
+\textbf{souverain} fondé sur l'architecture RAG (\anglais{Retrieval-Augmented Generation}),
+appliqué au Code du travail marocain (Loi n\textsuperscript{o}~65-99). Le système répond à une
+question posée en langage naturel en s'appuyant \emph{uniquement} sur les articles réellement
+retrouvés dans le corpus, cite systématiquement leurs numéros, et s'abstient explicitement
+lorsque l'information demandée n'y figure pas. L'ensemble de la chaîne --- corpus, embeddings,
+recherche et génération --- s'exécute en local, sans aucun appel à une interface de
+programmation externe.
+
+Le corpus a été construit à partir du PDF officiel : \NbArticles{} articles extraits, nettoyés
+et enrichis de leurs métadonnées de hiérarchie, avec une régénération vérifiée identique octet
+pour octet depuis la source. La recherche combine une méthode sémantique (embeddings BGE-M3,
+base vectorielle Chroma) et une méthode lexicale (BM25), fusionnées par \anglais{Reciprocal Rank
+Fusion}. La génération s'appuie sur un modèle Mistral~7B exécuté localement via Ollama, encadré
+par deux garde-fous indépendants du modèle : un seuil d'abstention appliqué \emph{avant} l'appel
+au modèle, et un contrôle vérifiant que chaque article cité figurait bien dans le contexte
+fourni.
+
+Le système a été évalué sur un jeu de référence de \NbQuestions{} questions. En configuration
+hybride, la recherche atteint un Recall@5 de \RecallHybride{} et un MRR de \MrrHybride{}. Côté
+réponses, \TauxCitation~\% citent au moins un article, \TauxVerif~\% des citations sont
+vérifiées comme réellement fournies au modèle, et l'abstention est correcte sur
+\TauxAbstention~\% des questions hors périmètre --- aucune réponse n'a été produite sur un sujet
+absent du corpus. Le temps de réponse médian est de \LatTotale~secondes, réduit à
+\LatAbstention~seconde lorsque le garde-fou se déclenche.
+
+Un audit de couverture, mené une fois le système stabilisé, a montré que le jeu de référence
+initial n'exerçait pas plusieurs comportements du code. Son élargissement de 37 à \NbQuestions{}
+questions a \textbf{inversé} deux conclusions pourtant mesurées : la comparaison entre recherche
+dense et recherche hybride, et la séparation apparente des bandes de score d'abstention. Ce
+résultat méthodologique --- un banc d'évaluation est un artefact conçu, qu'il faut valider comme
+le système qu'il juge --- occupe une place centrale dans ce rapport, au même titre que les
+limites de mesure assumées, dont l'impossibilité de vérifier automatiquement qu'un article cité
+\emph{dit réellement} ce que la réponse lui attribue.
+
+\vspace{0.6cm}
+{\color{rule}\rule{\textwidth}{0.8pt}}
+
+\vspace{2pt}
+\noindent{\sffamily\bfseries\color{navy}Mots clés~:}
+RAG, souveraineté numérique, traitement automatique du langage naturel, recherche sémantique,
+grands modèles de langage, droit du travail marocain, ancrage documentaire, abstention.
+
+\vspace{2pt}
+{\color{rule}\rule{\textwidth}{0.8pt}}

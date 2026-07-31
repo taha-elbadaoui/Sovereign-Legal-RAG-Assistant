@@ -1,52 +1,52 @@
 {
-  "generated_at": "2026-07-25T17:28:05",
+  "generated_at": "2026-07-31T02:59:09",
   "model": "mistral:7b",
   "abstention_threshold": 0.42,
   "reference_set": {
-    "in_scope": 32,
-    "out_of_scope": 5
+    "in_scope": 53,
+    "out_of_scope": 9
   },
   "latency_seconds": {
     "retrieval": {
-      "n": 37,
-      "min": 0.13312860000041837,
-      "median": 0.15971650000028603,
-      "mean": 0.17121627027031414,
-      "p90": 0.17519659999925352,
-      "max": 0.45668710000063584
+      "n": 62,
+      "min": 0.1279287000070326,
+      "median": 0.16445019998354837,
+      "mean": 0.17019126612801977,
+      "p90": 0.20530049997614697,
+      "max": 0.35236930003156886
     },
     "generation": {
-      "n": 35,
-      "min": 1.040529299998525,
-      "median": 3.284293799999432,
-      "mean": 3.932135145713983,
-      "p90": 7.231388899999729,
-      "max": 12.92844199999854
+      "n": 60,
+      "min": 1.0314023999962956,
+      "median": 3.8266632499871776,
+      "mean": 4.817026308327331,
+      "p90": 10.051606199995149,
+      "max": 16.15198429999873
     },
     "total_with_generation": {
-      "n": 35,
-      "min": 1.200245799998811,
-      "median": 3.485794700000042,
-      "mean": 4.105260208571157,
-      "p90": 7.480749899999864,
-      "max": 13.0842240999973
+      "n": 60,
+      "min": 1.1788806999684311,
+      "median": 3.9813797999813687,
+      "mean": 4.988426694992813,
+      "p90": 10.256906699971296,
+      "max": 16.31521829997655
     },
     "total_abstained_pre_llm": {
       "n": 2,
-      "min": 0.13312860000041837,
-      "median": 0.13781240000025718,
-      "mean": 0.13781240000025718,
-      "p90": 0.142496200000096,
-      "max": 0.142496200000096
+      "min": 0.1279287000070326,
+      "median": 0.13391765000415035,
+      "mean": 0.13391765000415035,
+      "p90": 0.1399066000012681,
+      "max": 0.1399066000012681
     }
   },
   "outcome_taxonomy": {
-    "Réponse sourcée, article attendu cité": 23,
+    "Réponse sourcée, article attendu cité": 41,
     "Réponse sourcée, autre article cité": 2,
-    "Réponse avec citation non vérifiée": 3,
-    "Réponse sans aucune citation": 1,
-    "Refus à tort (question valide)": 3,
-    "Abstention correcte": 5
+    "Réponse avec citation non vérifiée": 6,
+    "Réponse sans aucune citation": 2,
+    "Refus à tort (question valide)": 2,
+    "Abstention correcte": 9
   },
   "questions": [
     {
@@ -62,9 +62,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7826,
-      "t_retrieval_s": 0.457,
-      "t_generation_s": 7.024,
-      "t_total_s": 7.481,
+      "t_retrieval_s": 0.352,
+      "t_generation_s": 2.024,
+      "t_total_s": 2.377,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -81,9 +81,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7658,
-      "t_retrieval_s": 0.165,
-      "t_generation_s": 3.556,
-      "t_total_s": 3.721,
+      "t_retrieval_s": 0.177,
+      "t_generation_s": 3.867,
+      "t_total_s": 4.044,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -95,17 +95,16 @@
       "cited_articles": [
         "152",
         "154",
-        "156",
-        "269"
+        "156"
       ],
       "unverified_citations": [],
-      "abstained": true,
+      "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.6797,
-      "t_retrieval_s": 0.147,
-      "t_generation_s": 6.984,
-      "t_total_s": 7.131,
-      "outcome": "Refus à tort (question valide)"
+      "t_retrieval_s": 0.164,
+      "t_generation_s": 5.153,
+      "t_total_s": 5.317,
+      "outcome": "Réponse sourcée, article attendu cité"
     },
     {
       "question": "Quelle est la durée légale du travail dans les activités non agricoles ?",
@@ -120,9 +119,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7373,
-      "t_retrieval_s": 0.169,
-      "t_generation_s": 2.112,
-      "t_total_s": 2.282,
+      "t_retrieval_s": 0.141,
+      "t_generation_s": 2.233,
+      "t_total_s": 2.374,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -142,9 +141,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7214,
-      "t_retrieval_s": 0.16,
-      "t_generation_s": 4.383,
-      "t_total_s": 4.543,
+      "t_retrieval_s": 0.177,
+      "t_generation_s": 4.318,
+      "t_total_s": 4.495,
       "outcome": "Réponse avec citation non vérifiée"
     },
     {
@@ -163,9 +162,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7487,
-      "t_retrieval_s": 0.16,
-      "t_generation_s": 4.629,
-      "t_total_s": 4.79,
+      "t_retrieval_s": 0.145,
+      "t_generation_s": 4.617,
+      "t_total_s": 4.762,
       "outcome": "Réponse avec citation non vérifiée"
     },
     {
@@ -182,9 +181,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7164,
-      "t_retrieval_s": 0.16,
-      "t_generation_s": 1.041,
-      "t_total_s": 1.2,
+      "t_retrieval_s": 0.147,
+      "t_generation_s": 1.031,
+      "t_total_s": 1.179,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -201,8 +200,8 @@
       "gate_abstained": false,
       "retrieval_score": 0.718,
       "t_retrieval_s": 0.175,
-      "t_generation_s": 2.001,
-      "t_total_s": 2.176,
+      "t_generation_s": 1.917,
+      "t_total_s": 2.093,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -218,9 +217,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7124,
-      "t_retrieval_s": 0.174,
-      "t_generation_s": 2.436,
-      "t_total_s": 2.609,
+      "t_retrieval_s": 0.156,
+      "t_generation_s": 2.25,
+      "t_total_s": 2.406,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -230,17 +229,17 @@
         "3"
       ],
       "cited_articles": [
-        "4",
-        "11"
+        "3",
+        "4"
       ],
       "unverified_citations": [],
-      "abstained": false,
+      "abstained": true,
       "gate_abstained": false,
       "retrieval_score": 0.6946,
-      "t_retrieval_s": 0.156,
-      "t_generation_s": 7.231,
-      "t_total_s": 7.387,
-      "outcome": "Réponse sourcée, autre article cité"
+      "t_retrieval_s": 0.147,
+      "t_generation_s": 10.754,
+      "t_total_s": 10.901,
+      "outcome": "Refus à tort (question valide)"
     },
     {
       "question": "Pour combien de temps peut-on conclure un CDD à l'ouverture d'une nouvelle entreprise ?",
@@ -249,15 +248,17 @@
         "17"
       ],
       "cited_articles": [
-        "17"
+        "17",
+        "136",
+        "495"
       ],
       "unverified_citations": [],
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.6039,
-      "t_retrieval_s": 0.172,
-      "t_generation_s": 4.998,
-      "t_total_s": 5.17,
+      "t_retrieval_s": 0.174,
+      "t_generation_s": 6.281,
+      "t_total_s": 6.455,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -268,15 +269,16 @@
       ],
       "cited_articles": [
         "231",
+        "235",
         "238"
       ],
       "unverified_citations": [],
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.696,
-      "t_retrieval_s": 0.159,
-      "t_generation_s": 4.179,
-      "t_total_s": 4.338,
+      "t_retrieval_s": 0.149,
+      "t_generation_s": 3.968,
+      "t_total_s": 4.117,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -286,17 +288,16 @@
         "205"
       ],
       "cited_articles": [
-        "206",
-        "213"
+        "206"
       ],
       "unverified_citations": [],
-      "abstained": true,
+      "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.6611,
-      "t_retrieval_s": 0.159,
-      "t_generation_s": 3.814,
-      "t_total_s": 3.973,
-      "outcome": "Refus à tort (question valide)"
+      "t_retrieval_s": 0.16,
+      "t_generation_s": 5.125,
+      "t_total_s": 5.286,
+      "outcome": "Réponse sourcée, autre article cité"
     },
     {
       "question": "Combien de jours de congé un salarié a-t-il à l'occasion d'une naissance ?",
@@ -311,9 +312,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7707,
-      "t_retrieval_s": 0.163,
-      "t_generation_s": 1.517,
-      "t_total_s": 1.68,
+      "t_retrieval_s": 0.167,
+      "t_generation_s": 1.679,
+      "t_total_s": 1.846,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -329,9 +330,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7335,
-      "t_retrieval_s": 0.167,
-      "t_generation_s": 1.361,
-      "t_total_s": 1.528,
+      "t_retrieval_s": 0.171,
+      "t_generation_s": 1.56,
+      "t_total_s": 1.731,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -342,15 +343,17 @@
       ],
       "cited_articles": [
         "39",
-        "40"
+        "40",
+        "160",
+        "293"
       ],
       "unverified_citations": [],
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7805,
-      "t_retrieval_s": 0.156,
-      "t_generation_s": 12.928,
-      "t_total_s": 13.084,
+      "t_retrieval_s": 0.163,
+      "t_generation_s": 16.152,
+      "t_total_s": 16.315,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -361,19 +364,16 @@
       ],
       "cited_articles": [
         "41",
-        "51",
-        "59"
+        "301"
       ],
-      "unverified_citations": [
-        "51"
-      ],
+      "unverified_citations": [],
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7263,
-      "t_retrieval_s": 0.202,
-      "t_generation_s": 3.284,
-      "t_total_s": 3.486,
-      "outcome": "Réponse avec citation non vérifiée"
+      "t_retrieval_s": 0.151,
+      "t_generation_s": 5.998,
+      "t_total_s": 6.15,
+      "outcome": "Réponse sourcée, article attendu cité"
     },
     {
       "question": "Comment est calculée l'indemnité de licenciement ?",
@@ -382,19 +382,26 @@
         "53"
       ],
       "cited_articles": [
+        "41",
+        "51",
         "53",
         "55",
         "56",
-        "59"
+        "59",
+        "356"
       ],
-      "unverified_citations": [],
+      "unverified_citations": [
+        "41",
+        "51",
+        "356"
+      ],
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7881,
       "t_retrieval_s": 0.151,
-      "t_generation_s": 6.516,
-      "t_total_s": 6.667,
-      "outcome": "Réponse sourcée, article attendu cité"
+      "t_generation_s": 8.258,
+      "t_total_s": 8.408,
+      "outcome": "Réponse avec citation non vérifiée"
     },
     {
       "question": "L'employeur peut-il licencier une salariée enceinte ?",
@@ -410,9 +417,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7153,
-      "t_retrieval_s": 0.153,
-      "t_generation_s": 4.861,
-      "t_total_s": 5.015,
+      "t_retrieval_s": 0.164,
+      "t_generation_s": 5.206,
+      "t_total_s": 5.37,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -428,9 +435,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7935,
-      "t_retrieval_s": 0.166,
-      "t_generation_s": 3.102,
-      "t_total_s": 3.267,
+      "t_retrieval_s": 0.176,
+      "t_generation_s": 3.319,
+      "t_total_s": 3.495,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -446,9 +453,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7135,
-      "t_retrieval_s": 0.16,
-      "t_generation_s": 1.756,
-      "t_total_s": 1.916,
+      "t_retrieval_s": 0.154,
+      "t_generation_s": 1.823,
+      "t_total_s": 1.977,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -464,9 +471,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.755,
-      "t_retrieval_s": 0.192,
-      "t_generation_s": 2.333,
-      "t_total_s": 2.526,
+      "t_retrieval_s": 0.161,
+      "t_generation_s": 2.634,
+      "t_total_s": 2.795,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -476,16 +483,29 @@
         "430"
       ],
       "cited_articles": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
         "433"
       ],
-      "unverified_citations": [],
+      "unverified_citations": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.767,
-      "t_retrieval_s": 0.246,
-      "t_generation_s": 9.532,
-      "t_total_s": 9.778,
-      "outcome": "Réponse sourcée, autre article cité"
+      "t_retrieval_s": 0.148,
+      "t_generation_s": 10.488,
+      "t_total_s": 10.636,
+      "outcome": "Réponse avec citation non vérifiée"
     },
     {
       "question": "À partir de combien de salariés faut-il créer un comité d'entreprise ?",
@@ -500,9 +520,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.6743,
-      "t_retrieval_s": 0.159,
-      "t_generation_s": 1.949,
-      "t_total_s": 2.108,
+      "t_retrieval_s": 0.149,
+      "t_generation_s": 1.921,
+      "t_total_s": 2.07,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -518,9 +538,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7278,
-      "t_retrieval_s": 0.155,
-      "t_generation_s": 1.372,
-      "t_total_s": 1.527,
+      "t_retrieval_s": 0.165,
+      "t_generation_s": 1.513,
+      "t_total_s": 1.678,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -536,9 +556,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7092,
-      "t_retrieval_s": 0.161,
-      "t_generation_s": 4.332,
-      "t_total_s": 4.493,
+      "t_retrieval_s": 0.169,
+      "t_generation_s": 4.657,
+      "t_total_s": 4.826,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -552,9 +572,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.5955,
-      "t_retrieval_s": 0.154,
-      "t_generation_s": 1.737,
-      "t_total_s": 1.891,
+      "t_retrieval_s": 0.16,
+      "t_generation_s": 1.922,
+      "t_total_s": 2.082,
       "outcome": "Réponse sans aucune citation"
     },
     {
@@ -563,17 +583,15 @@
       "expected_articles": [
         "336"
       ],
-      "cited_articles": [
-        "337"
-      ],
+      "cited_articles": [],
       "unverified_citations": [],
-      "abstained": true,
+      "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.692,
-      "t_retrieval_s": 0.174,
-      "t_generation_s": 3.465,
-      "t_total_s": 3.638,
-      "outcome": "Refus à tort (question valide)"
+      "t_retrieval_s": 0.16,
+      "t_generation_s": 2.549,
+      "t_total_s": 2.709,
+      "outcome": "Réponse sans aucune citation"
     },
     {
       "question": "Que doit faire un salarié malade pour justifier son absence ?",
@@ -588,9 +606,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.764,
-      "t_retrieval_s": 0.158,
-      "t_generation_s": 3.895,
-      "t_total_s": 4.052,
+      "t_retrieval_s": 0.148,
+      "t_generation_s": 3.404,
+      "t_total_s": 3.552,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -606,9 +624,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7076,
-      "t_retrieval_s": 0.155,
-      "t_generation_s": 1.516,
-      "t_total_s": 1.671,
+      "t_retrieval_s": 0.151,
+      "t_generation_s": 1.721,
+      "t_total_s": 1.872,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -620,6 +638,7 @@
       ],
       "cited_articles": [
         "24",
+        "169",
         "287",
         "504",
         "542"
@@ -628,9 +647,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.7173,
-      "t_retrieval_s": 0.175,
-      "t_generation_s": 8.123,
-      "t_total_s": 8.298,
+      "t_retrieval_s": 0.181,
+      "t_generation_s": 9.046,
+      "t_total_s": 9.227,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -646,9 +665,9 @@
       "abstained": false,
       "gate_abstained": false,
       "retrieval_score": 0.6958,
-      "t_retrieval_s": 0.156,
-      "t_generation_s": 1.928,
-      "t_total_s": 2.083,
+      "t_retrieval_s": 0.159,
+      "t_generation_s": 2.09,
+      "t_total_s": 2.249,
       "outcome": "Réponse sourcée, article attendu cité"
     },
     {
@@ -660,9 +679,9 @@
       "abstained": true,
       "gate_abstained": false,
       "retrieval_score": 0.5147,
-      "t_retrieval_s": 0.152,
-      "t_generation_s": 1.566,
-      "t_total_s": 1.718,
+      "t_retrieval_s": 0.154,
+      "t_generation_s": 1.992,
+      "t_total_s": 2.146,
       "outcome": "Abstention correcte"
     },
     {
@@ -674,9 +693,9 @@
       "abstained": true,
       "gate_abstained": false,
       "retrieval_score": 0.515,
-      "t_retrieval_s": 0.145,
-      "t_generation_s": 2.946,
-      "t_total_s": 3.091,
+      "t_retrieval_s": 0.141,
+      "t_generation_s": 4.37,
+      "t_total_s": 4.511,
       "outcome": "Abstention correcte"
     },
     {
@@ -688,9 +707,9 @@
       "abstained": true,
       "gate_abstained": false,
       "retrieval_score": 0.4453,
-      "t_retrieval_s": 0.148,
-      "t_generation_s": 3.216,
-      "t_total_s": 3.364,
+      "t_retrieval_s": 0.145,
+      "t_generation_s": 3.122,
+      "t_total_s": 3.267,
       "outcome": "Abstention correcte"
     },
     {
@@ -702,9 +721,9 @@
       "abstained": true,
       "gate_abstained": true,
       "retrieval_score": 0.3071,
-      "t_retrieval_s": 0.142,
+      "t_retrieval_s": 0.14,
       "t_generation_s": 0.0,
-      "t_total_s": 0.142,
+      "t_total_s": 0.14,
       "outcome": "Abstention correcte"
     },
     {
@@ -716,9 +735,467 @@
       "abstained": true,
       "gate_abstained": true,
       "retrieval_score": 0.3357,
-      "t_retrieval_s": 0.133,
+      "t_retrieval_s": 0.128,
       "t_generation_s": 0.0,
-      "t_total_s": 0.133,
+      "t_total_s": 0.128,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Que dit l'article 32 du Code du travail ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "32"
+      ],
+      "cited_articles": [
+        "32",
+        "154",
+        "156",
+        "274",
+        "275",
+        "277"
+      ],
+      "unverified_citations": [
+        "154",
+        "156",
+        "274",
+        "275",
+        "277"
+      ],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 1.0,
+      "t_retrieval_s": 0.14,
+      "t_generation_s": 6.999,
+      "t_total_s": 7.14,
+      "outcome": "Réponse avec citation non vérifiée"
+    },
+    {
+      "question": "Que prévoit l'article 152 ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "152"
+      ],
+      "cited_articles": [
+        "152"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 1.0,
+      "t_retrieval_s": 0.132,
+      "t_generation_s": 3.787,
+      "t_total_s": 3.919,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quel est le contenu de l'article 256 ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "256"
+      ],
+      "cited_articles": [
+        "256"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 1.0,
+      "t_retrieval_s": 0.146,
+      "t_generation_s": 6.184,
+      "t_total_s": 6.329,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Que dispose l'article 39 ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "39"
+      ],
+      "cited_articles": [
+        "39"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 1.0,
+      "t_retrieval_s": 0.153,
+      "t_generation_s": 14.743,
+      "t_total_s": 14.896,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Que dit l'article premier du Code du travail ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "1"
+      ],
+      "cited_articles": [
+        "1"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 1.0,
+      "t_retrieval_s": 0.205,
+      "t_generation_s": 10.052,
+      "t_total_s": 10.257,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Que prévoit l'article 217 ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "217"
+      ],
+      "cited_articles": [
+        "217"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 1.0,
+      "t_retrieval_s": 0.171,
+      "t_generation_s": 3.216,
+      "t_total_s": 3.388,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Qui est chargé de l'inspection du travail ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "530"
+      ],
+      "cited_articles": [
+        "538"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6793,
+      "t_retrieval_s": 0.156,
+      "t_generation_s": 1.741,
+      "t_total_s": 1.898,
+      "outcome": "Réponse sourcée, autre article cité"
+    },
+    {
+      "question": "L'employeur doit-il tenir un registre des mises en demeure ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "536"
+      ],
+      "cited_articles": [
+        "536"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7558,
+      "t_retrieval_s": 0.166,
+      "t_generation_s": 3.748,
+      "t_total_s": 3.914,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelle est la valeur juridique des procès-verbaux dressés par l'inspection du travail ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "539"
+      ],
+      "cited_articles": [
+        "539"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6328,
+      "t_retrieval_s": 0.184,
+      "t_generation_s": 2.712,
+      "t_total_s": 2.896,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelle amende sanctionne le défaut d'ouverture du registre des mises en demeure ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "547"
+      ],
+      "cited_articles": [
+        "536",
+        "547"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.705,
+      "t_retrieval_s": 0.173,
+      "t_generation_s": 4.411,
+      "t_total_s": 4.584,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Qu'est-ce qu'un conflit collectif du travail ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "549"
+      ],
+      "cited_articles": [
+        "549"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6924,
+      "t_retrieval_s": 0.182,
+      "t_generation_s": 6.153,
+      "t_total_s": 6.335,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Dans quel délai l'arbitre doit-il rendre sa décision ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "574"
+      ],
+      "cited_articles": [
+        "574",
+        "578"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7492,
+      "t_retrieval_s": 0.194,
+      "t_generation_s": 4.786,
+      "t_total_s": 4.98,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Dans quel délai peut-on contester une décision d'arbitrage ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "577"
+      ],
+      "cited_articles": [
+        "577"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.716,
+      "t_retrieval_s": 0.166,
+      "t_generation_s": 2.271,
+      "t_total_s": 2.437,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Comment l'arbitre est-il désigné en cas de conflit collectif ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "568"
+      ],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.6716,
+      "t_retrieval_s": 0.246,
+      "t_generation_s": 2.763,
+      "t_total_s": 3.009,
+      "outcome": "Refus à tort (question valide)"
+    },
+    {
+      "question": "Dans quels cas le conflit est-il soumis à la commission nationale d'enquête et de conciliation ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "565"
+      ],
+      "cited_articles": [
+        "565",
+        "566"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7434,
+      "t_retrieval_s": 0.245,
+      "t_generation_s": 4.839,
+      "t_total_s": 5.084,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quand le Code du travail entre-t-il en vigueur ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "589"
+      ],
+      "cited_articles": [
+        "58",
+        "100"
+      ],
+      "unverified_citations": [
+        "58",
+        "100"
+      ],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6053,
+      "t_retrieval_s": 0.212,
+      "t_generation_s": 10.573,
+      "t_total_s": 10.784,
+      "outcome": "Réponse avec citation non vérifiée"
+    },
+    {
+      "question": "Quelles obligations l'employeur a-t-il envers les agents de l'inspection du travail ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "536",
+        "538"
+      ],
+      "cited_articles": [
+        "538"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6938,
+      "t_retrieval_s": 0.238,
+      "t_generation_s": 9.857,
+      "t_total_s": 10.095,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Que se passe-t-il si l'employeur ne respecte pas une mise en demeure d'hygiène et de sécurité ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "540",
+        "542"
+      ],
+      "cited_articles": [
+        "300",
+        "540",
+        "542"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.7674,
+      "t_retrieval_s": 0.208,
+      "t_generation_s": 9.846,
+      "t_total_s": 10.054,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelles sont les étapes de la procédure de règlement d'un conflit collectif ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "551",
+        "565"
+      ],
+      "cited_articles": [
+        "550",
+        "551",
+        "560",
+        "567"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6131,
+      "t_retrieval_s": 0.191,
+      "t_generation_s": 11.33,
+      "t_total_s": 11.521,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Le service militaire suspend-il le contrat de travail ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "32"
+      ],
+      "cited_articles": [
+        "32"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.6542,
+      "t_retrieval_s": 0.179,
+      "t_generation_s": 2.358,
+      "t_total_s": 2.536,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Le salarié appelé au service militaire est-il indemnisé pour son congé annuel non pris ?",
+      "type": "retrieval",
+      "expected_articles": [
+        "256"
+      ],
+      "cited_articles": [
+        "256"
+      ],
+      "unverified_citations": [],
+      "abstained": false,
+      "gate_abstained": false,
+      "retrieval_score": 0.784,
+      "t_retrieval_s": 0.168,
+      "t_generation_s": 2.484,
+      "t_total_s": 2.652,
+      "outcome": "Réponse sourcée, article attendu cité"
+    },
+    {
+      "question": "Quelles sont les conditions pour obtenir un passeport marocain ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.6027,
+      "t_retrieval_s": 0.171,
+      "t_generation_s": 2.816,
+      "t_total_s": 2.987,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Comment calculer l'impôt sur le revenu au Maroc ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.5561,
+      "t_retrieval_s": 0.17,
+      "t_generation_s": 5.124,
+      "t_total_s": 5.295,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Quel est le meilleur moment de l'année pour visiter Marrakech ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.4461,
+      "t_retrieval_s": 0.177,
+      "t_generation_s": 4.212,
+      "t_total_s": 4.389,
+      "outcome": "Abstention correcte"
+    },
+    {
+      "question": "Quelles sont les règles du hors-jeu au football ?",
+      "type": "abstention",
+      "expected_articles": [],
+      "cited_articles": [],
+      "unverified_citations": [],
+      "abstained": true,
+      "gate_abstained": false,
+      "retrieval_score": 0.4319,
+      "t_retrieval_s": 0.155,
+      "t_generation_s": 3.054,
+      "t_total_s": 3.209,
       "outcome": "Abstention correcte"
     }
   ]

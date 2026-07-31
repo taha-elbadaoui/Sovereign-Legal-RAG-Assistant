@@ -1,0 +1,58 @@
+% Séquence d'une requête, avec le temps médian mesuré à chaque étape.
+% Les deux chemins possibles — réponse ou abstention — sont représentés
+% ensemble : c'est leur écart de coût qui fait l'intérêt de la figure.
+\begin{tikzpicture}[font=\sffamily\scriptsize, node distance=5.5mm]
+
+\def\colx{0}          % colonne principale
+\def\tempsx{4.55}     % gouttière des temps
+
+% ------------------------------------------------------------------- étapes
+\node[donnee, text width=34mm] (q) at (\colx,0) {Question reçue};
+\node[modele, text width=34mm, below=of q] (vec)
+  {Vectorisation de la question (BGE-M3)};
+\node[traitement, text width=34mm, below=of vec] (rech)
+  {Interrogation des deux index, fusion RRF};
+\node[decision, text width=22mm, below=7mm of rech] (gate)
+  {meilleur score $\geq$ \SeuilAbstention{} ?};
+\node[modele, text width=34mm, below=9mm of gate] (gen)
+  {Génération sous prompt strict, température 0,1};
+\node[traitement, text width=34mm, below=of gen] (verif)
+  {Extraction des numéros cités et confrontation au contexte fourni};
+\node[donnee, text width=34mm, below=of verif] (out)
+  {Réponse, articles sources, avertissement};
+
+\draw[flux] (q) -- (vec);
+\draw[flux] (vec) -- (rech);
+\draw[flux] (rech) -- (gate);
+\draw[flux] (gate) -- node[etiq, right, pos=0.35]{oui} (gen);
+\draw[flux] (gen) -- (verif);
+\draw[flux] (verif) -- (out);
+
+% ---------------------------------------------------- branche d'abstention
+\node[arret, text width=28mm, left=13mm of gen] (abst)
+  {Phrase d'abstention rendue telle quelle};
+\draw[rejet] (gate) -| node[etiq, above, pos=0.25, text=anrtred]{non} (abst);
+
+\node[annot, below=4mm of abst, text width=32mm]
+  {Le garde-fou est un test de seuil : il ne dépend pas de la bonne volonté
+   du modèle à dire «\,je ne sais pas\,».};
+
+% ------------------------------------------------------ gouttière des temps
+\node[etiq, anchor=west, text=slate] at (\tempsx,{0.32}) {\bfseries médiane};
+\node[etiq, anchor=west] at (\tempsx,{-1.55}) {\LatRecherche{} s};
+\node[etiq, anchor=west, text width=27mm] at (\tempsx,{-2.2})
+  {recherche complète};
+\node[etiq, anchor=west] at (\tempsx,{-5.3}) {\LatGeneration{} s};
+\node[etiq, anchor=west, text width=27mm] at (\tempsx,{-5.95}) {génération};
+\node[etiqfort, anchor=west] at (\tempsx,{-8.6}) {\LatTotale{} s};
+\node[etiq, anchor=west, text width=27mm] at (\tempsx,{-9.25}) {total};
+
+\draw[rule, line width=0.5pt] ($(\tempsx-0.28,0.55)$) -- ($(\tempsx-0.28,-9.8)$);
+
+% Le chemin d'abstention, chiffré. L'étiquette se place à gauche de la
+% descente rouge, pour ne pas la chevaucher.
+\node[etiq, text=anrtred, anchor=east, align=right]
+  at ($(abst.north)+(-2.5mm,8mm)$)
+  {\LatAbstention{} s\\\scriptsize soit \FacteurGarde{}$\times$ plus rapide};
+
+\end{tikzpicture}

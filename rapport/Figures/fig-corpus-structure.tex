@@ -1,0 +1,51 @@
+% Structure du corpus. Le déséquilibre est celui de la loi elle-même : le
+% Livre II concentre à lui seul près de la moitié des articles, ce qui
+% explique que le jeu de référence y puise autant.
+\input{Figures/data/fig-corpus-data}
+\begin{tikzpicture}
+
+\begin{axis}[
+  name=livres,
+  barresH,
+  height=5.4cm, width=0.55\linewidth,
+  xmin=0, xmax=\CorpusMax*1.28,
+  ytick={0,...,7},
+  % Libellés en clair : pgfplots ne développe pas une macro donnée à
+  % « yticklabels ». L'ordre suit celui des barres, par effectif décroissant.
+  yticklabels={{Livre II},{Livre I},{Livre III},{Livre IV},
+               {Livre VI},{Livre V},{Livre prélim.},{Livre VII}},
+  yticklabel style={font=\sffamily\scriptsize, text=ink, align=right},
+  xlabel={nombre d'articles},
+  nodes near coords,
+  bar width=9pt,
+  title={Répartition par Livre},
+  title style={at={(0,1.06)}, anchor=south west},
+]
+\addplot[draw=inptblue, fill=inptblue, fill opacity=0.85]
+  coordinates {\CorpusCoords};
+\end{axis}
+
+% Décomposition du Livre II — le seul dont la taille justifie qu'on l'ouvre.
+\begin{axis}[
+  barresH,
+  at={($(livres.north east)+(1.7cm,0)$)}, anchor=north west,
+  height=5.4cm, width=0.32\linewidth,
+  xmin=0, xmax=118,
+  ytick={0,...,4},
+  yticklabels={{Durée du travail},{Hygiène et sécurité},{Salaire},
+               {Mineur et femme},{Dispositions générales}},
+  yticklabel style={font=\sffamily\scriptsize, text=ink, align=right},
+  xlabel={articles},
+  nodes near coords,
+  bar width=8pt,
+  title={Livre II, par Titre},
+  title style={at={(0,1.06)}, anchor=south west},
+]
+\addplot[draw=inptblue, fill=inptblue, fill opacity=0.45]
+  coordinates {(97,0) (64,1) (51,2) (41,3) (8,4)};
+\end{axis}
+
+% Le commentaire sur les métadonnées est passé en légende : posé dans la
+% figure, il débordait de la justification.
+
+\end{tikzpicture}

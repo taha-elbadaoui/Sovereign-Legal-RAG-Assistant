@@ -1,89 +1,120 @@
 \chapter*{Conclusion générale et perspectives}
 \addcontentsline{toc}{chapter}{Conclusion générale et perspectives}
+\markboth{Conclusion générale et perspectives}{}
 
 \section*{Bilan du travail réalisé}
 
-Ce stage avait pour objectif de concevoir, réaliser et évaluer un assistant de recherche
-juridique souverain appliqué au Code du travail marocain. Le système livré répond à une question
-posée en langage naturel en s'appuyant uniquement sur les articles réellement retrouvés dans le
-corpus, cite systématiquement leurs numéros, et s'abstient lorsque l'information n'y figure pas.
-L'ensemble de la chaîne s'exécute en local, sans aucun appel à une API externe : la question du
-citoyen ne quitte à aucun moment la machine.
+Ce stage avait pour objectif de concevoir, réaliser et évaluer un assistant de recherche juridique
+souverain appliqué au Code du travail marocain. Le système livré répond à une question posée en
+langage naturel en s'appuyant uniquement sur les articles réellement retrouvés dans le corpus,
+cite systématiquement leurs numéros, et s'abstient lorsque l'information n'y figure pas.
+L'ensemble de la chaîne s'exécute en local : la question du citoyen ne quitte à aucun moment la
+machine.
 
-Les trois missions engagées ont été menées à terme :
+Les trois missions engagées ont été menées à terme.
 
 \begin{itemize}
-    \item \textbf{Le corpus} compte 589 articles structurés, enrichis de leurs métadonnées de
-    hiérarchie, et se régénère à l'identique depuis le PDF source --- propriété vérifiée octet
-    pour octet depuis un clone vierge du dépôt.
-    \item \textbf{Le moteur RAG} combine recherche sémantique et lexicale, encadrée par deux
-    garde-fous indépendants du modèle : un seuil d'abstention appliqué avant l'appel au LLM, et
-    une vérification systématique des citations produites.
-    \item \textbf{L'évaluation} repose sur un jeu de référence de 37 questions et trois scripts
-    rejouables. Aucun chiffre du rapport n'a été saisi à la main.
+  \item \textbf{Le corpus} compte \NbArticles{} articles structurés, enrichis de leurs métadonnées
+        de hiérarchie, et se régénère à l'identique depuis le PDF source --- propriété vérifiée
+        octet pour octet depuis un clone vierge du dépôt.
+  \item \textbf{Le moteur RAG} combine recherche sémantique et lexicale, encadrée par deux
+        garde-fous indépendants du modèle : un seuil d'abstention appliqué avant l'appel au LLM, et
+        un contrôle systématique des citations produites.
+  \item \textbf{L'évaluation} repose sur un jeu de référence de \NbQuestions{} questions et trois
+        scripts rejouables. Aucun chiffre de ce rapport n'a été saisi à la main : tous sont générés
+        depuis les fichiers de mesure.
 \end{itemize}
+
+La quatrième mission --- l'extension multilingue --- était explicitement présentée comme une
+ambition complémentaire et n'a pas été engagée. Le périmètre annoncé au chapitre~\ref{chap:contexte}
+a été tenu sans élargissement.
 
 \section*{Principaux résultats}
 
-Sur le jeu de référence, la recherche atteint un Recall@5 de 0{,}97 et un MRR de 0{,}89. Côté
-réponses, 97~\% citent au moins un article, 94~\% des citations sont vérifiées comme réellement
-fournies au modèle, et l'abstention est correcte sur la totalité des questions hors périmètre.
-Le temps de réponse médian est de 3{,}5~secondes, réduit à 0{,}14~seconde lorsque le garde-fou
-se déclenche.
+Sur le jeu de référence de \NbQuestions{} questions, la recherche hybride atteint un Recall@5 de
+\RecallHybride{} et un MRR de \MrrHybride{}. Côté réponses, \TauxCitation~\% citent au moins un
+article, \TauxSourceAttendue~\% citent l'article attendu, \TauxVerif~\% des citations sont
+vérifiées comme réellement fournies au modèle, et l'abstention est correcte sur la totalité des
+questions hors périmètre. Le temps de réponse médian est de \LatTotale~secondes, réduit à
+\LatAbstention~seconde lorsque le garde-fou se déclenche.
 
-Deux résultats méritent d'être soulignés parce qu'ils contredisent les attentes initiales :
+Trois résultats méritent d'être soulignés parce qu'ils contredisent les attentes initiales.
 
 \begin{enumerate}
-    \item \textbf{La recherche dense seule dépasse la recherche hybride} sur ce jeu de questions.
-    Les questions en langage naturel étant des reformulations, elles favorisent le sémantique ;
-    la fusion RRF dilue alors un bon classement dense.
-    \item \textbf{Une hallucination inter-codes, invisible aux tests manuels}, a été mise au jour
-    par l'évaluation : le modèle refusait correctement une question hors périmètre, puis inventait
-    une réponse citant une loi inexistante. Sa correction, puis le rééquilibrage de cette
-    correction, n'ont été possibles que parce qu'un banc de mesure rejouable existait.
+  \item \textbf{Une hallucination inter-codes, invisible aux tests manuels}, a été mise au jour par
+        l'évaluation : le modèle refusait correctement une question hors périmètre, puis inventait
+        une réponse citant une loi inexistante. Sa correction, puis le \emph{rééquilibrage} de
+        cette correction, n'ont été possibles que parce qu'un banc de mesure rejouable existait.
+  \item \textbf{La comparaison des méthodes de recherche s'est inversée} lorsque le jeu de
+        référence est passé de 37 à \NbQuestions{} questions. Le dense l'emportait nettement sur le
+        jeu d'origine, uniquement composé de reformulations en langage courant ; dès que des
+        références explicites à des numéros d'articles et le vocabulaire figé des Livres~V et~VI
+        sont entrés dans le jeu, l'hybride est passé devant. Le premier résultat mesurait la
+        composition du jeu de test, pas le système.
+  \item \textbf{Les bandes de score d'abstention se recouvrent.} Une question administrative hors
+        périmètre obtient un score supérieur à celui de la question de droit du travail la moins
+        bien classée : aucun seuil unique ne peut les séparer. Là encore, la séparation nette
+        qu'affichait le jeu d'origine était un artefact de ses cinq seules questions hors
+        périmètre.
 \end{enumerate}
 
-Ces deux constats justifient rétrospectivement le poids donné à l'évaluation dans ce projet : ils
-n'auraient été accessibles ni par l'intuition, ni par des tests ponctuels.
+Ces trois constats justifient rétrospectivement le poids donné à l'évaluation dans ce projet, mais
+les deux derniers vont plus loin : ils montrent qu'un banc de mesure est lui-même un objet à
+valider. Tant que sa couverture n'a pas été auditée, il mesure les hypothèses de celui qui l'a
+écrit autant que le système qu'il juge.
 
 \section*{Limites}
 
-Plusieurs limites sont assumées et documentées :
+Plusieurs limites sont assumées et documentées.
 
 \begin{itemize}
-    \item \textbf{La vérification des citations est syntaxique, non sémantique.} Elle établit
-    qu'un article cité figurait dans le contexte, pas qu'il dise ce que la réponse lui attribue.
-    \item \textbf{Trois questions valides sur 32 sont refusées à tort}, coût assumé d'une
-    abstention volontairement stricte.
-    \item \textbf{Le périmètre reste un code unique} et une seule langue.
-    \item \textbf{Le corpus repose sur une version datée} du texte : sa mise à jour reste un acte
-    humain, déclenché et validé, non une veille automatisée.
+  \item \textbf{Le contrôle des citations est syntaxique, non sémantique.} Il établit qu'un article
+        cité figurait dans le contexte, pas qu'il dise ce que la réponse lui attribue.
+  \item \textbf{\NbRefusTort{} questions valides sur \NbInScope{} sont refusées à tort}, coût
+        assumé d'une abstention volontairement stricte. Les deux refus proviennent du modèle, non
+        du seuil.
+  \item \textbf{Le seuil d'abstention ne sépare pas les populations qu'il vise.} Les bandes de
+        score se recouvrent ; il n'écarte que la fraction clairement non pertinente, et c'est
+        l'abstention au niveau du prompt qui fait le reste du travail.
+  \item \textbf{Les taux rapportés sont ceux d'une seule exécution.} La génération n'étant pas
+        déterministe, ils ne constituent pas des constantes du système et ne sont pas assortis
+        d'intervalles.
+  \item \textbf{Le jeu de référence reste petit} (\NbQuestions{} questions) et construit par la
+        même personne que le système. Son élargissement a par ailleurs \emph{ciblé} des zones dont
+        on savait qu'elles n'étaient pas couvertes : il corrige un angle mort connu, il ne rend pas
+        le jeu représentatif de l'usage réel.
+  \item \textbf{Le périmètre reste un code unique} et une seule langue.
+  \item \textbf{Le corpus repose sur une version datée} du texte : sa mise à jour reste un acte
+        humain, déclenché et validé, non une veille automatisée.
 \end{itemize}
 
 \section*{Perspectives}
 
-\paragraph{Extension à un second code.}
+\paragraph{Extension à un second code}
 L'architecture a été conçue pour généraliser, mais une évolution structurante reste nécessaire :
 les numéros d'articles cessent d'être uniques dès qu'un second code entre dans le corpus ---
-« l'article 32 » existe dans plusieurs codes. Chaque article devra donc porter un identifiant
-composite associant le code et le numéro. Le Code de la famille constitue le candidat naturel,
-étant cité dans le sujet de stage et parmi les plus consultés par le citoyen. Sa sensibilité
-particulière imposera une discipline d'abstention encore plus stricte.
+«~l'article~32~» existe dans plusieurs codes. Chaque article devra donc porter un identifiant
+composite associant le code et le numéro, et le contrôle des citations devra être réécrit en
+conséquence. Le Code de la famille constitue le candidat naturel, étant cité dans le sujet de
+stage et parmi les plus consultés par le citoyen ; sa sensibilité particulière imposera une
+discipline d'abstention encore plus stricte.
 
-\paragraph{Couche multilingue.}
-L'approche retenue consisterait à traiter l'arabe et l'anglais comme une couche de traduction
-greffée aux extrémités du système, sans toucher au moteur : la question est ramenée au français,
-le pipeline s'exécute inchangé, et la réponse est retraduite --- les numéros d'articles cités
-restant, eux, indépendants de la langue. Le darija, dépourvu d'orthographe standardisée et
+\paragraph{Couche multilingue}
+L'approche envisagée consisterait à traiter l'arabe et l'anglais comme une couche de traduction
+greffée aux \emph{extrémités} du système, sans toucher au moteur : la question est ramenée au
+français, le pipeline s'exécute inchangé, et la réponse est retraduite --- les numéros d'articles
+cités restant, eux, indépendants de la langue. Le darija, dépourvu d'orthographe standardisée et
 sujet à une forte alternance codique, est délibérément différé.
 
-\paragraph{Reclassement par cross-encodeur.}
-Prévu comme option conditionnelle, il reste à mesurer. Compte tenu du constat sur la supériorité
-du dense, son apport devrait être évalué contre cette configuration et non contre l'hybride.
+\paragraph{Reclassement par cross-encodeur}
+Prévu comme option conditionnelle et déjà câblé dans le code, il reste à mesurer. Il devra l'être
+contre la configuration hybride --- désormais la meilleure des trois --- et non contre le dense :
+comparer au mauvais point de référence produirait un gain apparent.
 
-\paragraph{Vérification sémantique des citations.}
+\paragraph{Vérification sémantique des citations}
 C'est la limite la plus intéressante à lever : vérifier non plus la présence de l'article cité,
-mais la cohérence entre l'affirmation produite et le contenu réel de cet article.
+mais la cohérence entre l'affirmation produite et le contenu réel de cet article. C'est aussi la
+seule qui transformerait la traçabilité mesurée aujourd'hui en une véritable garantie d'exactitude.
 
 \section*{Apport personnel}
 
@@ -91,5 +122,16 @@ Ce stage m'a permis de mettre en pratique une chaîne complète de traitement au
 langage, de l'extraction d'un corpus brut jusqu'à l'évaluation quantitative d'un système
 génératif. Au-delà des compétences techniques --- recherche sémantique, bases vectorielles,
 modèles de langage locaux --- il m'a surtout appris la valeur d'une démarche de mesure
-systématique : plusieurs des décisions défendues dans ce rapport contredisent l'intuition que
-j'en avais au départ, et n'ont pu être tranchées que par des chiffres reproductibles.
+systématique.
+
+La leçon la plus durable est cependant venue d'une erreur que j'ai commise moi-même. Pendant
+l'essentiel du stage, j'ai tenu pour acquis un résultat --- la supériorité de la recherche dense
+--- que je croyais solide parce qu'il était mesuré. Il ne l'était pas : mon jeu de questions ne
+contenait que la forme de requête que cette méthode sait traiter, et je mesurais donc mes propres
+hypothèses. L'audit de couverture, mené tardivement, a inversé la conclusion sans qu'une seule
+ligne du moteur ait changé.
+
+J'en retiens deux choses. Qu'un système génératif ne peut pas être jugé sur ses bonnes réponses,
+d'abord. Mais surtout qu'un chiffre reproductible n'est pas pour autant un chiffre valide : un banc
+de mesure est un artefact conçu, avec ses angles morts, et il demande le même scepticisme que le
+système qu'il évalue.

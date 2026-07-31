@@ -1,38 +1,63 @@
 ﻿question,type,expected_articles,cited_articles,unverified_citations,abstained,gate_abstained,retrieval_score,t_retrieval_s,t_generation_s,t_total_s,outcome
-Quelle est la durée de la période d'essai pour un cadre en contrat à durée indéterminée ?,retrieval,14,14,,False,False,0.7826,0.457,7.024,7.481,"Réponse sourcée, article attendu cité"
-À quel âge minimum un mineur peut-il être employé au Maroc ?,retrieval,143,143;145,,False,False,0.7658,0.165,3.556,3.721,"Réponse sourcée, article attendu cité"
-Quelle est la durée du congé de maternité ?,retrieval,152,152;154;156;269,,True,False,0.6797,0.147,6.984,7.131,Refus à tort (question valide)
-Quelle est la durée légale du travail dans les activités non agricoles ?,retrieval,184,184,,False,False,0.7373,0.169,2.112,2.282,"Réponse sourcée, article attendu cité"
-Dans quel délai faut-il saisir le tribunal après un licenciement contesté ?,retrieval,65,41;65;532,532,False,False,0.7214,0.16,4.383,4.543,Réponse avec citation non vérifiée
-À quel âge un salarié est-il mis à la retraite ?,retrieval,526,53;526,53,False,False,0.7487,0.16,4.629,4.79,Réponse avec citation non vérifiée
-Le harcèlement sexuel commis par l'employeur est-il une faute grave ?,retrieval,40,39;40,,False,False,0.7164,0.16,1.041,1.2,"Réponse sourcée, article attendu cité"
-Peut-on employer un mineur de moins de 18 ans dans les mines ?,retrieval,179,179,,False,False,0.718,0.175,2.001,2.176,"Réponse sourcée, article attendu cité"
-Combien d'heures par mois un délégué des salariés a-t-il pour exercer ses fonctions ?,retrieval,456,456,,False,False,0.7124,0.174,2.436,2.609,"Réponse sourcée, article attendu cité"
-Quelles catégories de salariés sont régies par des statuts spéciaux ?,retrieval,3,4;11,,False,False,0.6946,0.156,7.231,7.387,"Réponse sourcée, autre article cité"
-Pour combien de temps peut-on conclure un CDD à l'ouverture d'une nouvelle entreprise ?,retrieval,17,17,,False,False,0.6039,0.172,4.998,5.17,"Réponse sourcée, article attendu cité"
-Combien de jours de congé annuel payé acquiert-on par mois de service ?,retrieval,231,231;238,,False,False,0.696,0.159,4.179,4.338,"Réponse sourcée, article attendu cité"
-Quelle est la durée minimale du repos hebdomadaire ?,retrieval,205,206;213,,True,False,0.6611,0.159,3.814,3.973,Refus à tort (question valide)
-Combien de jours de congé un salarié a-t-il à l'occasion d'une naissance ?,retrieval,269,269,,False,False,0.7707,0.163,1.517,1.68,"Réponse sourcée, article attendu cité"
-"À partir de quelle ancienneté la prime d'ancienneté est-elle due, et à quel taux ?",retrieval,350,350,,False,False,0.7335,0.167,1.361,1.528,"Réponse sourcée, article attendu cité"
-Quelles sont les fautes graves pouvant justifier le licenciement d'un salarié ?,retrieval,39,39;40,,False,False,0.7805,0.156,12.928,13.084,"Réponse sourcée, article attendu cité"
-Comment sont calculés les dommages-intérêts en cas de licenciement abusif ?,retrieval,41,41;51;59,51,False,False,0.7263,0.202,3.284,3.486,Réponse avec citation non vérifiée
-Comment est calculée l'indemnité de licenciement ?,retrieval,53,53;55;56;59,,False,False,0.7881,0.151,6.516,6.667,"Réponse sourcée, article attendu cité"
-L'employeur peut-il licencier une salariée enceinte ?,retrieval,159,159;160,,False,False,0.7153,0.153,4.861,5.015,"Réponse sourcée, article attendu cité"
-Une mère salariée a-t-elle droit à un repos pour allaiter son enfant ?,retrieval,161,161,,False,False,0.7935,0.166,3.102,3.267,"Réponse sourcée, article attendu cité"
-Est-il permis de faire travailler les salariés pendant les jours de fête payés ?,retrieval,217,217,,False,False,0.7135,0.16,1.756,1.916,"Réponse sourcée, article attendu cité"
-La discrimination salariale entre hommes et femmes est-elle autorisée ?,retrieval,346,346,,False,False,0.755,0.192,2.333,2.526,"Réponse sourcée, article attendu cité"
-À partir de combien de salariés doit-on élire des délégués des salariés ?,retrieval,430,433,,False,False,0.767,0.246,9.532,9.778,"Réponse sourcée, autre article cité"
-À partir de combien de salariés faut-il créer un comité d'entreprise ?,retrieval,464,464,,False,False,0.6743,0.159,1.949,2.108,"Réponse sourcée, article attendu cité"
-Faut-il une autorisation pour recruter un salarié étranger ?,retrieval,516,516,,False,False,0.7278,0.155,1.372,1.527,"Réponse sourcée, article attendu cité"
-Le salarié doit-il être entendu avant d'être licencié ?,retrieval,62,62,,False,False,0.7092,0.161,4.332,4.493,"Réponse sourcée, article attendu cité"
-Quelle est la durée maximale d'une mission d'intérim ?,retrieval,500,,,False,False,0.5955,0.154,1.737,1.891,Réponse sans aucune citation
-À partir de combien de salariés un comité de sécurité et d'hygiène est-il obligatoire ?,retrieval,336,337,,True,False,0.692,0.174,3.465,3.638,Refus à tort (question valide)
-Que doit faire un salarié malade pour justifier son absence ?,retrieval,271,271,,False,False,0.764,0.158,3.895,4.052,"Réponse sourcée, article attendu cité"
-Combien de jours d'absence a-t-on pour son propre mariage ?,retrieval,274,274,,False,False,0.7076,0.155,1.516,1.671,"Réponse sourcée, article attendu cité"
-Quelles obligations de sécurité et de santé l'employeur a-t-il envers ses salariés ?,retrieval,24;281,24;287;504;542,,False,False,0.7173,0.175,8.123,8.298,"Réponse sourcée, article attendu cité"
-Un salarié appelé au service militaire retrouve-t-il son poste au retour ?,retrieval,510,510,,False,False,0.6958,0.156,1.928,2.083,"Réponse sourcée, article attendu cité"
-Quelle est la procédure pour divorcer au Maroc ?,abstention,,,,True,False,0.5147,0.152,1.566,1.718,Abstention correcte
-Comment créer une société anonyme au Maroc ?,abstention,,,,True,False,0.515,0.145,2.946,3.091,Abstention correcte
-Quelle est la peine encourue pour vol qualifié ?,abstention,,,,True,False,0.4453,0.148,3.216,3.364,Abstention correcte
-Quelle est la recette du couscous royal ?,abstention,,,,True,True,0.3071,0.142,0.0,0.142,Abstention correcte
-Quelle est la capitale de la France ?,abstention,,,,True,True,0.3357,0.133,0.0,0.133,Abstention correcte
+Quelle est la durée de la période d'essai pour un cadre en contrat à durée indéterminée ?,retrieval,14,14,,False,False,0.7826,0.352,2.024,2.377,"Réponse sourcée, article attendu cité"
+À quel âge minimum un mineur peut-il être employé au Maroc ?,retrieval,143,143;145,,False,False,0.7658,0.177,3.867,4.044,"Réponse sourcée, article attendu cité"
+Quelle est la durée du congé de maternité ?,retrieval,152,152;154;156,,False,False,0.6797,0.164,5.153,5.317,"Réponse sourcée, article attendu cité"
+Quelle est la durée légale du travail dans les activités non agricoles ?,retrieval,184,184,,False,False,0.7373,0.141,2.233,2.374,"Réponse sourcée, article attendu cité"
+Dans quel délai faut-il saisir le tribunal après un licenciement contesté ?,retrieval,65,41;65;532,532,False,False,0.7214,0.177,4.318,4.495,Réponse avec citation non vérifiée
+À quel âge un salarié est-il mis à la retraite ?,retrieval,526,53;526,53,False,False,0.7487,0.145,4.617,4.762,Réponse avec citation non vérifiée
+Le harcèlement sexuel commis par l'employeur est-il une faute grave ?,retrieval,40,39;40,,False,False,0.7164,0.147,1.031,1.179,"Réponse sourcée, article attendu cité"
+Peut-on employer un mineur de moins de 18 ans dans les mines ?,retrieval,179,179,,False,False,0.718,0.175,1.917,2.093,"Réponse sourcée, article attendu cité"
+Combien d'heures par mois un délégué des salariés a-t-il pour exercer ses fonctions ?,retrieval,456,456,,False,False,0.7124,0.156,2.25,2.406,"Réponse sourcée, article attendu cité"
+Quelles catégories de salariés sont régies par des statuts spéciaux ?,retrieval,3,3;4,,True,False,0.6946,0.147,10.754,10.901,Refus à tort (question valide)
+Pour combien de temps peut-on conclure un CDD à l'ouverture d'une nouvelle entreprise ?,retrieval,17,17;136;495,,False,False,0.6039,0.174,6.281,6.455,"Réponse sourcée, article attendu cité"
+Combien de jours de congé annuel payé acquiert-on par mois de service ?,retrieval,231,231;235;238,,False,False,0.696,0.149,3.968,4.117,"Réponse sourcée, article attendu cité"
+Quelle est la durée minimale du repos hebdomadaire ?,retrieval,205,206,,False,False,0.6611,0.16,5.125,5.286,"Réponse sourcée, autre article cité"
+Combien de jours de congé un salarié a-t-il à l'occasion d'une naissance ?,retrieval,269,269,,False,False,0.7707,0.167,1.679,1.846,"Réponse sourcée, article attendu cité"
+"À partir de quelle ancienneté la prime d'ancienneté est-elle due, et à quel taux ?",retrieval,350,350,,False,False,0.7335,0.171,1.56,1.731,"Réponse sourcée, article attendu cité"
+Quelles sont les fautes graves pouvant justifier le licenciement d'un salarié ?,retrieval,39,39;40;160;293,,False,False,0.7805,0.163,16.152,16.315,"Réponse sourcée, article attendu cité"
+Comment sont calculés les dommages-intérêts en cas de licenciement abusif ?,retrieval,41,41;301,,False,False,0.7263,0.151,5.998,6.15,"Réponse sourcée, article attendu cité"
+Comment est calculée l'indemnité de licenciement ?,retrieval,53,41;51;53;55;56;59;356,41;51;356,False,False,0.7881,0.151,8.258,8.408,Réponse avec citation non vérifiée
+L'employeur peut-il licencier une salariée enceinte ?,retrieval,159,159;160,,False,False,0.7153,0.164,5.206,5.37,"Réponse sourcée, article attendu cité"
+Une mère salariée a-t-elle droit à un repos pour allaiter son enfant ?,retrieval,161,161,,False,False,0.7935,0.176,3.319,3.495,"Réponse sourcée, article attendu cité"
+Est-il permis de faire travailler les salariés pendant les jours de fête payés ?,retrieval,217,217,,False,False,0.7135,0.154,1.823,1.977,"Réponse sourcée, article attendu cité"
+La discrimination salariale entre hommes et femmes est-elle autorisée ?,retrieval,346,346,,False,False,0.755,0.161,2.634,2.795,"Réponse sourcée, article attendu cité"
+À partir de combien de salariés doit-on élire des délégués des salariés ?,retrieval,430,1;2;3;4;5;6;433,1;2;3;4;5;6,False,False,0.767,0.148,10.488,10.636,Réponse avec citation non vérifiée
+À partir de combien de salariés faut-il créer un comité d'entreprise ?,retrieval,464,464,,False,False,0.6743,0.149,1.921,2.07,"Réponse sourcée, article attendu cité"
+Faut-il une autorisation pour recruter un salarié étranger ?,retrieval,516,516,,False,False,0.7278,0.165,1.513,1.678,"Réponse sourcée, article attendu cité"
+Le salarié doit-il être entendu avant d'être licencié ?,retrieval,62,62,,False,False,0.7092,0.169,4.657,4.826,"Réponse sourcée, article attendu cité"
+Quelle est la durée maximale d'une mission d'intérim ?,retrieval,500,,,False,False,0.5955,0.16,1.922,2.082,Réponse sans aucune citation
+À partir de combien de salariés un comité de sécurité et d'hygiène est-il obligatoire ?,retrieval,336,,,False,False,0.692,0.16,2.549,2.709,Réponse sans aucune citation
+Que doit faire un salarié malade pour justifier son absence ?,retrieval,271,271,,False,False,0.764,0.148,3.404,3.552,"Réponse sourcée, article attendu cité"
+Combien de jours d'absence a-t-on pour son propre mariage ?,retrieval,274,274,,False,False,0.7076,0.151,1.721,1.872,"Réponse sourcée, article attendu cité"
+Quelles obligations de sécurité et de santé l'employeur a-t-il envers ses salariés ?,retrieval,24;281,24;169;287;504;542,,False,False,0.7173,0.181,9.046,9.227,"Réponse sourcée, article attendu cité"
+Un salarié appelé au service militaire retrouve-t-il son poste au retour ?,retrieval,510,510,,False,False,0.6958,0.159,2.09,2.249,"Réponse sourcée, article attendu cité"
+Quelle est la procédure pour divorcer au Maroc ?,abstention,,,,True,False,0.5147,0.154,1.992,2.146,Abstention correcte
+Comment créer une société anonyme au Maroc ?,abstention,,,,True,False,0.515,0.141,4.37,4.511,Abstention correcte
+Quelle est la peine encourue pour vol qualifié ?,abstention,,,,True,False,0.4453,0.145,3.122,3.267,Abstention correcte
+Quelle est la recette du couscous royal ?,abstention,,,,True,True,0.3071,0.14,0.0,0.14,Abstention correcte
+Quelle est la capitale de la France ?,abstention,,,,True,True,0.3357,0.128,0.0,0.128,Abstention correcte
+Que dit l'article 32 du Code du travail ?,retrieval,32,32;154;156;274;275;277,154;156;274;275;277,False,False,1.0,0.14,6.999,7.14,Réponse avec citation non vérifiée
+Que prévoit l'article 152 ?,retrieval,152,152,,False,False,1.0,0.132,3.787,3.919,"Réponse sourcée, article attendu cité"
+Quel est le contenu de l'article 256 ?,retrieval,256,256,,False,False,1.0,0.146,6.184,6.329,"Réponse sourcée, article attendu cité"
+Que dispose l'article 39 ?,retrieval,39,39,,False,False,1.0,0.153,14.743,14.896,"Réponse sourcée, article attendu cité"
+Que dit l'article premier du Code du travail ?,retrieval,1,1,,False,False,1.0,0.205,10.052,10.257,"Réponse sourcée, article attendu cité"
+Que prévoit l'article 217 ?,retrieval,217,217,,False,False,1.0,0.171,3.216,3.388,"Réponse sourcée, article attendu cité"
+Qui est chargé de l'inspection du travail ?,retrieval,530,538,,False,False,0.6793,0.156,1.741,1.898,"Réponse sourcée, autre article cité"
+L'employeur doit-il tenir un registre des mises en demeure ?,retrieval,536,536,,False,False,0.7558,0.166,3.748,3.914,"Réponse sourcée, article attendu cité"
+Quelle est la valeur juridique des procès-verbaux dressés par l'inspection du travail ?,retrieval,539,539,,False,False,0.6328,0.184,2.712,2.896,"Réponse sourcée, article attendu cité"
+Quelle amende sanctionne le défaut d'ouverture du registre des mises en demeure ?,retrieval,547,536;547,,False,False,0.705,0.173,4.411,4.584,"Réponse sourcée, article attendu cité"
+Qu'est-ce qu'un conflit collectif du travail ?,retrieval,549,549,,False,False,0.6924,0.182,6.153,6.335,"Réponse sourcée, article attendu cité"
+Dans quel délai l'arbitre doit-il rendre sa décision ?,retrieval,574,574;578,,False,False,0.7492,0.194,4.786,4.98,"Réponse sourcée, article attendu cité"
+Dans quel délai peut-on contester une décision d'arbitrage ?,retrieval,577,577,,False,False,0.716,0.166,2.271,2.437,"Réponse sourcée, article attendu cité"
+Comment l'arbitre est-il désigné en cas de conflit collectif ?,retrieval,568,,,True,False,0.6716,0.246,2.763,3.009,Refus à tort (question valide)
+Dans quels cas le conflit est-il soumis à la commission nationale d'enquête et de conciliation ?,retrieval,565,565;566,,False,False,0.7434,0.245,4.839,5.084,"Réponse sourcée, article attendu cité"
+Quand le Code du travail entre-t-il en vigueur ?,retrieval,589,58;100,58;100,False,False,0.6053,0.212,10.573,10.784,Réponse avec citation non vérifiée
+Quelles obligations l'employeur a-t-il envers les agents de l'inspection du travail ?,retrieval,536;538,538,,False,False,0.6938,0.238,9.857,10.095,"Réponse sourcée, article attendu cité"
+Que se passe-t-il si l'employeur ne respecte pas une mise en demeure d'hygiène et de sécurité ?,retrieval,540;542,300;540;542,,False,False,0.7674,0.208,9.846,10.054,"Réponse sourcée, article attendu cité"
+Quelles sont les étapes de la procédure de règlement d'un conflit collectif ?,retrieval,551;565,550;551;560;567,,False,False,0.6131,0.191,11.33,11.521,"Réponse sourcée, article attendu cité"
+Le service militaire suspend-il le contrat de travail ?,retrieval,32,32,,False,False,0.6542,0.179,2.358,2.536,"Réponse sourcée, article attendu cité"
+Le salarié appelé au service militaire est-il indemnisé pour son congé annuel non pris ?,retrieval,256,256,,False,False,0.784,0.168,2.484,2.652,"Réponse sourcée, article attendu cité"
+Quelles sont les conditions pour obtenir un passeport marocain ?,abstention,,,,True,False,0.6027,0.171,2.816,2.987,Abstention correcte
+Comment calculer l'impôt sur le revenu au Maroc ?,abstention,,,,True,False,0.5561,0.17,5.124,5.295,Abstention correcte
+Quel est le meilleur moment de l'année pour visiter Marrakech ?,abstention,,,,True,False,0.4461,0.177,4.212,4.389,Abstention correcte
+Quelles sont les règles du hors-jeu au football ?,abstention,,,,True,False,0.4319,0.155,3.054,3.209,Abstention correcte
