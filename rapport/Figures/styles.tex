@@ -181,18 +181,3 @@
   \node[font=\sffamily\scriptsize\bfseries, text=anrtred, anchor=south, rotate=90]
     at ({axis cs:#1,0}|-{rel axis cs:0,0.02}) {\;#2};}
 
-% ================================================================ DIAGRAMME
-% Gantt : mêmes couleurs, mêmes fontes que le reste.
-\ganttset{
-  bar height=0.55,
-  bar/.append style={draw=inptblue!70, fill=inptblue!25, rounded corners=1pt},
-  bar label font=\sffamily\scriptsize\color{ink},
-  group/.append style={draw=navy, fill=navy},
-  group label font=\sffamily\scriptsize\bfseries\color{navy},
-  milestone/.append style={draw=amberdark, fill=amberdark},
-  milestone label font=\sffamily\scriptsize\color{amberdark!60!black},
-  title label font=\sffamily\scriptsize\color{slate},
-  title/.append style={draw=none, fill=none},
-  link/.style={-{Stealth[length=1.6mm]}, draw=slate, line width=0.5pt},
-  vgrid={*1{draw=rule!60, line width=0.4pt}},
-}

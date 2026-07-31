@@ -126,29 +126,22 @@ moment où il n'aurait plus été possible de revenir en arrière.
 \section{Organisation du travail}
 
 Le travail a été planifié en huit phases hebdomadaires, chacune assortie d'un livrable identifié à
-l'avance (figure~\ref{fig:gantt}). Le découpage suit une progression délibérée : rendre le corpus
-fiable avant de construire quoi que ce soit dessus, obtenir une chaîne complète avant de
-l'optimiser, et mesurer avant de conclure.
+l'avance. Le découpage suivait une progression délibérée : rendre le corpus fiable avant de
+construire quoi que ce soit dessus, obtenir une chaîne complète avant de l'optimiser, et mesurer
+avant de conclure.
 
-\begin{figure}[htbp]
-  \centering
-  \input{Figures/fig-gantt}
-  \caption[Phasage prévu du stage]{Phasage \emph{prévu} du stage. Les jalons marquent les moments
-  où le travail devenait vérifiable par un tiers : un corpus qui se régénère à l'identique, des
-  réponses effectivement citées, un banc de mesure rejouable.}
-  \label{fig:gantt}
-\end{figure}
+L'exécution réelle s'est nettement écartée de ce découpage, et c'est l'écart qui est instructif.
+Le journal de bord permet de le dater précisément : les trois premières semaines, du 2 au
+20~juillet, ont été absorbées par le \emph{seul} corpus --- extraction, découpage, reconstruction
+de la hiérarchie, puis correction des familles de défauts décrites au
+chapitre~\ref{chap:realisation}. Le moteur lui-même, du premier pipeline RAG bout-en-bout jusqu'à
+l'évaluation complète, a été mené en deux jours, les 24 et 25~juillet.
 
 \begin{constat}
-L'exécution réelle s'est écartée de ce plan, et l'écart est instructif. Le journal de bord montre
-que les trois premières semaines (2 au 20~juillet) ont été absorbées par le \emph{seul} corpus ---
-extraction, découpage, hiérarchie, correction des trois familles de défauts décrites au
-chapitre~\ref{chap:realisation} --- tandis que les phases S3 à~S6, du premier pipeline RAG jusqu'à
-l'évaluation complète, ont été menées en deux jours, les 24 et 25~juillet.
-
-Ce déséquilibre n'est pas un accident de planification : il est la manifestation directe de la
-thèse défendue dans ce rapport. Une fois le corpus fiable, le moteur RAG se construit vite ; c'est
-la donnée qui coûte, pas la boucle qui l'exploite.
+Ce déséquilibre --- trois semaines de données contre deux jours de moteur --- n'est pas un
+accident de planification. Il est la manifestation directe de la thèse défendue dans ce rapport :
+une fois le corpus fiable, la boucle RAG se construit vite. C'est la \textbf{donnée} qui coûte,
+pas le code qui l'exploite.
 \end{constat}
 
 Un \textbf{journal de bord} a été tenu quotidiennement, consignant chaque décision, chaque
